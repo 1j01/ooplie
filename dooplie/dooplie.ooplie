@@ -1,0 +1,9 @@
+
+Make a pane for output and an input field.
+Append the elements to the <body>.
+When the user hits enter in the input field,
+	interpret the value as English,
+	output the results to the pane, and
+	clear the field.
+If the user presses up or down in the input,
+	scroll through a history of commands.

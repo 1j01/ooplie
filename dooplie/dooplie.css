@@ -1,0 +1,64 @@
+
+html,
+body {
+	height: 100%;
+	display: flex;
+	flex: 1;
+	margin: 0;
+	box-sizing: border-box;
+	font-family: sans-serif;
+}
+
+body {
+	flex-direction: column;
+	padding: 0.3em;
+}
+
+#ooplie-output,
+#ooplie-input {
+	flex: 0;
+	flex-basis: auto;
+}
+
+#ooplie-output {
+	overflow: auto;
+}
+
+#ooplie-input,
+.entry {
+	padding: 0.25em 0.5em;
+}
+/*
+#ooplie-input,
+.entry.input {
+	padding-left: 1em;
+	position: relative;
+}
+#ooplie-input::before,
+.entry.input::before {
+	content: ">";
+	position: absolute;
+	left: 0;
+	font-weight: bold;
+}
+*/
+.entry:last-child {
+	margin-bottom: 0.25em;
+}
+.entry:first-child {
+	margin-top: 0.25em;
+}
+.entry.input {
+	color: gray;
+}
+.error {
+	color: #A00;
+	background: #FFF5F5;
+}
+/*
+.welcome {
+	font-size: 5em;
+	color: gray;
+	opacity: 0.3;
+}
+*/

@@ -1,0 +1,49 @@
+{
+  "name": "ooplie",
+  "description": "Program in English",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/1j01/ooplie.git"
+  },
+  "bugs": {
+    "url": "http://github.com/1j01/ooplie/issues"
+  },
+  "license": "GPL-3.0",
+  "keywords": [
+    "ooplie",
+    "object-oriented",
+    "programming",
+    "language",
+    "programming-language",
+    "program",
+    "natural-language",
+    "natural",
+    "command",
+    "interpret",
+    "interpreter",
+    "english",
+    "dynamic",
+    "lingual",
+    "engine",
+    "algebra",
+    "math",
+    "maths",
+    "mathematics",
+    "scripting",
+    "scripting-language",
+    "script",
+    "web"
+  ],
+  "main": "ooplie.js",
+  "scripts": {
+    "prepublish": "browserify -t coffeeify --extension=\".coffee\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE",
+    "develop": "watchify -v -t coffeeify --extension=\".coffee\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "coffeeify": "^2.0.1",
+    "watchify": "^3.6.1"
+  }
+}
