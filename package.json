@@ -38,26 +38,11 @@
   ],
   "main": "ooplie.js",
   "scripts": {
-    "prepublish": "browserify -t coffeeify --extension=\".coffee\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE",
-    "develop-not-working": "watchify -v -t coffeeify --extension=\".coffee\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE --poll=100",
-    "develop-also-not-working": "watch-run -i -p '**/*.coffee' \"browserify -t coffeeify --extension=\\\".coffee\\\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE\"",
-    "develop-slow": "npm run prepublish && rerun-script",
-    "develop-also-broken": "npm-watch",
-    "develop-also-does-not-work": "watchy -w src -- npm run prepublish"
-  },
-  "watches": {
-    "prepublish": "**/*.coffee"
-  },
-  "watch": {
-    "prepublish": "**/*.coffee"
+    "prepublish": "webpack",
+    "develop": "webpack -d --watch --display-error-details"
   },
   "devDependencies": {
-    "browserify": "^12.0.1",
-    "coffeeify": "^2.0.1",
-    "npm-watch": "0.0.1",
-    "rerun-script": "^0.6.0",
-    "watch-run": "^1.2.4",
-    "watchify": "^3.6.1",
-    "watchy": "^0.6.5"
+    "coffee-loader": "^0.7.2",
+    "webpack": "^1.12.9"
   }
 }

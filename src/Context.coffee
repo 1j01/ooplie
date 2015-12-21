@@ -18,7 +18,7 @@ class Context
 		else if text.match /^\?|clear/i
 			if @console?
 				@console.clear()
-				callback null, "Console cleared."
+				callback null, "Console cleared.dfsdfsdfgdfg"
 			else
 				callback new Error "No console to clear."
 		# TODO: anything useful

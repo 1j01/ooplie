@@ -1,2 +1,2 @@
 
-module.exports.Context = require './Context'
+module.exports.Context = require './Context.coffee'

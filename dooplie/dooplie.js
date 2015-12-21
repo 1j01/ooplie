@@ -23,8 +23,6 @@ var log = function(text){
 	return entry;
 };
 
-var context = new OOPLiE.Context({console: {clear: clear, log: log}});
-
 output.is_scrolled_to_bottom = function(){
 	return output.scrollTop + output.clientHeight >= output.scrollHeight
 };
@@ -50,6 +48,13 @@ var save_command_history = function(){
 };
 
 load_command_history();
+
+window.onerror = function(error_message, etc){
+	var error_entry = log(error_message);
+	error_entry.classList.add("error");
+};
+
+var context = new OOPLiE.Context({console: {clear: clear, log: log}});
 
 input.addEventListener("keydown", function(e){
 	if(e.keyCode === 13){
@@ -96,8 +101,3 @@ input.addEventListener("keydown", function(e){
 		}
 	}
 });
-
-window.onerror = function(error_message, etc){
-	var error_entry = log(error_message);
-	error_entry.classList.add("error");
-};
