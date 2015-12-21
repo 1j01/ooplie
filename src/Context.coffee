@@ -1,7 +1,7 @@
 
 module.exports =
 class Context
-	constructor: ->
+	constructor: ({@console})->
 		
 	interpret: (text, callback)->
 		# Conversational trivialities
@@ -14,6 +14,13 @@ class Context
 		# Unhelp
 		else if text.match /^\?|help/i
 			callback null, "Sorry, I can't help."
+		# Console
+		else if text.match /^\?|clear/i
+			if @console?
+				@console.clear()
+				callback null, "Console cleared."
+			else
+				callback new Error "No console to clear."
 		# TODO: anything useful
 		else if text.match /^(Create|Make|Do|Just)/i
 			callback new Error "I don't know how to do that."
@@ -24,7 +31,5 @@ class Context
 			catch e
 				error = e
 			callback error, result
-		else if Math.random() < 0.5
-			callback new Error "Nothing happened."
 		else
-			callback null, text + "?"
+			callback new Error "I don't understand."

@@ -2,7 +2,9 @@
 var Context;
 
 module.exports = Context = (function() {
-  function Context() {}
+  function Context(arg) {
+    this.console = arg.console;
+  }
 
   Context.prototype.interpret = function(text, callback) {
     var e, error, error1, result;
@@ -14,6 +16,13 @@ module.exports = Context = (function() {
       return callback(null, text);
     } else if (text.match(/^\?|help/i)) {
       return callback(null, "Sorry, I can't help.");
+    } else if (text.match(/^\?|clear/i)) {
+      if (this.console != null) {
+        this.console.clear();
+        return callback(null, "Console cleared.");
+      } else {
+        return callback(new Error("No console to clear."));
+      }
     } else if (text.match(/^(Create|Make|Do|Just)/i)) {
       return callback(new Error("I don't know how to do that."));
     } else if (text.match(/\(*(new )?\(*(window|global)(\.|\[)/)) {
@@ -25,10 +34,8 @@ module.exports = Context = (function() {
         error = e;
       }
       return callback(error, result);
-    } else if (Math.random() < 0.5) {
-      return callback(new Error("Nothing happened."));
     } else {
-      return callback(null, text + "?");
+      return callback(new Error("I don't understand."));
     }
   };
 

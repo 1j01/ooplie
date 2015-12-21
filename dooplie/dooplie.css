@@ -23,17 +23,14 @@ body {
 }
 #ooplie-input {
 	flex: 1;
-	/*padding: 0.3em;*/
 	font-size: inherit;
 	color: inherit;
 	background: transparent;
 	border: 0;
-	/*border-bottom: 1px solid transparent;*/
 	box-shadow: 0 1px 0 transparent;
 }
 #ooplie-input:focus {
 	outline: 0;
-	/*border-bottom-color: rgba(0, 0, 0, 0.2);*/
 	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -43,7 +40,7 @@ body {
 #ooplie-input-wrapper,
 .entry {
 	padding: 0.25em 0.5em;
-	padding-left: 1em;
+	padding-left: 1em; /* = A */
 	position: relative;
 }
 #ooplie-input-wrapper > .octicon:first-child,
@@ -52,7 +49,7 @@ body {
 	left: 0;
 	top: 0;
 	bottom: 0;
-	width: 1em;
+	width: 1em; /* = A */
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -74,7 +71,6 @@ body.dark .error {
 	background: rgba(255, 0, 0, 0.15);
 }
 body.dark #ooplie-input:focus {
-	/*border-bottom-color: rgba(255, 255, 255, 0.2);*/
 	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 

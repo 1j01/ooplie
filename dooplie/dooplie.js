@@ -23,7 +23,7 @@ var log = function(text){
 	return entry;
 };
 
-var context = new OOPLiE.Context;
+var context = new OOPLiE.Context({console: {clear: clear, log: log}});
 
 output.is_scrolled_to_bottom = function(){
 	return output.scrollTop + output.clientHeight >= output.scrollHeight
