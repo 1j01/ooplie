@@ -11,7 +11,6 @@ body {
 
 body {
 	flex-direction: column;
-	padding: 0.3em;
 }
 
 #ooplie-output,
@@ -24,6 +23,18 @@ body {
 }
 #ooplie-input {
 	flex: 1;
+	/*padding: 0.3em;*/
+	font-size: inherit;
+	color: inherit;
+	background: transparent;
+	border: 0;
+	/*border-bottom: 1px solid transparent;*/
+	box-shadow: 0 1px 0 transparent;
+}
+#ooplie-input:focus {
+	outline: 0;
+	/*border-bottom-color: rgba(0, 0, 0, 0.2);*/
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 #ooplie-output {
@@ -35,15 +46,6 @@ body {
 	padding-left: 1em;
 	position: relative;
 }
-/*
-#ooplie-input-wrapper::before,
-.entry.input::before {
-	content: "›";
-	content: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M6%2C4L10%2C8L6%2C12%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E");
-	position: absolute;
-	left: 0;
-}
-*/
 #ooplie-input-wrapper > .octicon:first-child,
 .entry.input > .octicon:first-child {
 	position: absolute;
@@ -61,4 +63,33 @@ body {
 .error {
 	color: #A00;
 	background: #FFF5F5;
+}
+
+body.dark {
+	background: black;
+	color: white;
+}
+body.dark .error {
+	color: #A00;
+	background: rgba(255, 0, 0, 0.15);
+}
+body.dark #ooplie-input:focus {
+	/*border-bottom-color: rgba(255, 255, 255, 0.2);*/
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+body.dark ::-webkit-input-placeholder {
+	color: #555;
+}
+
+body.dark :-moz-placeholder { /* Firefox 18- */
+	color: #555;
+}
+
+body.dark ::-moz-placeholder { /* Firefox 19+ */
+	color: #555;
+}
+
+body.dark :-ms-input-placeholder {
+	color: #555;
 }
