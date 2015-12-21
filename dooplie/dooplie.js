@@ -1,18 +1,6 @@
 
-var output = document.createElement("div");
-var input = document.createElement("input");
-
-output.id = "ooplie-output";
-input.id = "ooplie-input";
-
-output.setAttribute("role", "log");
-output.setAttribute("aria-live", "polite");
-input.setAttribute("aria-label", "Enter commands or expressions");
-input.setAttribute("placeholder", "Enter commands or expressions");
-input.setAttribute("aria-controls", output.id);
-
-document.body.appendChild(output);
-document.body.appendChild(input);
+var output = document.getElementById("ooplie-output");
+var input = document.getElementById("ooplie-input");
 
 var clear = function(){
 	output.innerHTML = "";
@@ -79,6 +67,9 @@ input.addEventListener("keydown", function(e){
 		
 		var command_entry = log(command);
 		command_entry.classList.add("input");
+		var icon = document.createElement("span");
+		icon.className = "octicon octicon-chevron-right";
+		command_entry.insertBefore(icon, command_entry.firstChild);
 		
 		output.scroll_to_bottom();
 		
@@ -97,9 +88,12 @@ input.addEventListener("keydown", function(e){
 	}else if(e.keyCode === 40){
 		input.value = (++cmdi >= command_history.length) ? (cmdi = command_history.length, "") : command_history[cmdi]
 	}else if(e.keyCode === 46 && e.shiftKey){
-		command_history.splice(cmdi, 1);
-		input.value = command_history[--cmdi];
-		save_command_history();
+		if(input.value === command_history[cmdi]){
+			command_history.splice(cmdi, 1);
+			cmdi = Math.max(0, cmdi - 1)
+			input.value = command_history[cmdi] || "";
+			save_command_history();
+		}
 	}
 });
 
@@ -107,5 +101,3 @@ window.onerror = function(error_message, etc){
 	var error_entry = log(error_message);
 	error_entry.classList.add("error");
 };
-
-// log("Welcome to OOPLiE").classList.add("welcome");
