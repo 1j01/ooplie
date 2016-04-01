@@ -20,6 +20,7 @@ body {
 }
 #ooplie-input-wrapper {
 	display: flex;
+	flex-shrink: 0;
 }
 #ooplie-input {
 	flex: 1;
