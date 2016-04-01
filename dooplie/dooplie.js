@@ -52,7 +52,7 @@ var save_command_history = function(){
 load_command_history();
 
 input.addEventListener("keydown", function(e){
-	if(e.keyCode === 13){
+	if(e.keyCode === 13){ // Enter
 		// if(!e.shiftKey){
 			// @TODO: textarea?
 		// }
@@ -83,17 +83,22 @@ input.addEventListener("keydown", function(e){
 			}
 		});
 		
-	}else if(e.keyCode === 38){
+	}else if(e.keyCode === 38){ // Up
 		input.value = (--cmdi < 0) ? (cmdi = -1, "") : command_history[cmdi];
-	}else if(e.keyCode === 40){
-		input.value = (++cmdi >= command_history.length) ? (cmdi = command_history.length, "") : command_history[cmdi]
-	}else if(e.keyCode === 46 && e.shiftKey){
+		input.setSelectionRange(input.value.length, input.value.length);
+		e.preventDefault();
+	}else if(e.keyCode === 40){ // Down
+		input.value = (++cmdi >= command_history.length) ? (cmdi = command_history.length, "") : command_history[cmdi];
+		input.setSelectionRange(input.value.length, input.value.length);
+		e.preventDefault();
+	}else if(e.keyCode === 46 && e.shiftKey){ // Shift+Delete
 		if(input.value === command_history[cmdi]){
 			command_history.splice(cmdi, 1);
 			cmdi = Math.max(0, cmdi - 1)
 			input.value = command_history[cmdi] || "";
 			save_command_history();
 		}
+		e.preventDefault();
 	}
 });
 
