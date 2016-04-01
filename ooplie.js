@@ -16,7 +16,7 @@ module.exports = Context = (function() {
       return callback(null, text);
     } else if (text.match(/^\?|help/i)) {
       return callback(null, "Sorry, I can't help.");
-    } else if (text.match(/^\?|clear/i)) {
+    } else if (text.match(/^clr|clear/i)) {
       if (this.console != null) {
         this.console.clear();
         return callback(null, "Console cleared.");

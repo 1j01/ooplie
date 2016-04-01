@@ -15,7 +15,7 @@ class Context
 		else if text.match /^\?|help/i
 			callback null, "Sorry, I can't help."
 		# Console
-		else if text.match /^\?|clear/i
+		else if text.match /^clr|clear/i
 			if @console?
 				@console.clear()
 				callback null, "Console cleared."
