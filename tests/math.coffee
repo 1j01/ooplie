@@ -1,4 +1,6 @@
 
+OOPLiE = require "./src/ooplie.coffee"
+
 {Range} = OOPLiE
 context = new OOPLiE
 
@@ -11,6 +13,9 @@ suite "mathematics", ->
 		evaluate("-2").to(-2)
 		evaluate("-2.5").to(-2.5)
 		evaluate("+2.345").to(+2.345)
+	test "numbers with commas", ->
+		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
+		# https://en.wikipedia.org/wiki/Decimal_mark
 	test "numbers with exponents", ->
 		evaluate("5e3").to(5000)
 		evaluate("5.5e3").to(5000)
@@ -99,8 +104,8 @@ suite "mathematics", ->
 		evaluate("a million").to(1000000)
 		evaluate("a million and a half").to(1000000.5) # (the year mankind is enslaved by giraffe)
 		evaluate("a and a half million").to(1500000)
-		evaluate("a billion").to(1000000000)
-		evaluate("a trillion").to(1000000000000)
+		evaluate("a billion").to(1000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
+		evaluate("a trillion").to(1000000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
 	test "fractional word numbers", ->
 		evaluate("half").to(1/2)
 		evaluate("one half").to(1/3)
@@ -157,6 +162,7 @@ suite "mathematics", ->
 		evaluate("1 mole = 1mol").to(true)
 		evaluate("1 candela = 1cd").to(true)
 	test "time units", ->
+		# TODO: move to time.coffee?
 		evaluate("1h = 1hr = 1 hour").to(true)
 		evaluate("1min = 60s").to(true)
 		evaluate("1hr = 60min").to(true)
@@ -167,6 +173,7 @@ suite "mathematics", ->
 		evaluate("half a day = 12 hours").to(true)
 		evaluate("half a day = 12 hours").to(true)
 		# let's maybe not define months and years? since they vary in days?
+		# maybe it should throw an error and tell you to do calcualtions on specific date-time values
 		evaluate("a decade = 10 years").to(true)
 		evaluate("a century = 100 years").to(true)
 		evaluate("a millennium = 1000 years").to(true)

@@ -1,8 +1,13 @@
 
 module.exports =
 class Context
-	constructor: ({@console})->
-		
+	constructor: ({@console, @supercontext}={})->
+		# definitions / rules / data / information / stuff = [{[{[]}]}]
+	
+	subcontext: ({console}={})->
+		console ?= @console
+		new Context {console, supercontext: @}
+	
 	interpret: (text, callback)->
 		# Conversational trivialities
 		if text.match /^((Well|So),? )?(Hi|Hello|Hey|Greetings|Hola)/i

@@ -3,8 +3,21 @@ var Context;
 
 module.exports = Context = (function() {
   function Context(arg) {
-    this.console = arg.console;
+    var ref;
+    ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
   }
+
+  Context.prototype.subcontext = function(arg) {
+    var console;
+    console = (arg != null ? arg : {}).console;
+    if (console == null) {
+      console = this.console;
+    }
+    return new Context({
+      console: console,
+      supercontext: this
+    });
+  };
 
   Context.prototype.interpret = function(text, callback) {
     var e, error, error1, result;
