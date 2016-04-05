@@ -354,6 +354,23 @@ suite "mathematics", ->
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
 		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
 		evaluate("100 seconds = one hundred second").to(false)
+	test "boolean logic", ->
+		evaluate("true and true").to(true)
+		evaluate("false and true").to(false)
+		evaluate("true and false").to(false)
+		evaluate("false and false").to(false)
+		evaluate("10 = 10 and 5 = 5").to(true)
+		evaluate("10 = 10 and 5 = 3").to(false)
+		evaluate("10 = 5 and 5 = 5").to(false)
+		evaluate("true or true").to(true)
+		evaluate("true or false").to(true)
+		evaluate("false or true").to(true)
+		# TODO: this should be under equality:
+		evaluate("false = false").to(true)
+		evaluate("true = true").to(true)
+		evaluate("true = false").to(false)
+		# TODO: order of operations should be tested for boolean logic
+		# TODO: xor, nor, xnor
 	test "whether", ->
 		evaluate("whether 10 = 10").to(true)
 		evaluate("whether 10 is 10").to(true)
@@ -395,10 +412,11 @@ suite "mathematics", ->
 		expect(context.eval("Ø")).to.be.a(Set)
 		expect(context.eval("Ø").has(1)).to.be(false)
 	test "null, nil, nothin'?"
+	test "bitwise operators"
 	test "matrices"
 	test "quaternions"
 	test "complex numbers"
 	test "coordinates"
-	test "mathml"
 	test "algebra and all the other math (easy enough, right? haha? hahaha? hahahahaha? AHAHAHAHAAAAAAAGH)"
 	test "interaction of various things"
+	test "MathML"
