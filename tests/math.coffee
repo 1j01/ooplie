@@ -54,6 +54,12 @@ suite "mathematics", ->
 		evaluate("32^0.8").to(16)
 	test "plus-minus", ->
 		# should probably be a set of two possible numbers
+		# probably shouldn't allow ASCII "+-"
+		# probably should also test minus-plus
+		# probably should move this test down below functions and such
+		# "plus or minus" for a range
+		# "plus and minus" or "plus-minus" for plus-minus
+		# "minus and plus" or "minus-plus" for minus-plus
 		evaluate("9 +- 0.1").to(new Range(8.9, 9.1))
 	test "equality", ->
 		evaluate("5 = 5").to(true)
@@ -115,10 +121,13 @@ suite "mathematics", ->
 		evaluate("5 ∙ 6").to(5 * 6) # bullet operator (throw style error?)
 		evaluate("5 • 6").to(5 * 6) # bullet (throw style error!)
 		evaluate("5⁄6").to(5/6) # fraction slash
+		evaluate("5 ⁄ 6").to(5/6) # fraction slash used wrong (throw style error!)
 		evaluate("5 ∕ 6").to(5 / 6) # division slash
+		evaluate("5 ／ 6").to(5 / 6) # full width solidus
 		evaluate("5 ÷ 6").to(5 / 6) # obelus
 		evaluate("9 ∓ 0.1").to(new Range(8.9, 9.1)) # probably not a range
 	test "basic word numbers", ->
+		evaluate("zero").to(0)
 		evaluate("one").to(1)
 		evaluate("two").to(2)
 		evaluate("three").to(3)
@@ -148,7 +157,8 @@ suite "mathematics", ->
 		evaluate("twentysix").to(26)
 		evaluate("twenty‒seven").to(27) # figure dash used (probably not really correct usage)
 		evaluate("thirty-eight").to(38)
-		evaluate("fourty-nine").to(49)
+		evaluate("fourty-nine").to(49) # throw spelling error
+		evaluate("forty-nine").to(49)
 		evaluate("fifty").to(50)
 		evaluate("sixty-one").to(61)
 		evaluate("seventy-two").to(72)
@@ -160,15 +170,22 @@ suite "mathematics", ->
 		evaluate("Two hundred fifty-six").to(256)
 		evaluate("Two-hundred-fifty-six").to(256) # TODO: throw style error
 		evaluate("Two-thousand five").to(2005)
-		evaluate("Two-thousand and five").to(2005) # throw style error
+		evaluate("Two-thousand and five").to(2005) # throw style error / warning
 		evaluate("Twenty-three hundred sixty-one").to(2361)
+		evaluate("negative one").to(-1)
+		evaluate("negative twenty-three hundred sixty-one").to(-2361)
+	test "special word numbers", ->
+		evaluate("nought = naught = zilch = nada = zip = zero").to(true)
+		evaluate("a banker's dozen").to(11)
 		evaluate("a dozen").to(12)
 		evaluate("a baker's dozen").to(13)
+		evaluate("a score").to(20) # might conflict with scoring games, and shouldn't really be used
 		evaluate("a million").to(1000000)
 		evaluate("a million and a half").to(1000000.5) # (the year mankind is enslaved by giraffe)
 		evaluate("a and a half million").to(1500000)
 		evaluate("a billion").to(1000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
 		evaluate("a trillion").to(1000000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
+		# lots more here: https://en.wikipedia.org/wiki/English_numerals#Cardinal_numbers
 	test "fractional word numbers", ->
 		evaluate("half").to(1/2)
 		evaluate("one half").to(1/3)
@@ -247,6 +264,8 @@ suite "mathematics", ->
 		evaluate("300 K = 300 kelvin").to(true)
 		evaluate("1 mole = 1mol").to(true)
 		evaluate("1 candela = 1cd").to(true)
+		evaluate("1m2 = 1 square meter").to(true)
+		evaluate("1m = 1 linear meter").to(true) # explicitly denoting the first power of the unit
 	test "time units", ->
 		# TODO: move to time.coffee?
 		evaluate("1h = 1hr = 1 hour").to(true)
@@ -291,7 +310,7 @@ suite "mathematics", ->
 		evaluate("s = ms").to(false)
 		evaluate("s = seconds").to(true)
 		evaluate("sec = 1000ms").to(true)
-	test "placement (1st, 2nd, 3rd, 4th)", ->
+	test "ordinal numbers (1st, 2nd, 3rd, 4th...)", ->
 		evaluate("1st = first").to(true)
 		evaluate("2st = second").to(true) # throw style error
 		evaluate("2nd = second").to(true)
@@ -316,7 +335,8 @@ suite "mathematics", ->
 		evaluate("30th = thirtieth").to(true)
 		evaluate("31st = thirty-first").to(true)
 		evaluate("40th = fourtieth").to(true)
-		evaluate("41st = fourty-first").to(true)
+		evaluate("41st = fourty-first").to(true) # throw spelling error
+		evaluate("41st = forty-first").to(true)
 		evaluate("50th = fiftieth").to(true)
 		evaluate("51st = fifty-first").to(true)
 		evaluate("60th = sixtieth").to(true)
@@ -328,18 +348,57 @@ suite "mathematics", ->
 		evaluate("90th = ninetieth").to(true)
 		evaluate("91st = ninety-first").to(true)
 		evaluate("100th = one hundredth").to(true)
-		evaluate("101st = one hundred first").to(true)
-		evaluate("102nd = one hundred second").to(true)
+		evaluate("101st = one hundred first").to(true) # should this be "one hundred and first"?
+		evaluate("102nd = one hundred second").to(true) # should this be "one hundred and second"?
 		evaluate("103rd = last place").to(true)
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
+		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
+		evaluate("100 seconds = one hundred second").to(false)
 	test "whether", ->
 		evaluate("whether 10 = 10").to(true)
 		evaluate("whether 10 is 10").to(true)
 		evaluate("whether 10 = 4").to(false)
 		evaluate("whether 10 is 4").to(false)
 		evaluate("(whether 10 is 4) = false").to(true)
+	test "more unicode fun", ->
+		evaluate("√2 = √(2) = sqrt(2) = the square root of two").to(true)
+		evaluate("1ˢᵗ = 1st").to(true)
+		evaluate("2ⁿᵈ = 2nd").to(true)
+		evaluate("3ʳᵈ = 3rd").to(true)
+		evaluate("4ᵗʰ = 4th").to(true)
+		# TODO: superscript/subscript fractions and stuff
 	test "defining functions"
 	test "built-in math functions"
 	test "overwriting variable values? e.g. incrementing/decrementing"
 	# hopefully not? except for with interop
+	test "sets", ->
+		evaluate("{} = {}").to(true)
+		evaluate("Ø = {}").to(true)
+		evaluate("Ø = {1}").to(false)
+		evaluate("Ø = the empty set").to(true)
+		evaluate("Ø = nothing").to(true)
+		evaluate("{1} = {1}").to(true)
+		evaluate("{1, 2, 3} = {1, 2, 3}").to(true)
+		evaluate("{1, 2} = {1, 2, 3}").to(false)
+		evaluate("{3, 2, 1} = {1, 2, 3}").to(true)
+		evaluate("{1, 2, 3} contains 2").to(true)
+		evaluate("{1, 2, 3} contains 5").to(false)
+		evaluate("{1, 2, 3} contains {1, 2, 3}").to(false)
+		evaluate("{{1, 2, 3}} contains {1, 2, 3}").to(true)
+		evaluate("1 is within {1}").to(true)
+		evaluate("1 is within {}").to(false)
+		evaluate("1 is within {one}").to(true)
+		evaluate("{0} contains -0").to(true)
+		evaluate("{-0} contains 0").to(true)
+		expect(context.eval("{1, 2, 3}")).to.be.a(Set)
+		expect(context.eval("{1, 2, 3}").has(1)).to.be(true)
+		expect(context.eval("Ø")).to.be.a(Set)
+		expect(context.eval("Ø").has(1)).to.be(false)
+	test "null, nil, nothin'?"
+	test "matrices"
+	test "quaternions"
 	test "complex numbers"
+	test "coordinates"
+	test "mathml"
+	test "algebra and all the other math (easy enough, right? haha? hahaha? hahahahaha? AHAHAHAHAAAAAAAGH)"
+	test "interaction of various things"
