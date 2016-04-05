@@ -1,8 +1,7 @@
 
-OOPLiE = require "./src/ooplie.coffee"
+{Context, Range} = require "../src/ooplie.coffee"
 
-{Range} = OOPLiE
-context = new OOPLiE
+context = new Context
 
 evaluate = (expression)->
 	to: expect(context.eval(expression)).to.eql
@@ -98,6 +97,7 @@ suite "mathematics", ->
 		evaluate("Two hundred fifty-six").to(256)
 		evaluate("Two-hundred-fifty-six").to(256) # TODO: throw style error
 		evaluate("Two-thousand five").to(2005)
+		evaluate("Two-thousand and five").to(2005) # throw style error
 		evaluate("Twenty-three hundred sixty-one").to(2361)
 		evaluate("a dozen").to(12)
 		evaluate("a baker's dozen").to(13)

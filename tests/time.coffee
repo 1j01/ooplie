@@ -1,7 +1,7 @@
 
-OOPLiE = require "./src/ooplie.coffee"
+{Context} = require "../src/ooplie.coffee"
 
-context = new OOPLiE
+context = new Context
 
 evaluate = (expression)->
 	result = context.eval(expression)

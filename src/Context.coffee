@@ -8,6 +8,14 @@ class Context
 		console ?= @console
 		new Context {console, supercontext: @}
 	
+	eval: (text)->
+		# everything's syncronous for now, so we can do this:
+		result = null
+		@interpret text, (err, res)->
+			throw err if err
+			result = res
+		result
+	
 	interpret: (text, callback)->
 		# Conversational trivialities
 		if text.match /^((Well|So),? )?(Hi|Hello|Hey|Greetings|Hola)/i

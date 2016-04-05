@@ -19,6 +19,18 @@ module.exports = Context = (function() {
     });
   };
 
+  Context.prototype["eval"] = function(text) {
+    var result;
+    result = null;
+    this.interpret(text, function(err, res) {
+      if (err) {
+        throw err;
+      }
+      return result = res;
+    });
+    return result;
+  };
+
   Context.prototype.interpret = function(text, callback) {
     var e, error, error1, result;
     if (text.match(/^((Well|So),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {

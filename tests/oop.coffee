@@ -1,5 +1,5 @@
 
-OOPLiE = require "./src/ooplie.coffee"
+{Context} = require "../src/ooplie.coffee"
 
 shared_context = null
 context = null
@@ -8,7 +8,7 @@ evaluate = (expression)->
 	to: expect(context.eval(expression)).to.eql
 
 suite "object-oriented programming", ->
-	shared_context = new OOPLiE
+	shared_context = new Context
 	test "animals 1", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.
