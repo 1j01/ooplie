@@ -1,4 +1,5 @@
 
+{expect} = require "chai"
 {Context} = require "../src/ooplie.coffee"
 
 shared_context = null

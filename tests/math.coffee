@@ -1,4 +1,5 @@
 
+{expect} = require "chai"
 {Context, Range} = require "../src/ooplie.coffee"
 
 context = new Context
@@ -12,12 +13,26 @@ suite "mathematics", ->
 		evaluate("-2").to(-2)
 		evaluate("-2.5").to(-2.5)
 		evaluate("+2.345").to(+2.345)
+		evaluate("90").to(90)
+		evaluate("90.00").to(90.00)
 	test "numbers with commas", ->
 		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
 		# https://en.wikipedia.org/wiki/Decimal_mark
 	test "numbers with exponents", ->
 		evaluate("5e3").to(5000)
-		evaluate("5.5e3").to(5000)
+		evaluate("5.5e3").to(5500)
+		evaluate("5.5E3").to(5500) # throw style error for uppercase
+	test "numbers with radices", ->
+		evaluate("0xf0f0").to(0xf0f0)
+		evaluate("0b0101").to(0b0101)
+		evaluate("0o744").to(0o744)
+		evaluate("0Xf0f0").to(0xf0f0) # throw style error for uppercase
+		evaluate("0Bf0f0").to(0b0101) # throw style error for uppercase
+		evaluate("0O744").to(0o744) # throw style error for uppercase
+		evaluate("0744").to(0o744) # throw style error, no implicit octal!
+		evaluate("0x0b0").to(176)
+		evaluate("0x0B1").to(177)
+		evaluate("0xE1").to(225)
 	test "infinity", ->
 		evaluate("∞").to(Infinity)
 		evaluate("-∞").to(-Infinity)
@@ -35,6 +50,7 @@ suite "mathematics", ->
 		evaluate("100 / 4").to(25)
 	test "exponentiation", ->
 		evaluate("2 ^ 8").to(256)
+		evaluate("2 ** 8").to(256) # throw error
 		evaluate("32^0.8").to(16)
 	test "plus-minus", ->
 		# should probably be a set of two possible numbers
@@ -45,15 +61,62 @@ suite "mathematics", ->
 		evaluate("5 = 3").to(false)
 		evaluate("5 = 5 = 3").to(false)
 		evaluate("5 = 5 = true").to(false)
+		evaluate("5 == 5").to(true) # throw error, just use =
+		evaluate("5 === 5").to(true) # throw error, just use =
 	test "inequality", ->
+		evaluate("5 <= 5").to(true)
+		evaluate("5 >= 5").to(true)
+		evaluate("5 < 5").to(false)
+		evaluate("5 > 5").to(false)
+		evaluate("4 > 5").to(false)
+		evaluate("4 < 5").to(true)
+		evaluate("4 > 5").to(true)
+		evaluate("4 >= 5").to(true)
+		evaluate("4 <= 5").to(false)
+		evaluate("-0 < +0").to(false)
+		evaluate("-1 < +1").to(true)
 	test "parenthesis", ->
+		evaluate("(1)").to(1)
+		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
+		evaluate("(3 * 6) - 1").to((3 * 6) - 1)
 	test "order of operations", ->
+		evaluate("3 * 6 - 1").to(3 * 6 - 1)
+		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
+		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
+		evaluate("0.0 + -.25 - -.75 + 0.0").to(0.5)
+		evaluate("2, 2^1^3").to(0.5)
+		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace
+		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
+		evaluate("1 + 3^3 * 2").to(55) # that's more like it
+		evaluate("-2^2").to(-4)
+	test "percentages", ->
+		# should this be a style error? percentages, like degrees, are kinda arbitrary and I don't like them
+		# but that's probably not a good enough basis for forbidding them
+		evaluate("50%").to(50 / 100)
+		evaluate("50‰").to(50 / 1000) # permille, tho?
+		evaluate("50‱").to(50 / 10000) # c'mon
+		# ridiculous:
+		evaluate("1 basis point = 1 permyriad = one one-hundredth percent").to(true)
+		evaluate("1 bp = 1‱ = 0.01% = 0.1‰ = 10^(−4) = 1⁄10000 = 0.0001").to(true)
+		evaluate("1% = 100 bp = 100‱").to(true)
+	test "implicit multiplication", ->
+		# should this be a style error? explicit is generally better than implicit
+		context.eval("x = 5")
+		evaluate("2x").to(10)
+		evaluate("1/2x").to(1/10) # or...
+		evaluate("1/2x").to((1/2) * 5)
+		# yeah, maybe this should be disallowed
+		# at least the slash division without whitespace should be
 	test "unicode operators", ->
-		evaluate("5 <times> 6").to(11)
 		evaluate("5 − 6").to(5 - 6)
-		evaluate("5 ⋅ 6").to(5 * 6)
-		evaluate("5∕6").to(5/6)
-		evaluate("5  6").to(5 / 6)
+		evaluate("5 × 6").to(5 * 6)
+		evaluate("5 ⋅ 6").to(5 * 6) # dot operator (throw style error?)
+		evaluate("5 ∗ 6").to(5 * 6) # asterisk operator (throw style error?)
+		evaluate("5 ∙ 6").to(5 * 6) # bullet operator (throw style error?)
+		evaluate("5 • 6").to(5 * 6) # bullet (throw style error!)
+		evaluate("5⁄6").to(5/6) # fraction slash
+		evaluate("5 ∕ 6").to(5 / 6) # division slash
+		evaluate("5 ÷ 6").to(5 / 6) # obelus
 		evaluate("9 ∓ 0.1").to(new Range(8.9, 9.1)) # probably not a range
 	test "basic word numbers", ->
 		evaluate("one").to(1)
@@ -126,16 +189,39 @@ suite "mathematics", ->
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
-		evaluate("5 over 6").to(5 / 6)
+		evaluate("5 over 6").to(5 / 6) # throw style warning / error
 		evaluate("half of 6").to(3)
 		evaluate("a third of 12").to(4)
 		evaluate("2 thirds of 12").to(8)
 		evaluate("twice 6").to(12) # throw style warning / error?
 		evaluate("thrice 2").to(6) # throw style warning / error?
 		evaluate("3 doubled").to(6) # throw style warning / error?
+		evaluate("5 less than 7").to(2) # throw style warning / error?
+		evaluate("5 more than 7").to(5 + 7) # throw style error
+		evaluate("5 greater than 7").to(5 + 7) # throw style warning / error?
 		evaluate("2 to the power of 8").to(256)
 		evaluate("2 to the 8th power").to(256)
+		evaluate("the square root of 2").to(Math.sqrt(2))
+		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
+		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
+		# TODO: nth roots
 		evaluate("9 plus or minus 0.1").to(new Range(8.9, 9.1)) # probably not a range
+		evaluate("9 give or take 0.1").to(new Range(8.9, 9.1))
+	test "worded comparisons", ->
+		evaluate("5 equals 5").to(true)
+		evaluate("5 is 5").to(true)
+		evaluate("5 is not 4").to(true)
+		evaluate("5 does not equal 4").to(true)
+		evaluate("5 isnt 4").to(true) # throw error
+		evaluate("5 isn't 4").to(true)
+		evaluate("Does 4 equal 5?").to(no)
+		evaluate("Does 4 = 5?").to(no)
+		evaluate("Does 5 equal 5?").to(yes)
+		evaluate("Does 5 = 5?").to(yes)
+		evaluate("Is 5 less than 3?").to(no)
+		evaluate("Is 3 less than 5?").to(yes)
+		evaluate("Is 3 more than 5?").to(no) # throw style error
+		evaluate("Is 5 greater than 3?").to(yes)
 	test "ranges", ->
 		evaluate("between 4 and 6").to(new Range(4, 6)) # exclusive?
 		evaluate("from 4 to 6").to(new Range(4, 6)) # inclusive?
@@ -252,3 +338,8 @@ suite "mathematics", ->
 		evaluate("whether 10 = 4").to(false)
 		evaluate("whether 10 is 4").to(false)
 		evaluate("(whether 10 is 4) = false").to(true)
+	test "defining functions"
+	test "built-in math functions"
+	test "overwriting variable values? e.g. incrementing/decrementing"
+	# hopefully not? except for with interop
+	test "complex numbers"
