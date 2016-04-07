@@ -390,27 +390,62 @@ suite "mathematics", ->
 	# hopefully not? except for with interop
 	test "sets", ->
 		evaluate("{} = {}").to(true)
-		evaluate("Ø = {}").to(true)
-		evaluate("Ø = {1}").to(false)
-		evaluate("Ø = the empty set").to(true)
-		evaluate("Ø = nothing").to(true)
+		evaluate("Ø = {}").to(true) # throw style error/warning?
+		evaluate("∅ = {}").to(true) # this character is the proper one
+		evaluate("∅ = {1}").to(false)
+		evaluate("{} = the empty set").to(true)
+		evaluate("{} = the null set").to(true)
+		evaluate("{} = nothing").to(true)
+		evaluate("{} = null").to(true)
+		evaluate("∅ is empty").to(true)
+		evaluate("{} is empty").to(true)
+		evaluate("{∅} is empty").to(false)
 		evaluate("{1} = {1}").to(true)
 		evaluate("{1, 2, 3} = {1, 2, 3}").to(true)
 		evaluate("{1, 2} = {1, 2, 3}").to(false)
 		evaluate("{3, 2, 1} = {1, 2, 3}").to(true)
+		evaluate("{11, 6, 6} = {11, 6}").to(true)
 		evaluate("{1, 2, 3} contains 2").to(true)
 		evaluate("{1, 2, 3} contains 5").to(false)
-		evaluate("{1, 2, 3} contains {1, 2, 3}").to(false)
+		evaluate("{1, 2, 3} contains {1, 2, 3}").to(false) # unless you define a contains b as a is a superset of b
 		evaluate("{{1, 2, 3}} contains {1, 2, 3}").to(true)
-		evaluate("1 is within {1}").to(true)
-		evaluate("1 is within {}").to(false)
-		evaluate("1 is within {one}").to(true)
+		# I hope you're not dealing with shop items and DOM Elements because that could be confusing (and ambiguous!)
+		# well, you can call shop items products, but yeah
+		# I guess if you're trying to check how many Elements are in a set, the set is probably a set of elements anyways
+		evaluate("{1, 2, 3} contains 3 items").to(true)
+		evaluate("{1, 2, 3} contains 2 or more items").to(true)
+		evaluate("{1, 2, 3} contains 3 elements").to(true)
+		evaluate("{1, 2, 3} contains 2 or more elements").to(true)
+		evaluate("How many items does {1, 2, 3} contain?").to(3)
+		evaluate("How many items does {1, 100, 30, 4} have?").to(4)
+		evaluate("How many elements does {2, 4, 6, 8, 10} contain?").to(5)
+		evaluate("How many elements does {-1, 0, 1} have?").to(3)
 		evaluate("{0} contains -0").to(true)
 		evaluate("{-0} contains 0").to(true)
+		evaluate("1 ∈ {1, 2, 3}").to(true) # 1 belongs to {1, 2, 3} = true
+		evaluate("4 ∈ {1, 2, 3}").to(false) # 4 belongs to {1, 2, 3} = false
+		evaluate("4 ∉ {1, 2, 3}").to(true) # 4 does not belong to {1, 2, 3} = true
+		evaluate("1 ∉ {1, 2, 3}").to(true) # 1 does not belong to {1, 2, 3} = false
+		evaluate("1 belongs to {1}").to(true)
+		evaluate("1 is within {1}").to(true)
+		evaluate("1 belongs to {}").to(false)
+		evaluate("1 is within {}").to(false)
+		evaluate("1 belongs to {one}").to(true)
+		evaluate("1 is within {one}").to(true)
+		evaluate("one belongs to {1}").to(true)
+		
+		evaluate("{} ⊆ {1}").to(true)
+		evaluate("{} ⊆ {}").to(true)
+		evaluate("{1} ⊆ {1}").to(true)
+		evaluate("{1} ⊆ {1}").to(true)
+		
+		# TODO: finish testing subsets, supersets, strict subsets, strict supersets
+		# throw an error for the ambiguous set operaters that ideally would be the strict operators (maybe?)
+		
 		expect(context.eval("{1, 2, 3}")).to.be.a(Set)
 		expect(context.eval("{1, 2, 3}").has(1)).to.be(true)
-		expect(context.eval("Ø")).to.be.a(Set)
-		expect(context.eval("Ø").has(1)).to.be(false)
+		expect(context.eval("{}")).to.be.a(Set)
+		expect(context.eval("{}").has(1)).to.be(false)
 	test "null, nil, nothin'?"
 	test "bitwise operators"
 	test "matrices"

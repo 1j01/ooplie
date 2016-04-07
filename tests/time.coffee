@@ -75,3 +75,4 @@ suite "time", ->
 		evaluate("do x every 1s")
 		evaluate("every 1s do x") # throw grammar error
 		evaluate("every 1s, do x")
+	test "every <timespan> for <timespan>, do x"

@@ -10,6 +10,10 @@ evaluate = (expression)->
 
 suite "object-oriented programming", ->
 	shared_context = new Context
+	# put the OOP in Ooplie
+	# TODO: better tests in general
+	# test defining a class
+	# then test inheritance
 	test "animals 1", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.

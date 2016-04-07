@@ -1,19 +1,18 @@
 
-# OOPLiE
+# Ooplie
 
-### Object-Oriented Programming Language in English
+Ooplie is a [multi-paradigm][] programing "language" where you write in English.
 
-Nothing yet.
-[Except a nice little console.][console]
-
-"DOOPLIE" stands for "Dynamic OOPLiE-Oriented Programmatic Lingual Integrated Environment" or something.
-That's a mouthful.
-
-"OOPLiE", however, is not a bacronym.
+There's nothing yet except [a nice little console][console]
+and a [million failing tests][tests].
 
 ### "Roadmap"
 
 * Lots and lots of tests (that all fail)
+
+* Rewrite this "Roadmap"
+
+* Research how people would write programs in English
 
 * Try to implement something
 
@@ -23,9 +22,11 @@ That's a mouthful.
 
 * Mathematics
 
-* Module system (extract shell script stuff and anything else)
+* Module system (extract file system stuff and anything else to modules)
 
-* JavaScript interop (access node modules etc. and make OOPLiE wrappers)
+* Automatic searching for modules related to code you type that isn't understood?
+
+* JavaScript interop (access node modules etc. and make Ooplie wrappers)
 
 * Try to write a web app with this
 
@@ -35,12 +36,16 @@ That's a mouthful.
   * especially with "Did you mean?" style error handling that can update your actual code
   * but also hopefully with [Light Table][]-like live inspection features
   * and it could possibly blur the line between entering commands and writing a program
+  * add a dynamic underline to "Every N seconds" / "After N seconds" representing the timer
+  * and stuff like that
 
 * Reusable syntax highlighting engine/module
 
-* Gather feedback about how people would write programs in English
+* Reject a pull request for a performance optimization
 
 (with lots of rewriting along the way; nothing necessarily in that order; nothing *likely* to be in that order)
 
+[multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
 [console]: http://1j01.github.io/ooplie/dooplie/
+[tests]: ./tests/
 [Light Table]: http://lighttable.com/

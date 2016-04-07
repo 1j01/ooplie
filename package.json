@@ -10,9 +10,11 @@
   "bugs": {
     "url": "http://github.com/1j01/ooplie/issues"
   },
+  "author": "Isaiah Odhner <isaiahodhner@gmail.com>",
   "license": "GPL-3.0",
   "keywords": [
     "ooplie",
+    "dooplie",
     "object-oriented",
     "programming",
     "language",
@@ -38,10 +40,10 @@
   ],
   "main": "ooplie.js",
   "scripts": {
-    "prepublish": "browserify -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone OOPLiE",
-    "develop-not-working": "watchify -v -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone OOPLiE",
-    "develop-not-working-with-polling": "watchify -v -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone OOPLiE --poll=100",
-    "develop-also-not-working": "watch-run -i -p '**/*.coffee' \"browserify -t coffeeify --extension=\\\".coffee\\\" src/ooplie.coffee -o ooplie.js --standalone OOPLiE\"",
+    "prepublish": "browserify -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone Ooplie",
+    "develop-not-working": "watchify -v -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone Ooplie",
+    "develop-not-working-with-polling": "watchify -v -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone Ooplie --poll=100",
+    "develop-also-not-working": "watch-run -i -p '**/*.coffee' \"browserify -t coffeeify --extension=\\\".coffee\\\" src/ooplie.coffee -o ooplie.js --standalone Ooplie\"",
     "develop-slow": "npm run prepublish && rerun-script",
     "develop-also-broken": "npm-watch",
     "develop-also-does-not-work": "watchy -w src -- npm run prepublish",
