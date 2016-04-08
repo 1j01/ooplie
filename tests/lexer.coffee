@@ -16,7 +16,7 @@ suite "tokenization", ->
 	
 	test "words", ->
 		tokenize("3 monkeys").to([
-			{type: "number", value: 1.5}
+			{type: "number", value: 3}
 			{type: "word", value: "monkeys"}
 		])
 	
