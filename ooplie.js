@@ -33,15 +33,15 @@ module.exports = Context = (function() {
 
   Context.prototype.interpret = function(text, callback) {
     var e, error, error1, result;
-    if (text.match(/^((Well|So),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
+    if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
-    } else if (text.match(/^((Well|So),? )?(What'?s up)/i)) {
+    } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Not much" : "not much") + (text.match(/\?|!/) ? "." : ""));
     } else if (text.match(/^>?[:;8X][()O3PCD]$/i)) {
       return callback(null, text);
     } else if (text.match(/^\?|help/i)) {
       return callback(null, "Sorry, I can't help.");
-    } else if (text.match(/^clr|clear/i)) {
+    } else if (text.match(/^(clr|clear)( console| output)?/i)) {
       if (this.console != null) {
         this.console.clear();
         return callback(null, "Console cleared.");
