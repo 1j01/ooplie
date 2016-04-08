@@ -26,8 +26,14 @@ class Lexer
 		col = 1
 		
 		current_type = null
+		next_type = null
 		current_token_string = ""
 		quote_char = null
+		string_first_newline_cannot_be_ignored = no
+		string_last_newline_cannot_be_ignored = no
+		string_first_newline_found = no
+		string_content_started = no
+		string_content_indentation = null
 		
 		indent = [0]
 		handle_indentation = (i, row, col)->
@@ -48,6 +54,15 @@ class Lexer
 				tokens.push(new Token("dedent", row, col, indentation))
 				indent.shift()
 		
+		start_string = (char)->
+			next_type = "string"
+			quote_char = char
+			string_first_newline_cannot_be_ignored = no
+			string_last_newline_cannot_be_ignored = no
+			string_first_newline_found = no
+			string_content_started = no
+			string_content_indentation = null
+		
 		finish_token = ->
 			if current_type is "number"
 				tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)))
@@ -63,12 +78,30 @@ class Lexer
 			if current_type is "string"
 				if char is quote_char
 					next_type = null
+					console.log "end string", current_token_string
 					finish_token()
-				# else if char is "\n"
-				# 	current_token_string += char unless...
-				# else if char is "\t"
-				# 	current_token_string += char unless...
+				else if char is "\n"
+					# whitespace_before = source.slice(0, i).match(/\s*$/m)
+					whitespace_after = source.slice(i).match(/^\s*/m)
+					# unless source[i - whitespace_before.length] is quote_char
+					# console.log "newline in string in", source, row, col, source[i + whitespace_after.length]
+					is_last_newline = source[i + whitespace_after.length] is quote_char
+					# if string_first_newline_found and not is_last_newline
+					# if (string_first_newline_found or string_first_newline_cannot_be_ignored) and not is_last_newline...
+					if string_first_newline_found or string_first_newline_cannot_be_ignored
+						unless is_last_newline and not string_last_newline_cannot_be_ignored
+							current_token_string += char
+					
+					string_first_newline_found = yes
+				else if char is "\t"
+					# TODO: support spaces (not sure what's up with this indent array)
+					tabs_before = source.slice(0, i - 1).match(/\t*$/m)
+					# console.log indent, row, col, source
+					console.log row, col, source, indent, indent.length, tabs_before.length
+					if tabs_before.length > indent.length
+						current_token_string += char
 				else
+					string_first_newline_cannot_be_ignored = yes unless string_first_newline_found
 					current_token_string += char
 			else
 				if char.match(/\d/)
@@ -84,13 +117,13 @@ class Lexer
 					next_type = "word"
 				else if char.match(/'/)
 					if current_type is "word" and next_char.match(/[a-z]/i)
+						# e.g. it's, isn't, doesn't, shouldn't etc.
+						# (but not e.g. 'tis or fightin')
 						next_type = "word"
 					else
-						quote_char = char
-						next_type = "string"
+						start_string(char)
 				else if char.match(/"/)
-					next_type = "string"
-					quote_char = char
+					start_string(char)
 				else if char is "\n"
 					handle_indentation(i, row, col)
 				else if char.match(/\s/)
@@ -99,7 +132,7 @@ class Lexer
 					next_type = "unknown"
 				
 				finish_token() if next_type isnt current_type
-			
+				
 				current_type = next_type
 				unless next_type is "string"
 					current_token_string += char
@@ -135,20 +168,4 @@ class Token
 
 module.exports = (source)->
 	lexer = new Lexer
-
-	# lexer.addRule /^[\t ]*/gm, (lexeme)->
-	# 	indentation = lexeme.length
-		
-	# 	if indentation > indent[0]
-	# 		indent.unshift(indentation)
-	# 		return "INDENT"
-		
-	# 	tokens = []
-		
-	# 	while indentation < indent[0]
-	# 		tokens.push("DEDENT")
-	# 		indent.shift()
-		
-	# 	return tokens if tokens.length
-	
 	lexer.lex(source)

@@ -37,6 +37,24 @@ suite "strings", ->
 				
 			'
 		""").to("\nHello\nWorld\n")
+		evaluate("""
+			'
+				Hello
+					World
+			'
+		""").to("Hello\n\tWorld")
+		evaluate("""
+			'
+				Hello
+				 World
+			'
+		""").to("Hello\n World")
+		evaluate("""
+			'
+					Hello
+					World
+			'
+		""").to("\tHello\n\tWorld")
 	test "escaping quotes", ->
 		evaluate("\"I said \\\"Good day!\\\"").to("Hello World")
 		evaluate("'I said \"Good day!\"'").to("Hello World")

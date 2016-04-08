@@ -109,14 +109,20 @@ Lexer = (function() {
   };
 
   Lexer.prototype.tokenize = function(source) {
-    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent, j, len, next_char, next_type, quote_char, ref, row, tokens;
+    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent, is_last_newline, j, len, next_char, next_type, quote_char, ref, row, start_string, string_content_indentation, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_last_newline_cannot_be_ignored, tabs_before, tokens, whitespace_after;
     this.check_indentation(source);
     tokens = [];
     row = 1;
     col = 1;
     current_type = null;
+    next_type = null;
     current_token_string = "";
     quote_char = null;
+    string_first_newline_cannot_be_ignored = false;
+    string_last_newline_cannot_be_ignored = false;
+    string_first_newline_found = false;
+    string_content_started = false;
+    string_content_indentation = null;
     indent = [0];
     handle_indentation = function(i, row, col) {
       var indentation, ref, results;
@@ -141,6 +147,15 @@ Lexer = (function() {
       }
       return results;
     };
+    start_string = function(char) {
+      next_type = "string";
+      quote_char = char;
+      string_first_newline_cannot_be_ignored = false;
+      string_last_newline_cannot_be_ignored = false;
+      string_first_newline_found = false;
+      string_content_started = false;
+      return string_content_indentation = null;
+    };
     finish_token = function() {
       if (current_type === "number") {
         tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)));
@@ -157,8 +172,27 @@ Lexer = (function() {
       if (current_type === "string") {
         if (char === quote_char) {
           next_type = null;
+          console.log("end string", current_token_string);
           finish_token();
+        } else if (char === "\n") {
+          whitespace_after = source.slice(i).match(/^\s*/m);
+          is_last_newline = source[i + whitespace_after.length] === quote_char;
+          if (string_first_newline_found || string_first_newline_cannot_be_ignored) {
+            if (!(is_last_newline && !string_last_newline_cannot_be_ignored)) {
+              current_token_string += char;
+            }
+          }
+          string_first_newline_found = true;
+        } else if (char === "\t") {
+          tabs_before = source.slice(0, i - 1).match(/\t*$/m);
+          console.log(row, col, source, indent, indent.length, tabs_before.length);
+          if (tabs_before.length > indent.length) {
+            current_token_string += char;
+          }
         } else {
+          if (!string_first_newline_found) {
+            string_first_newline_cannot_be_ignored = true;
+          }
           current_token_string += char;
         }
       } else {
@@ -178,12 +212,10 @@ Lexer = (function() {
           if (current_type === "word" && next_char.match(/[a-z]/i)) {
             next_type = "word";
           } else {
-            quote_char = char;
-            next_type = "string";
+            start_string(char);
           }
         } else if (char.match(/"/)) {
-          next_type = "string";
-          quote_char = char;
+          start_string(char);
         } else if (char === "\n") {
           handle_indentation(i, row, col);
         } else if (char.match(/\s/)) {

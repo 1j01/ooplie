@@ -20,6 +20,27 @@ suite "tokenization", ->
 			{type: "word", value: "monkeys"}
 		])
 	
+	test "midway contractions", ->
+		tokenize("it's gonna be a g'day t'day").to([
+			{type: "word", value: "it's"}
+			{type: "word", value: "gonna"}
+			{type: "word", value: "be"}
+			{type: "word", value: "a"}
+			{type: "word", value: "g'day"}
+			{type: "word", value: "t'day"}
+		])
+	
+	test "starting/ending contractions", ->
+		tokenize("'tis goin' ta be a g'day t'day").to([
+			{type: "word", value: "'tis"}
+			{type: "word", value: "goin'"}
+			{type: "word", value: "ta"}
+			{type: "word", value: "be"}
+			{type: "word", value: "a"}
+			{type: "word", value: "g'day"}
+			{type: "word", value: "t'day"}
+		])
+	
 	test "simple strings", ->
 		tokenize("say 'hi'").to([
 			{type: "word", value: "say"}
@@ -35,7 +56,23 @@ suite "tokenization", ->
 			{type: "punctuation", value: "!"}
 		])
 	
+	test "empty string", ->
+		tokenize("empty string = ''").to([
+			{type: "word", value: "empty"}
+			{type: "word", value: "string"}
+			{type: "punctuation", value: "="}
+			{type: "string", value: ""}
+		])
+	
 	test "multiline strings", ->
+		tokenize('"Hello\nWorld"').to([
+			{type: "string", value: "Hello\nWorld"}
+		])
+		tokenize("'Hello\nWorld'").to([
+			{type: "string", value: "Hello\nWorld"}
+		])
+	
+	test "multiline strings with ignored whitespace", ->
 		tokenize("""
 			say '
 				hi
@@ -64,6 +101,38 @@ suite "tokenization", ->
 		""").to([
 			{type: "word", value: "say"}
 			{type: "string", value: "\nhi\n\nbye\n"}
+		])
+		tokenize("""
+			'
+			Hello
+			World
+			'
+		""").to([
+			{type: "string", value: "Hello\nWorld"}
+		])
+		tokenize("""
+			'
+				Hello
+					World
+			'
+		""").to([
+			{type: "string", value: "Hello\n\tWorld"}
+		])
+		tokenize("""
+			'
+				Hello
+				 World
+			'
+		""").to([
+			{type: "string", value: "Hello\n World"}
+		])
+		tokenize("""
+			'
+					Hello
+					World
+			'
+		""").to([
+			{type: "string", value: "\tHello\n\tWorld"}
 		])
 	
 	test "indentation", ->
@@ -103,6 +172,8 @@ suite "tokenization", ->
 			{type: "word", value: "else"}
 		])
 	
+	test "bad indentation"
+		# TODO: test mixed indentation errors
 	
 	test "single-line comments with #", ->
 		tokenize("""
@@ -136,3 +207,6 @@ suite "tokenization", ->
 			{type: "comment", value: ' hashes within strings'}
 			{type: "comment", value: ' "Hello World"'}
 		])
+	
+	test "row/column properties"
+		# which btw shouldn't be the end of the token (although that would be good to have additionally)
