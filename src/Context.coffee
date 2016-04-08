@@ -1,5 +1,5 @@
 
-# lex = require "./lex"
+lex = require "./lex"
 
 module.exports =
 class Context
@@ -37,16 +37,19 @@ class Context
 			else
 				callback new Error "No console to clear."
 		# TODO: anything useful
-		else if text.match /^(Create|Make|Do|Just)/i
-			callback new Error "I don't know how to do that."
-		else if text.match /\(*(new )?\(*(window|global)(\.|\[)/
-			error = null
-			try
-				result = eval(text)
-			catch e
-				error = e
-			callback error, result
-		else
-			callback new Error "I don't understand."
+		# else if text.match /^(Create|Make|Do|Just)/i
+		# 	callback new Error "I don't know how to do that."
+		# else if text.match /\(*(new )?\(*(window|global)(\.|\[)/
+		# 	error = null
+		# 	try
+		# 		result = eval(text)
+		# 	catch e
+		# 		error = e
+		# 	callback error, result
 		# else
-		# 	console.log lex(text)
+		# 	callback new Error "I don't understand."
+		else
+			console.log text
+			console.log lex(text)
+			# console.log lex(text).toString()
+			console.log (token.value for token in lex(text))...

@@ -66,8 +66,5 @@
     "watch-run": "^1.2.4",
     "watchify": "^3.7.0",
     "watchy": "^0.6.6"
-  },
-  "dependencies": {
-    "lex": "^1.7.9"
   }
 }

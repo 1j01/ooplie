@@ -1,5 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context;
+var Context, lex;
+
+lex = require("./lex");
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -32,7 +34,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var e, error, error1, result;
+    var token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -48,19 +50,19 @@ module.exports = Context = (function() {
       } else {
         return callback(new Error("No console to clear."));
       }
-    } else if (text.match(/^(Create|Make|Do|Just)/i)) {
-      return callback(new Error("I don't know how to do that."));
-    } else if (text.match(/\(*(new )?\(*(window|global)(\.|\[)/)) {
-      error = null;
-      try {
-        result = eval(text);
-      } catch (error1) {
-        e = error1;
-        error = e;
-      }
-      return callback(error, result);
     } else {
-      return callback(new Error("I don't understand."));
+      console.log(text);
+      console.log(lex(text));
+      return console.log.apply(console, (function() {
+        var i, len, ref, results;
+        ref = lex(text);
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          token = ref[i];
+          results.push(token.value);
+        }
+        return results;
+      })());
     }
   };
 
@@ -69,9 +71,175 @@ module.exports = Context = (function() {
 })();
 
 
-},{}],2:[function(require,module,exports){
+},{"./lex":2}],2:[function(require,module,exports){
+var Lexer, Token;
+
+Lexer = (function() {
+  function Lexer() {}
+
+  Lexer.prototype.check_indentation = function(source) {
+    var char_name, column_index, indentation, j, k, len, len1, line, line_index, previous_indentation, previous_indentation_char, ref, results;
+    previous_indentation = "";
+    ref = source.replace(/\r/g, "").split("\n");
+    results = [];
+    for (line_index = j = 0, len = ref.length; j < len; line_index = ++j) {
+      line = ref[line_index];
+      indentation = line.match(/^\s*/)[0];
+      for (column_index = k = 0, len1 = previous_indentation.length; k < len1; column_index = ++k) {
+        previous_indentation_char = previous_indentation[column_index];
+        if (indentation[column_index]) {
+          if (indentation[column_index] !== previous_indentation_char) {
+            char_name = (function() {
+              switch (indentation[column_index]) {
+                case "\t":
+                  return "tab";
+                case " ":
+                  return "space";
+                default:
+                  return JSON.stringify(indentation[column_index]);
+              }
+            })();
+            throw new Error("Mixed indentation between lines " + line_index + " and " + (line_index + 1) + " on column " + (column_index + 1));
+          }
+        }
+      }
+      results.push(previous_indentation = indentation);
+    }
+    return results;
+  };
+
+  Lexer.prototype.tokenize = function(source) {
+    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent, j, len, next_char, next_type, quote_char, ref, row, tokens;
+    this.check_indentation(source);
+    tokens = [];
+    row = 1;
+    col = 1;
+    current_type = null;
+    current_token_string = "";
+    quote_char = null;
+    indent = [0];
+    handle_indentation = function(i, row, col) {
+      var indentation, ref, results;
+      indentation = "";
+      while (true) {
+        i += 1;
+        if ((ref = source[i]) != null ? ref.match(/[\t\ ]/) : void 0) {
+          indentation += source[i];
+        } else {
+          break;
+        }
+      }
+      if (indentation.length > indent[0]) {
+        indent.unshift(indentation.length);
+        tokens.push(new Token("indent", row, col, indentation));
+        return;
+      }
+      results = [];
+      while (indentation.length < indent[0]) {
+        tokens.push(new Token("dedent", row, col, indentation));
+        results.push(indent.shift());
+      }
+      return results;
+    };
+    finish_token = function() {
+      if (current_type === "number") {
+        tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)));
+      } else if (current_type === "string") {
+        tokens.push(new Token(current_type, row, col, current_token_string.replace(/^['"]/, "")));
+      } else if (current_type != null) {
+        tokens.push(new Token(current_type, row, col, current_token_string));
+      }
+      return current_token_string = "";
+    };
+    for (i = j = 0, len = source.length; j < len; i = ++j) {
+      char = source[i];
+      next_char = (ref = source[i + 1]) != null ? ref : "";
+      next_type = current_type;
+      if (current_type === "string") {
+        if (char === quote_char) {
+          next_type = null;
+        }
+      } else {
+        if (char.match(/\d/)) {
+          next_type = "number";
+        } else if (char === ".") {
+          if (next_char.match(/\d/)) {
+            next_type = "number";
+          } else {
+            next_type = "punctuation";
+          }
+        } else if (char === ",") {
+          next_type = "punctuation";
+        } else if (char.match(/[a-z]/i)) {
+          next_type = "word";
+        } else if (char.match(/'/)) {
+          if (current_type === "word" && next_char.match(/[a-z]/i)) {
+            next_type = "word";
+          } else {
+            quote_char = char;
+            next_type = "string";
+          }
+        } else if (char.match(/"/)) {
+          next_type = "string";
+          quote_char = char;
+        } else if (char.match(/\s/)) {
+          next_type = null;
+        } else {
+          next_type = "other";
+        }
+      }
+      if (next_type !== current_type) {
+        finish_token();
+      }
+      current_type = next_type;
+      current_token_string += char;
+      if (char === "\n") {
+        row++;
+        col = 1;
+        handle_indentation(i, row, col);
+      } else {
+        col += 1;
+      }
+    }
+    if (current_type === "string") {
+      throw new Error("Missing end quote (" + quote_char + ") for string at row " + row + ", column " + col);
+    }
+    finish_token();
+    return tokens;
+  };
+
+  Lexer.prototype.lex = function(source) {
+    var tokens;
+    tokens = this.tokenize(source);
+    return tokens;
+  };
+
+  return Lexer;
+
+})();
+
+Token = (function() {
+  function Token(type, col1, row1, value) {
+    this.type = type;
+    this.col = col1;
+    this.row = row1;
+    this.value = value;
+  }
+
+  return Token;
+
+})();
+
+module.exports = function(source) {
+  var lexer;
+  lexer = new Lexer;
+  return lexer.lex(source);
+};
+
+
+},{}],3:[function(require,module,exports){
 module.exports.Context = require('./Context');
 
 
-},{"./Context":1}]},{},[2])(2)
+},{"./Context":1}]},{},[3])(3)
 });
