@@ -72,7 +72,7 @@ class Lexer
 						next_type = "number"
 					else
 						next_type = "punctuation"
-				else if char is ","
+				else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)
 					next_type = "punctuation"
 				else if char.match(/[a-z]/i)
 					next_type = "word"
@@ -88,7 +88,7 @@ class Lexer
 				else if char.match(/\s/)
 					next_type = null
 				else
-					next_type = "other"
+					next_type = "unknown"
 			
 			finish_token() if next_type isnt current_type
 			

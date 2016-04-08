@@ -35,6 +35,75 @@ suite "tokenization", ->
 			{type: "punctuation", value: "!"}
 		])
 	
+	test "multiline strings", ->
+		tokenize("""
+			say '
+				hi
+			'
+		""").to([
+			{type: "word", value: "say"}
+			{type: "string", value: "hi"}
+		])
+		tokenize("""
+			say '
+				hi
+				bye
+			'
+		""").to([
+			{type: "word", value: "say"}
+			{type: "string", value: "hi\nbye"}
+		])
+		tokenize("""
+			say '
+				
+				hi
+				
+				bye
+				
+			'
+		""").to([
+			{type: "word", value: "say"}
+			{type: "string", value: "\nhi\n\nbye\n"}
+		])
+	
+	test "indentation", ->
+		tokenize("""
+			If true,
+				Do something
+		""").to([
+			{type: "word", value: "If"}
+			{type: "word", value: "true"}
+			{type: "punctuation", value: ","}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t"}
+			{type: "word", value: "Do"}
+			{type: "word", value: "something"}
+		])
+		tokenize("""
+			If true,
+				Do something
+			Else,
+				Do something else
+		""").to([
+			{type: "word", value: "If"}
+			{type: "word", value: "true"}
+			{type: "punctuation", value: ","}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t"}
+			{type: "word", value: "Do"}
+			{type: "word", value: "something"}
+			{type: "newline", value: "\n"}
+			{type: "dedent", value: ""}
+			{type: "word", value: "Else"}
+			{type: "punctuation", value: ","}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t"}
+			{type: "word", value: "Do"}
+			{type: "word", value: "something"}
+			{type: "word", value: "else"}
+		])
+	
+	
 	test "single-line comments with #", ->
 		tokenize("""
 			#!/usr/bin/english

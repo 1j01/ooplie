@@ -168,7 +168,7 @@ Lexer = (function() {
           } else {
             next_type = "punctuation";
           }
-        } else if (char === ",") {
+        } else if (char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)) {
           next_type = "punctuation";
         } else if (char.match(/[a-z]/i)) {
           next_type = "word";
@@ -185,7 +185,7 @@ Lexer = (function() {
         } else if (char.match(/\s/)) {
           next_type = null;
         } else {
-          next_type = "other";
+          next_type = "unknown";
         }
       }
       if (next_type !== current_type) {
