@@ -144,12 +144,11 @@ Lexer = (function() {
     finish_token = function() {
       if (current_type === "number") {
         tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)));
-      } else if (current_type === "string") {
-        tokens.push(new Token(current_type, row, col, current_token_string.replace(/^['"]/, "")));
       } else if (current_type != null) {
         tokens.push(new Token(current_type, row, col, current_token_string));
       }
-      return current_token_string = "";
+      current_token_string = "";
+      return current_type = null;
     };
     for (i = j = 0, len = source.length; j < len; i = ++j) {
       char = source[i];
@@ -158,6 +157,9 @@ Lexer = (function() {
       if (current_type === "string") {
         if (char === quote_char) {
           next_type = null;
+          finish_token();
+        } else {
+          current_token_string += char;
         }
       } else {
         if (char.match(/\d/)) {
@@ -182,21 +184,24 @@ Lexer = (function() {
         } else if (char.match(/"/)) {
           next_type = "string";
           quote_char = char;
+        } else if (char === "\n") {
+          handle_indentation(i, row, col);
         } else if (char.match(/\s/)) {
           next_type = null;
         } else {
           next_type = "unknown";
         }
+        if (next_type !== current_type) {
+          finish_token();
+        }
+        current_type = next_type;
+        if (next_type !== "string") {
+          current_token_string += char;
+        }
       }
-      if (next_type !== current_type) {
-        finish_token();
-      }
-      current_type = next_type;
-      current_token_string += char;
       if (char === "\n") {
         row++;
         col = 1;
-        handle_indentation(i, row, col);
       } else {
         col += 1;
       }

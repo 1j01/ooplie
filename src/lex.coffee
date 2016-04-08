@@ -51,11 +51,10 @@ class Lexer
 		finish_token = ->
 			if current_type is "number"
 				tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)))
-			else if current_type is "string"
-				tokens.push(new Token(current_type, row, col, current_token_string.replace(/^['"]/, "")))
 			else if current_type?
 				tokens.push(new Token(current_type, row, col, current_token_string))
 			current_token_string = ""
+			current_type = null
 		
 		for char, i in source
 			next_char = source[i + 1] ? ""
@@ -64,6 +63,13 @@ class Lexer
 			if current_type is "string"
 				if char is quote_char
 					next_type = null
+					finish_token()
+				# else if char is "\n"
+				# 	current_token_string += char unless...
+				# else if char is "\t"
+				# 	current_token_string += char unless...
+				else
+					current_token_string += char
 			else
 				if char.match(/\d/)
 					next_type = "number"
@@ -85,20 +91,22 @@ class Lexer
 				else if char.match(/"/)
 					next_type = "string"
 					quote_char = char
+				else if char is "\n"
+					handle_indentation(i, row, col)
 				else if char.match(/\s/)
 					next_type = null
 				else
 					next_type = "unknown"
+				
+				finish_token() if next_type isnt current_type
 			
-			finish_token() if next_type isnt current_type
-			
-			current_type = next_type
-			current_token_string += char
+				current_type = next_type
+				unless next_type is "string"
+					current_token_string += char
 			
 			if char is "\n"
 				row++
 				col = 1
-				handle_indentation(i, row, col)
 			else
 				col += 1
 		
