@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Ooplie Tests with Mocha</title>
+	<link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+	<style>
+		#mocha .test:not(:focus) .error {
+			/* TODO: remove me when there aren't way too many errors */
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div id="mocha"></div>
+	
+	<script src="https://cdn.rawgit.com/jquery/jquery/2.1.4/dist/jquery.min.js"></script>
+	<script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
+	<script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
+	
+	<script>mocha.setup('tdd')</script>
+	<script src="lib/coffee-script.js"></script>
+	<script src="lib/chai.js"></script>
+	<script src="ooplie.js"></script>
+	<script src="tests/flow.coffee" type="text/coffeescript"></script>
+	<script src="tests/math.coffee" type="text/coffeescript"></script>
+	<script src="tests/oop.coffee" type="text/coffeescript"></script>
+	<script src="tests/text.coffee" type="text/coffeescript"></script>
+	<script src="tests/time.coffee" type="text/coffeescript"></script>
+	<script type="text/coffeescript">
+		mocha.checkLeaks()
+		mocha.run()
+		
+		# TODO: remove me when there aren't way too many errors
+		addEventListener "click", (e)->
+			if e.target.tagName is "H2"
+				err_pre = e.target.nextElementSibling
+				if err_pre?.nextElementSibling?
+					err_pre.style.display = "block"
+					err_pre.style.display = err_pre.nextElementSibling.style.display
+	</script>
+</body>
+</html>

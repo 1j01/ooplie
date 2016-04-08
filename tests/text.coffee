@@ -1,11 +1,14 @@
 
-{expect} = require "chai"
-{Context} = require "../src/ooplie.coffee"
+{expect} = require?("chai") ? chai
+{Context} = require?("../src/ooplie.coffee") ? Ooplie
 
 context = new Context
 
 evaluate = (expression)->
-	to: expect(context.eval(expression)).to.eql
+	result = context.eval(expression)
+	to = (value)-> expect(result).to.eql(value)
+	to.a = (type)-> expect(result).to.be.a(type)
+	{to}
 
 suite "strings", ->
 	test "simple strings", ->

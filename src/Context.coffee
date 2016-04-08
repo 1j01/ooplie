@@ -18,9 +18,9 @@ class Context
 	
 	interpret: (text, callback)->
 		# Conversational trivialities
-		if text.match /^((Well|So),? )?(Hi|Hello|Hey|Greetings|Hola)/i
+		if text.match /^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i
 			callback null, (if text.match /^[A-Z]/ then "Hello" else "hello") + (if text.match /\.|!/ then "." else "")
-		else if text.match /^((Well|So),? )?(What'?s up)/i
+		else if text.match /^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i
 			callback null, (if text.match /^[A-Z]/ then "Not much" else "not much") + (if text.match /\?|!/ then "." else "")
 		else if text.match /^>?[:;8X][()O3PCD]$/i
 			callback null, text # top notch emotional mirroring
@@ -28,7 +28,7 @@ class Context
 		else if text.match /^\?|help/i
 			callback null, "Sorry, I can't help."
 		# Console
-		else if text.match /^clr|clear/i
+		else if text.match /^(clr|clear)( console| output)?/i
 			if @console?
 				@console.clear()
 				callback null, "Console cleared."

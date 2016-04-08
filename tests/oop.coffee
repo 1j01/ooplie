@@ -1,12 +1,15 @@
 
-{expect} = require "chai"
-{Context} = require "../src/ooplie.coffee"
+{expect} = require?("chai") ? chai
+{Context} = require?("../src/ooplie.coffee") ? Ooplie
 
 shared_context = null
 context = null
 
 evaluate = (expression)->
-	to: expect(context.eval(expression)).to.eql
+	result = context.eval(expression)
+	to = (value)-> expect(result).to.eql(value)
+	to.a = (type)-> expect(result).to.be.a(type)
+	{to}
 
 suite "object-oriented programming", ->
 	shared_context = new Context
@@ -18,6 +21,7 @@ suite "object-oriented programming", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.
 		"""
+		throw new Error "TODO: this isn't a test, it's setup"
 	test "animals 2!", ->
 		context = shared_context.subcontext()
 		context.eval """
@@ -58,6 +62,7 @@ suite "object-oriented programming", ->
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is a mammal a type of bunny?").to(no)
 	test "bla bla bla", ->
+		throw new Error "TODO: move or remove this, it isn't OOP"
 		context = shared_context.subcontext()
 		context.eval """
 			To say or log something, output it to the console.

@@ -1,12 +1,13 @@
 
-{expect} = require "chai"
-{Context} = require "../src/ooplie.coffee"
+{expect} = require?("chai") ? chai
+{Context} = require?("../src/ooplie.coffee") ? Ooplie
 
 context = new Context
 
 evaluate = (expression)->
 	result = context.eval(expression)
-	to = expect(result).to.eql
+	to = (value)-> expect(result).to.eql(value)
+	to.a = (type)-> expect(result).to.be.a(type)
 	to.approximately = (value, margin_of_error)->
 		unless value - margin_of_error <= result <= value + margin_of_error
 			throw new Error "expected #{result} to be within #{margin_of_error} of #{value}"
@@ -71,8 +72,10 @@ suite "time", ->
 		evaluate("do x after 1s")
 		evaluate("after 1s do x") # throw grammar error
 		evaluate("after 1s, do x")
+		throw new Error "TODO"
 	test "every <timespan>, do x", ->
 		evaluate("do x every 1s")
 		evaluate("every 1s do x") # throw grammar error
 		evaluate("every 1s, do x")
+		throw new Error "TODO"
 	test "every <timespan> for <timespan>, do x"

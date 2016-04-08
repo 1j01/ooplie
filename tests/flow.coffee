@@ -1,6 +1,6 @@
 
-{expect} = require "chai"
-{Context} = require "../src/ooplie.coffee"
+{expect} = require?("chai") ? chai
+{Context} = require?("../src/ooplie.coffee") ? Ooplie
 
 log_to_actual_console = (stuff)-> console.log stuff...
 
@@ -21,7 +21,10 @@ expect_output = (output, fn)->
 		throw new Error "Expected console output `#{output}` from #{fn}"
 
 evaluate = (expression)->
-	to: expect(context.eval(expression)).to.eql
+	result = context.eval(expression)
+	to = (value)-> expect(result).to.eql(value)
+	to.a = (type)-> expect(result).to.be.a(type)
+	{to}
 
 suite "control flow", ->
 	
@@ -51,7 +54,8 @@ suite "control flow", ->
 				
 				new set = other new set = another new set = {5, 10, 15, 20}
 			"""
-			# evaluate("").to.a(Set)
+			evaluate("new set").to.a(Set)
+			evaluate("other new set").to.a(Set)
 		test "for each in set by"
 		test "for each in Array"
 		test "for each in Array by"
@@ -102,18 +106,37 @@ suite "control flow", ->
 			# TODO: test unless-else, unless-else-if, unless-else-unless etc. but maybe throw style warnings/errors
 		test "as values"
 			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)
-
+		test "if there are any", ->
+			# it would probably good to make a wrapper for test that creates a new context
+			context.eval("There are five houses.")
+			evaluate("there are any houses").to(true)
+			evaluate("If there are any houses then 1 else 0").to(1)
+			evaluate("Are there any houses?").to(true)
+			context.eval("There are 0 people.")
+			evaluate("there are any people").to(false)
+			evaluate("If there are any people then 1 else 0").to(0)
+			evaluate("Are there any people?").to(false)
+		test "if there are no", ->
+			context.eval("There are 99 balloons.")
+			evaluate("there are no balloons").to(false)
+			evaluate("If there are no balloons then 1 else 0").to(0)
+			evaluate("Are there no balloons?").to(false)
+			context.eval("There are 0 towers.")
+			evaluate("there are no towers").to(true)
+			evaluate("If there are no towers then 1 else 0").to(1)
+			evaluate("Are there no towers?").to(true)
+	
 	suite "imperative", ->
 		test "run JS", ->
-			expect_output "Hello world from JavaScript from Ooplie", ->
+			expect_output "Hello world thru JavaScript from Ooplie", ->
 				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
 				context.eval("""
-					run JS 'console.log("Hello world from JavaScript from Ooplie")'
+					run JS 'console.log("Hello world thru JavaScript from Ooplie")'
 				""")
 		test "JS interop", ->
-			expect_output "Hello world from JavaScript from a variable in Ooplie", ->
+			expect_output "Hello world thru JavaScript from a variable in Ooplie", ->
 				context.eval("""
-					message = "Hello world from JavaScript from a variable in Ooplie"
+					message = "Hello world thru JavaScript from a variable in Ooplie"
 					run JS console.log(message)'
 				""")
 		test "to do x, bla bla bla", ->
@@ -121,9 +144,8 @@ suite "control flow", ->
 			context.eval("to output something to the console, run JS console.log(something)")
 			context.eval("to output something to the console, `console.log(it)`")
 			context.eval("to output something to the console, run JavaScript methed log on the global JavaScript object 'console' with it as a parameter")
-			expect_output
-			evaluate("say 'Hello World'!")
-			# TODO: expect output
+			expect_output "Hello World", ->
+				evaluate("say 'Hello World'!")
 		test "to do x, bla bla bla", ->
 			context.eval("to draw a circle of radius r at (x, y), run JS ctx.arc(x, y, r, 0, Math.PI * 2)")
 			context.eval("""
@@ -182,6 +204,7 @@ suite "control flow", ->
 			context.eval("draw a circle of radius 5")
 			context.eval("draw a circle with radius 5")
 			context.eval("draw a circle with radius 5 at the center of the screen/canvas")
+			throw new Error "TODO: mock canvas and test"
 		
 		test "physics!", ->
 			context.eval("""
@@ -189,3 +212,4 @@ suite "control flow", ->
 				set the ragdoll's head's velocity to a vector of random orientation with a magnitude between 0 and 10 every frame
 				hope it doesn't fall off
 			""")
+			throw new Error "TODO: what is this?"

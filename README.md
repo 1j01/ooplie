@@ -47,5 +47,5 @@ and a [million failing tests][tests].
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
 [console]: http://1j01.github.io/ooplie/dooplie/
-[tests]: ./tests/
+[tests]: ./test.html
 [Light Table]: http://lighttable.com/

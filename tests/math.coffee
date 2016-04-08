@@ -1,11 +1,14 @@
 
-{expect} = require "chai"
-{Context, Range} = require "../src/ooplie.coffee"
+{expect} = require?("chai") ? chai
+{Context, Range} = require?("../src/ooplie.coffee") ? Ooplie
 
 context = new Context
 
 evaluate = (expression)->
-	to: expect(context.eval(expression)).to.eql
+	result = context.eval(expression)
+	to = (value)-> expect(result).to.eql(value)
+	to.a = (type)-> expect(result).to.be.a(type)
+	{to}
 
 suite "mathematics", ->
 	test "plain numbers", ->
@@ -297,10 +300,13 @@ suite "mathematics", ->
 		evaluate("491.67 °R = 273.15 K = 0 °C").to(true)
 	test "legit math", ->
 		evaluate("1 like = 1 prayer").to(false)
-		evaluate("a goof + a laugh = a laugh").to(true)
-		evaluate("a goof + a gaff = a gaff").to(true)
+		evaluate("a goof + a laugh = a gaff").to(true)
+		evaluate("a goof + a gaff = a gaff").to(true) # the distributive poppardy
 		evaluate("a laugh + a goof = a spoof").to(true)
-		evaluate("bad + rad = Brad").to(true)
+		evaluate("a laugh + a goof + a gaff = a romp").to(true)
+		evaluate("a look + a gaff = a gander").to(true)
+		evaluate("a spoof + a boo = a spook").to(true)
+		evaluate("a gaff + a neck = a giraffe").to(true)
 		evaluate("Pegasus + unicorn = pegacorn").to(true)
 		evaluate("shark + octopus = Sharktopus").to(true)
 		evaluate("shark + tornado = Sharknado").to(true)
