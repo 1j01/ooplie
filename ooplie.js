@@ -163,7 +163,14 @@ Lexer = (function() {
       char = source[i];
       next_char = (ref = source[i + 1]) != null ? ref : "";
       next_type = current_type;
-      if (current_type === "string") {
+      if (current_type === "comment") {
+        if (char === "\n") {
+          next_type = null;
+          finish_token();
+        } else {
+          current_token_string += char;
+        }
+      } else if (current_type === "string") {
         if (char === quote_char) {
           next_type = null;
           finish_token();
@@ -201,6 +208,8 @@ Lexer = (function() {
           } else {
             next_type = "punctuation";
           }
+        } else if (char === "#") {
+          next_type = "comment";
         } else if (char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)) {
           next_type = "punctuation";
         } else if (char.match(/[a-z]/i)) {
@@ -224,7 +233,7 @@ Lexer = (function() {
           finish_token();
         }
         current_type = next_type;
-        if (next_type !== "string") {
+        if (next_type !== "string" && next_type !== "comment") {
           current_token_string += char;
         }
       }

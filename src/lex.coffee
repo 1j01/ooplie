@@ -72,10 +72,15 @@ class Lexer
 			next_char = source[i + 1] ? ""
 			next_type = current_type
 			
-			if current_type is "string"
+			if current_type is "comment"
+				if char is "\n"
+					next_type = null
+					finish_token()
+				else
+					current_token_string += char
+			else if current_type is "string"
 				if char is quote_char
 					next_type = null
-					# console.log "end string", JSON.stringify current_token_string
 					finish_token()
 				else if char is "\n"
 					whitespace_after = source.slice(i).match(/^\s*/m)
@@ -89,13 +94,7 @@ class Lexer
 					# TODO: support spaces
 					match = source.slice(0, i + 1).match(/\n(\t*)$/m)
 					if match?
-						# tabs_before = match[1]
 						string_indent_level = match[1].length
-						# console.log indent_level, row, col, source
-						# console.log row, col, source, indent_level, tabs_before.length
-						# console.log {row, col, tabs_before, source, indent_level}
-						# console.log {row, col, string_indent_level, source, indent_level}
-						# if tabs_before.length > indent_level + 1
 						if string_indent_level > indent_level + 1
 							current_token_string += char
 					else
@@ -111,6 +110,8 @@ class Lexer
 						next_type = "number"
 					else
 						next_type = "punctuation"
+				else if char is "#"
+					next_type = "comment"
 				else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)
 					next_type = "punctuation"
 				else if char.match(/[a-z]/i)
@@ -134,7 +135,7 @@ class Lexer
 				finish_token() if next_type isnt current_type
 				
 				current_type = next_type
-				unless next_type is "string"
+				unless next_type in ["string", "comment"]
 					current_token_string += char
 			
 			if char is "\n"
@@ -152,19 +153,11 @@ class Lexer
 	
 	lex: (source)->
 		tokens = @tokenize(source)
-		# if tokens[0]?.type is "number"
-		# 	tokens[0].value
-		# else
-		# 	tokens
-		# tokens[tokens.length-1]?.value ? tokens
 		tokens
 
 class Token
 	constructor: (@type, @col, @row, @value)->
-		
-	# toString: ->
-	# 	"#{@type}:#{JSON.stringify(@value)}"
-	# 	"#{JSON.stringify(@value)}"
+
 
 module.exports = (source)->
 	lexer = new Lexer
