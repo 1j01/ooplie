@@ -20,6 +20,8 @@ suite "mathematics", ->
 		evaluate("90.00").to(90.00)
 	test "numbers with commas", ->
 		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
+		evaluate("5,000,000").to(5000000) # throw style error? commas are sometimes used as decimal marks
+		evaluate("5,0").to(5.0) # throw style error
 		# https://en.wikipedia.org/wiki/Decimal_mark
 	test "numbers with exponents", ->
 		evaluate("5e3").to(5000)
@@ -32,7 +34,7 @@ suite "mathematics", ->
 		evaluate("0Xf0f0").to(0xf0f0) # throw style error for uppercase
 		evaluate("0Bf0f0").to(0b0101) # throw style error for uppercase
 		evaluate("0O744").to(0o744) # throw style error for uppercase
-		evaluate("0744").to(0o744) # throw style error, no implicit octal!
+		evaluate("0744").to(0o744) # throw style error for implicit octal!
 		evaluate("0x0b0").to(176)
 		evaluate("0x0B1").to(177)
 		evaluate("0xE1").to(225)
@@ -55,24 +57,18 @@ suite "mathematics", ->
 		evaluate("2 ^ 8").to(256)
 		evaluate("2 ** 8").to(256) # throw error
 		evaluate("32^0.8").to(16)
-	test "plus-minus", ->
-		# should probably be a set of two possible numbers
-		# probably shouldn't allow ASCII "+-"
-		# probably should also test minus-plus
-		# probably should move this test down below functions and such
-		# "plus or minus" for a range
-		# "plus and minus" or "plus-minus" for plus-minus
-		# "minus and plus" or "minus-plus" for minus-plus
-		evaluate("9 +- 0.1").to(new Range(8.9, 9.1))
-	test "equality", ->
+	test "equality comparison", ->
 		evaluate("5 = 5").to(true)
 		evaluate("5 = 5 = 5").to(true)
 		evaluate("5 = 3").to(false)
+		evaluate("false = false").to(true)
+		evaluate("true = true").to(true)
+		evaluate("true = false").to(false)
 		evaluate("5 = 5 = 3").to(false)
 		evaluate("5 = 5 = true").to(false)
 		evaluate("5 == 5").to(true) # throw error, just use =
 		evaluate("5 === 5").to(true) # throw error, just use =
-	test "inequality", ->
+	test "inequality comparison", ->
 		evaluate("5 <= 5").to(true)
 		evaluate("5 >= 5").to(true)
 		evaluate("5 < 5").to(false)
@@ -84,6 +80,8 @@ suite "mathematics", ->
 		evaluate("4 <= 5").to(false)
 		evaluate("-0 < +0").to(false)
 		evaluate("-1 < +1").to(true)
+		evaluate("5 != 3").to(true)
+		evaluate("5 != 5").to(false)
 	test "parenthesis", ->
 		evaluate("(1)").to(1)
 		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
@@ -113,9 +111,12 @@ suite "mathematics", ->
 		context.eval("x = 5")
 		evaluate("2x").to(10)
 		evaluate("1/2x").to(1/10) # or...
-		evaluate("1/2x").to((1/2) * 5)
+		evaluate("1/2x").to(5/2)
 		# yeah, maybe this should be disallowed
 		# at least the slash division without whitespace should be
+		evaluate("1 / 2x").to(1/10)
+		evaluate("(1/2)x").to(5/2)
+		# TODO: also e.g. five x
 	test "unicode operators", ->
 		evaluate("5 − 6").to(5 - 6)
 		evaluate("5 × 6").to(5 * 6)
@@ -128,7 +129,15 @@ suite "mathematics", ->
 		evaluate("5 ∕ 6").to(5 / 6) # division slash
 		evaluate("5 ／ 6").to(5 / 6) # full width solidus
 		evaluate("5 ÷ 6").to(5 / 6) # obelus
-		evaluate("9 ∓ 0.1").to(new Range(8.9, 9.1)) # probably not a range
+	test "unicode inequality comparisons", ->
+		evaluate("5 ≤ 5").to(true)
+		evaluate("5 ≥ 5").to(true)
+		evaluate("4 ≥ 5").to(true)
+		evaluate("4 ≤ 5").to(false)
+		evaluate("5 ≠ 3").to(true)
+		evaluate("5 ≠ 5").to(false)
+		evaluate("5 ≟ 3").to(false) # questioned equal (should we be using this for within expressions? I guess not since there's no oposite version)
+		evaluate("5 ≟ 5").to(true)
 	test "basic word numbers", ->
 		evaluate("zero").to(0)
 		evaluate("one").to(1)
@@ -225,8 +234,6 @@ suite "mathematics", ->
 		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
 		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
 		# TODO: nth roots
-		evaluate("9 plus or minus 0.1").to(new Range(8.9, 9.1)) # probably not a range
-		evaluate("9 give or take 0.1").to(new Range(8.9, 9.1))
 	test "worded comparisons", ->
 		evaluate("5 equals 5").to(true)
 		evaluate("5 is 5").to(true)
@@ -234,6 +241,9 @@ suite "mathematics", ->
 		evaluate("5 does not equal 4").to(true)
 		evaluate("5 isnt 4").to(true) # throw error
 		evaluate("5 isn't 4").to(true)
+		evaluate("5 is not equal to 4").to(true)
+		evaluate("5 is equal to 4").to(false)
+		evaluate("5 is equal to 5").to(true)
 		evaluate("Does 4 equal 5?").to(no)
 		evaluate("Does 4 = 5?").to(no)
 		evaluate("Does 5 equal 5?").to(yes)
@@ -242,11 +252,18 @@ suite "mathematics", ->
 		evaluate("Is 3 less than 5?").to(yes)
 		evaluate("Is 3 more than 5?").to(no) # throw style error
 		evaluate("Is 5 greater than 3?").to(yes)
-	test "ranges", ->
-		evaluate("between 4 and 6").to(new Range(4, 6)) # exclusive?
+	test "ranges (intervals)", ->
 		evaluate("from 4 to 6").to(new Range(4, 6)) # inclusive?
-		evaluate("4..6").to(new Range(4, 6)) # ?
-		evaluate("4...6").to(new Range(4, 6)) # ?
+		evaluate("between 4 and 6").to(new Range(4, 6)) # exclusive?
+		evaluate("between 4 and 6, inclusive").to(new Range(4, 6)) # inclusive
+		evaluate("between 4 and 6, exclusive").to(new Range(4, 6)) # exclusive
+		evaluate("from 4 to 6, inclusive").to(new Range(4, 6)) # inclusive
+		evaluate("from 4 to 6, exclusive").to(new Range(4, 6)) # exclusive
+		evaluate("9 plus or minus 0.1").to(new Range(8.9, 9.1)) # throw error/warning? can mean plus-minus
+		evaluate("9 give or take 0.1").to(new Range(8.9, 9.1))
+		evaluate("4..6").to(new Range(4, 6)) # should we have these? (inclusive?)
+		evaluate("4...6").to(new Range(4, 6)) # should we have these? (exclusive?)
+		# TODO: mathematical interval notation
 	test "units", ->
 		evaluate("5mm").to("5m")
 		evaluate("5mm = 5m").to(false)
@@ -371,93 +388,182 @@ suite "mathematics", ->
 		evaluate("true or true").to(true)
 		evaluate("true or false").to(true)
 		evaluate("false or true").to(true)
-		# TODO: this should be under equality:
-		evaluate("false = false").to(true)
-		evaluate("true = true").to(true)
-		evaluate("true = false").to(false)
 		# TODO: order of operations should be tested for boolean logic
 		# TODO: xor, nor, xnor
+		# TODO: test unicode boolean operators
 	test "whether", ->
 		evaluate("whether 10 = 10").to(true)
 		evaluate("whether 10 is 10").to(true)
 		evaluate("whether 10 = 4").to(false)
 		evaluate("whether 10 is 4").to(false)
 		evaluate("(whether 10 is 4) = false").to(true)
+	test "modulo", ->
+		evaluate("10 modulo 4").to(2)
+		evaluate("10 modulo 14").to(10)
+		evaluate("10 mod 5").to(0)
+		evaluate("-10 mod 5").to(0)
+		evaluate("-10 mod 3.25").to(3)
+		evaluate("10 mod -3.25").to(3)
+		evaluate("-10 mod -3.25").to(-0.25)
+		evaluate("-10 % -3.25").to(-0.25) # throw style error
 	test "more unicode fun", ->
 		evaluate("√2 = √(2) = sqrt(2) = the square root of two").to(true)
 		evaluate("1ˢᵗ = 1st").to(true)
 		evaluate("2ⁿᵈ = 2nd").to(true)
 		evaluate("3ʳᵈ = 3rd").to(true)
 		evaluate("4ᵗʰ = 4th").to(true)
+		evaluate("⊨").to(true)
+		evaluate("⊭").to(false)
+		evaluate("⊤").to(true)
+		evaluate("⊥").to(false)
+		evaluate("¬true").to(false)
+		evaluate("¬false").to(true)
 		# TODO: superscript/subscript fractions and stuff
-	test "defining functions"
+	test "defining functions", ->
+		context.eval("f(x) = x * 2")
+		evaluate("f(5)").to(10)
+		context.eval("funk(x, y) = f(x) + y")
+		evaluate("funk(5, 0)").to(10)
+		evaluate("funk(5, 1)").to(11)
+		evaluate("funk(5)").to(undefined) # throw error: not enough arguments
+		evaluate("f()").to(undefined) # throw error: not enough arguments
+	# test "complex functions", ->
+	# 	context.eval("lefunc()")
+	# 	evaluate("funk(5, 0)").to(10)
+	test "recursive functions"
 	test "built-in math functions"
+	
 	test "overwriting variable values? e.g. incrementing/decrementing"
-	# hopefully not? except for with interop
-	test "sets", ->
-		evaluate("{} = {}").to(true)
-		evaluate("Ø = {}").to(true) # throw style error/warning?
-		evaluate("∅ = {}").to(true) # this character is the proper one
-		evaluate("∅ = {1}").to(false)
-		evaluate("{} = the empty set").to(true)
-		evaluate("{} = the null set").to(true)
-		evaluate("{} = nothing").to(true)
-		evaluate("{} = null").to(true)
-		evaluate("∅ is empty").to(true)
-		evaluate("{} is empty").to(true)
-		evaluate("{∅} is empty").to(false)
-		evaluate("{1} = {1}").to(true)
-		evaluate("{1, 2, 3} = {1, 2, 3}").to(true)
-		evaluate("{1, 2} = {1, 2, 3}").to(false)
-		evaluate("{3, 2, 1} = {1, 2, 3}").to(true)
-		evaluate("{11, 6, 6} = {11, 6}").to(true)
-		evaluate("{1, 2, 3} contains 2").to(true)
-		evaluate("{1, 2, 3} contains 5").to(false)
-		evaluate("{1, 2, 3} contains {1, 2, 3}").to(false) # unless you define a contains b as a is a superset of b
-		evaluate("{{1, 2, 3}} contains {1, 2, 3}").to(true)
-		# I hope you're not dealing with shop items and DOM Elements because that could be confusing (and ambiguous!)
-		# well, you can call shop items products, but yeah
-		# I guess if you're trying to check how many Elements are in a set, the set is probably a set of elements anyways
-		evaluate("{1, 2, 3} contains 3 items").to(true)
-		evaluate("{1, 2, 3} contains 2 or more items").to(true)
-		evaluate("{1, 2, 3} contains 3 elements").to(true)
-		evaluate("{1, 2, 3} contains 2 or more elements").to(true)
-		evaluate("How many items does {1, 2, 3} contain?").to(3)
-		evaluate("How many items does {1, 100, 30, 4} have?").to(4)
-		evaluate("How many elements does {2, 4, 6, 8, 10} contain?").to(5)
-		evaluate("How many elements does {-1, 0, 1} have?").to(3)
-		evaluate("{0} contains -0").to(true)
-		evaluate("{-0} contains 0").to(true)
-		evaluate("1 ∈ {1, 2, 3}").to(true) # 1 belongs to {1, 2, 3} = true
-		evaluate("4 ∈ {1, 2, 3}").to(false) # 4 belongs to {1, 2, 3} = false
-		evaluate("4 ∉ {1, 2, 3}").to(true) # 4 does not belong to {1, 2, 3} = true
-		evaluate("1 ∉ {1, 2, 3}").to(true) # 1 does not belong to {1, 2, 3} = false
-		evaluate("1 belongs to {1}").to(true)
-		evaluate("1 is within {1}").to(true)
-		evaluate("1 belongs to {}").to(false)
-		evaluate("1 is within {}").to(false)
-		evaluate("1 belongs to {one}").to(true)
-		evaluate("1 is within {one}").to(true)
-		evaluate("one belongs to {1}").to(true)
-		
-		evaluate("{} ⊆ {1}").to(true)
-		evaluate("{} ⊆ {}").to(true)
-		evaluate("{1} ⊆ {1}").to(true)
-		evaluate("{1} ⊆ {1}").to(true)
-		
-		# TODO: finish testing subsets, supersets, strict subsets, strict supersets
-		# throw an error for the ambiguous set operaters that ideally would be the strict operators (maybe?)
-		
-		expect(context.eval("{1, 2, 3}")).to.be.a(Set)
-		expect(context.eval("{1, 2, 3}").has(1)).to.be(true)
-		expect(context.eval("{}")).to.be.a(Set)
-		expect(context.eval("{}").has(1)).to.be(false)
+	# hopefully not? except for with interop?
+	
+	suite "sets", ->
+		test "use native Set objects", ->
+			expect(context.eval("{1, 2, 3}")).to.be.a(Set)
+			expect(context.eval("{1}").has(1)).to.be(true)
+			expect(context.eval("{}")).to.be.a(Set)
+			expect(context.eval("{}").has(1)).to.be(false)
+		test "set identity", ->
+			evaluate("{} = {}").to(true)
+			evaluate("Ø = {}").to(true) # throw style error/warning?
+			evaluate("∅ = {}").to(true) # this character is the proper one
+			evaluate("∅ = {1}").to(false)
+			evaluate("{} = the empty set").to(true)
+			evaluate("{} = the null set").to(true)
+			evaluate("{} = nothing").to(true)
+			evaluate("{} = null").to(true)
+			evaluate("∅ is empty").to(true)
+			evaluate("{} is empty").to(true)
+			evaluate("{∅} is empty").to(false)
+			evaluate("{1} = {1}").to(true)
+			evaluate("{1, 2, 3} = {1, 2, 3}").to(true)
+			evaluate("{1, 2} = {1, 2, 3}").to(false)
+			evaluate("{3, 2, 1} = {1, 2, 3}").to(true)
+			evaluate("{11, 6, 6} = {11, 6}").to(true)
+			evaluate("{1, 1+1, 1+1+1} = {1, 2, 3}").to(true)
+		test "set membership", ->
+			evaluate("{1, 2, 3} contains 2").to(true)
+			evaluate("{1, 2, 3} contains 5").to(false)
+			evaluate("{1, 2, 3} contains {1, 2, 3}").to(false) # unless you define a contains b as a is a superset of b
+			evaluate("{{1, 2, 3}} contains {1, 2, 3}").to(true)
+			# I hope you're not dealing with inventory items and DOM Elements because that could be confusingly ambiguous
+			# I guess if you're trying to check how many Elements are in a set, the set is probably a set of Elements anyways
+			evaluate("{0} contains -0").to(true)
+			evaluate("{-0} contains 0").to(true)
+			evaluate("1 ∈ {1, 2, 3}").to(true) # 1 belongs to {1, 2, 3} = true
+			evaluate("4 ∈ {1, 2, 3}").to(false) # 4 belongs to {1, 2, 3} = false
+			evaluate("4 ∉ {1, 2, 3}").to(true) # 4 does not belong to {1, 2, 3} = true
+			evaluate("1 ∉ {1, 2, 3}").to(true) # 1 does not belong to {1, 2, 3} = false
+			evaluate("1 belongs to {1}").to(true)
+			evaluate("1 is within {1}").to(true)
+			evaluate("1 belongs to {}").to(false)
+			evaluate("1 is within {}").to(false)
+			evaluate("1 belongs to {one}").to(true)
+			evaluate("1 is within {one}").to(true)
+			evaluate("one belongs to {1}").to(true)
+		test "set cardinality", ->
+			evaluate("{1, 2, 3} contains 3 items").to(true)
+			evaluate("{1, 2, 3} contains 2 or more items").to(true)
+			evaluate("{1, 2, 3} contains 3 elements").to(true)
+			evaluate("{1, 2, 3} contains 2 or more elements").to(true)
+			evaluate("{1, 2, 3} has 2 or more elements").to(true)
+			evaluate("{1, 2, 3} has 2 or more members").to(true)
+			evaluate("the number of members of {1, 2, 3}").to(3)
+			evaluate("the number of elements in {1, 2, 3}").to(3)
+			evaluate("the cardinality of {1, 2, 3}").to(3)
+			evaluate("What's the cardinality of {1, 2, 3}?").to(3)
+			evaluate("| {1, 2, 3} |").to(3)
+			evaluate("How many items does {1, 2, 3} contain?").to(3)
+			evaluate("How many items does {1, 100, 30, 4} have?").to(4)
+			evaluate("How many elements does {2, 4, 6, 8, 10} contain?").to(5)
+			evaluate("How many elements does {-1, 0, 1} have?").to(3)
+			evaluate("How many members does {-1, 0, 1} have?").to(3)
+		test "subsets", ->
+			evaluate("{} is a subset of {1}").to(true)
+			evaluate("{1} is a subset of {}").to(false)
+			evaluate("{} is a subset of {}").to(true)
+			evaluate("{1} is a subset of {1}").to(true)
+			evaluate("{} ⊆ {1}").to(true)
+			evaluate("{} ⊆ {}").to(true)
+			evaluate("{1} ⊆ {1}").to(true)
+			evaluate("{1} ⊆ {}").to(false)
+		test "supersets", ->
+			evaluate("{1} is a superset of {}").to(true)
+			evaluate("{} is a superset of {1}").to(false)
+			evaluate("{} is a superset of {}").to(true)
+			evaluate("{1} is a superset of {1}").to(true)
+			evaluate("{1} ⊇ {}").to(true)
+			evaluate("{} ⊇ {1}").to(false)
+			evaluate("{} ⊇ {}").to(true)
+			evaluate("{1} ⊇ {1}").to(true)
+		test "strict subsets", ->
+			evaluate("{1} is a strict subset of {}").to(true)
+			evaluate("{} is a strict subset of {1}").to(false)
+			evaluate("{} is a strict subset of {}").to(false)
+			evaluate("{1} is a strict subset of {1}").to(true)
+			evaluate("{} ⊊ {1}").to(true)
+			evaluate("{} ⊊ {}").to(true)
+			evaluate("{1} ⊊ {1}").to(true)
+			evaluate("{1} ⊊ {}").to(false)
+		test "strict supersets", ->
+			evaluate("{1} is a strict superset of {}").to(true)
+			evaluate("{} is a strict superset of {1}").to(false)
+			evaluate("{} is a strict superset of {}").to(false)
+			evaluate("{1} is a strict superset of {1}").to(true)
+			evaluate("{} ⊋ {1}").to(true)
+			evaluate("{} ⊋ {}").to(true)
+			evaluate("{1} ⊋ {1}").to(true)
+			evaluate("{1} ⊋ {}").to(false)
+		# TODO: negative operators (⊄⊅⊈⊉)
+		test "ambiguous subset/superset operators", ->
+			# ideally these operators would be the strict operators
+			evaluate("{1} ⊂ {1}").to(false) # throw ambiguity error
+			evaluate("{1} ⊃ {1}").to(false) # throw ambiguity error
+		test "unions"
+		test "intersections"
+		test "compliments"
+		test "Cartesian product"
+		test "power sets"
+	
+	test "plus-minus", ->
+		evaluate("9 +- 0.1").to(9 - 0.1) # throw style error!
+		evaluate("9 -+ 0.1").to(9 - 0.1) # throw style error!
+		evaluate("9 ± 0.1 = {9 - 0.1, 9 + 0.1}").to(true)
+		evaluate("9 ∓ 0.1 = {9 - 0.1, 9 + 0.1}").to(true) # style error/warning? should you always use plus-minus when there's only one use?
+		evaluate("10 ± 2 ∓ 0.1 = {10 + 2 - 0.1, 10 - 2 + 0.1}").to(true)
+		# Another example is x^3 ± 1 = (x ± 1)(x^2 ∓ x + 1) which represents two equations.
+		evaluate("")
+		# "plus and minus" or "plus-minus" for plus-minus?
+		# "minus and plus" or "minus-plus" for minus-plus?
+		# "plus or minus" or "plus-minus" for plus-minus
+		# "minus or plus" or "minus-plus" for minus-plus
+		# NOTE: can mean other things, such as a margin of error
 	test "null, nil, nothin'?"
 	test "bitwise operators"
+	test "ordered pairs (i.e. coordinates)"
 	test "matrices"
 	test "quaternions"
 	test "complex numbers"
-	test "coordinates"
 	test "algebra and all the other math (easy enough, right? haha? hahaha? hahahahaha? AHAHAHAHAAAAAAAGH)"
+		# TODO: https://en.wikipedia.org/wiki/ISO_31-11
 	test "interaction of various things"
 	test "MathML"

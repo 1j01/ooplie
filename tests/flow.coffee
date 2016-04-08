@@ -18,7 +18,8 @@ expect_output = (output, fn)->
 			log_to_actual_console arguments...
 	fn()
 	unless got_expected_output
-		throw new Error "Expected console output `#{output}` from #{fn}"
+		throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}"
+	# TODO: expect an exact array of outputs
 
 evaluate = (expression)->
 	result = context.eval(expression)
@@ -107,7 +108,7 @@ suite "control flow", ->
 		test "as values"
 			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)
 		test "if there are any", ->
-			# it would probably good to make a wrapper for test that creates a new context
+			# it would probably be good to make a wrapper for test that creates a new context
 			context.eval("There are five houses.")
 			evaluate("there are any houses").to(true)
 			evaluate("If there are any houses then 1 else 0").to(1)

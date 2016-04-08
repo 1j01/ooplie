@@ -14,6 +14,29 @@ suite "strings", ->
 	test "simple strings", ->
 		evaluate('"Hello World"').to("Hello World")
 		evaluate("'Hello World'").to("Hello World")
+	test "multiline strings", ->
+		evaluate('"Hello\nWorld"').to("Hello\nWorld")
+		evaluate("'Hello\nWorld'").to("Hello\nWorld")
+		evaluate("""
+			'
+			Hello
+			World
+			'
+		""").to("Hello\nWorld")
+		evaluate("""
+			'
+				Hello
+				World
+			'
+		""").to("Hello\nWorld")
+		evaluate("""
+			'
+				
+				Hello
+				World
+				
+			'
+		""").to("\nHello\nWorld\n")
 	test "escaping quotes", ->
 		evaluate("\"I said \\\"Good day!\\\"").to("Hello World")
 		evaluate("'I said \"Good day!\"'").to("Hello World")

@@ -21,7 +21,11 @@ suite "object-oriented programming", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.
 		"""
-		throw new Error "TODO: this isn't a test, it's setup"
+		context = shared_context.subcontext()
+		evaluate("A mammal is a type of animal").to(yes)
+		evaluate("An animal is a type of mammal").to(no)
+		evaluate("Is a mammal a type of animal?").to(yes)
+		evaluate("Is an animal a type of mammal?").to(undefined)
 	test "animals 2!", ->
 		context = shared_context.subcontext()
 		context.eval """

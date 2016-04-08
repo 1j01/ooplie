@@ -1,4 +1,6 @@
 
+# lex = require "./lex"
+
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
@@ -46,3 +48,5 @@ class Context
 			callback error, result
 		else
 			callback new Error "I don't understand."
+		# else
+		# 	console.log lex(text)
