@@ -240,6 +240,8 @@ module.exports = function(source) {
 },{}],3:[function(require,module,exports){
 module.exports.Context = require('./Context');
 
+module.exports.lex = require('./lex');
 
-},{"./Context":1}]},{},[3])(3)
+
+},{"./Context":1,"./lex":2}]},{},[3])(3)
 });

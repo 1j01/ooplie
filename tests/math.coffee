@@ -426,10 +426,13 @@ suite "mathematics", ->
 		evaluate("funk(5, 0)").to(10)
 		evaluate("funk(5, 1)").to(11)
 		evaluate("funk(5)").to(undefined) # throw error: not enough arguments
+		evaluate("funk(5, 5, 5)").to(undefined) # throw error: too many arguments
 		evaluate("f()").to(undefined) # throw error: not enough arguments
-	# test "complex functions", ->
-	# 	context.eval("lefunc()")
-	# 	evaluate("funk(5, 0)").to(10)
+	test "complex functions", ->
+		context.eval("signat(x) = if x < 0 then -1 else if x > 0 then +1 else 0")
+		evaluate("signat(5)").to(+1)
+		evaluate("signat(-5)").to(-1)
+		evaluate("signat(0)").to(0)
 	test "recursive functions"
 	test "built-in math functions"
 	
