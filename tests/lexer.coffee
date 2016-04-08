@@ -56,12 +56,33 @@ suite "tokenization", ->
 			{type: "punctuation", value: "!"}
 		])
 	
-	test "empty string", ->
+	test "empty strings", ->
 		tokenize("empty string = ''").to([
 			{type: "word", value: "empty"}
 			{type: "word", value: "string"}
 			{type: "punctuation", value: "="}
 			{type: "string", value: ""}
+		])
+		tokenize('empty string = ""').to([
+			{type: "word", value: "empty"}
+			{type: "word", value: "string"}
+			{type: "punctuation", value: "="}
+			{type: "string", value: ""}
+		])
+	
+	test "escaped quotes", ->
+		tokenize("say '\\'hi\\''").to([
+			{type: "word", value: "say"}
+			{type: "string", value: "'hi'"}
+		])
+		tokenize('say "\\"hi\\""').to([
+			{type: "word", value: "say"}
+			{type: "string", value: "hi"}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "then"}
+			{type: "word", value: "say"}
+			{type: "string", value: "bye bye"}
+			{type: "punctuation", value: "!"}
 		])
 	
 	test "multiline strings", ->
@@ -75,11 +96,11 @@ suite "tokenization", ->
 	test "multiline strings with ignored whitespace", ->
 		tokenize("""
 			say '
-				hi
+				hello world
 			'
 		""").to([
 			{type: "word", value: "say"}
-			{type: "string", value: "hi"}
+			{type: "string", value: "hello world"}
 		])
 		tokenize("""
 			say '
@@ -93,47 +114,61 @@ suite "tokenization", ->
 		tokenize("""
 			say '
 				
-				hi
+				hi, and...
 				
 				bye
 				
 			'
 		""").to([
 			{type: "word", value: "say"}
-			{type: "string", value: "\nhi\n\nbye\n"}
+			{type: "string", value: "\nhi, and...\n\nbye\n"}
 		])
 		tokenize("""
 			'
 			Hello
-			World
+			Goodbye
 			'
 		""").to([
-			{type: "string", value: "Hello\nWorld"}
+			{type: "string", value: "Hello\nGoodbye"}
 		])
 		tokenize("""
 			'
-				Hello
-					World
+				Hello	Merhaba
+				Goodbye	Elveda
 			'
 		""").to([
-			{type: "string", value: "Hello\n\tWorld"}
+			{type: "string", value: """
+				Hello	Merhaba
+				Goodbye	Elveda
+			"""}
 		])
 		tokenize("""
 			'
-				Hello
-				 World
+				Hallo
+					Afscheid
 			'
 		""").to([
-			{type: "string", value: "Hello\n World"}
+			{type: "string", value: "Hallo\n\tAfscheid"}
+		])
+		tokenize("""
+			"
+				Salut
+				 Au revoir
+			"
+		""").to([
+			{type: "string", value: "Salut\n Au revoir"}
 		])
 		tokenize("""
 			'
-					Hello
-					World
+					¡Hola
+					Despedida
 			'
 		""").to([
-			{type: "string", value: "\tHello\n\tWorld"}
+			{type: "string", value: "\t¡Hola\n\tDespedida"}
 		])
+	
+	test "badly formed strings"
+		# including sudden EOF and mismatched quote characters
 	
 	test "indentation", ->
 		tokenize("""
@@ -207,6 +242,17 @@ suite "tokenization", ->
 			{type: "comment", value: ' hashes within strings'}
 			{type: "comment", value: ' "Hello World"'}
 		])
+	
+	test "CSS colors"
+	test "URLs"
+	test "email addresses"
+	test "ip addresses"
+	test "version strings"
+	test "file paths"
+	test "XML"
+	test "HTML"
+	
+	test "different line-endings"
 	
 	test "row/column properties"
 		# which btw shouldn't be the end of the token (although that would be good to have additionally)

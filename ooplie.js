@@ -109,7 +109,7 @@ Lexer = (function() {
   };
 
   Lexer.prototype.tokenize = function(source) {
-    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent, is_last_newline, j, len, next_char, next_type, quote_char, ref, row, start_string, string_content_indentation, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_last_newline_cannot_be_ignored, tabs_before, tokens, whitespace_after;
+    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent_level, is_last_newline_before_quote, j, len, match, next_char, next_type, quote_char, ref, row, start_string, string_content_indentation, string_content_on_first_line, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_indent_level, tokens, whitespace_after;
     this.check_indentation(source);
     tokens = [];
     row = 1;
@@ -118,14 +118,13 @@ Lexer = (function() {
     next_type = null;
     current_token_string = "";
     quote_char = null;
-    string_first_newline_cannot_be_ignored = false;
-    string_last_newline_cannot_be_ignored = false;
+    string_content_on_first_line = false;
     string_first_newline_found = false;
     string_content_started = false;
     string_content_indentation = null;
-    indent = [0];
+    indent_level = 0;
     handle_indentation = function(i, row, col) {
-      var indentation, ref, results;
+      var indentation, ref;
       indentation = "";
       while (true) {
         i += 1;
@@ -135,23 +134,18 @@ Lexer = (function() {
           break;
         }
       }
-      if (indentation.length > indent[0]) {
-        indent.unshift(indentation.length);
+      if (indentation.length > indent_level) {
         tokens.push(new Token("indent", row, col, indentation));
-        return;
       }
-      results = [];
-      while (indentation.length < indent[0]) {
+      while (indentation.length < indent_level) {
         tokens.push(new Token("dedent", row, col, indentation));
-        results.push(indent.shift());
       }
-      return results;
+      return indent_level = indentation.length;
     };
     start_string = function(char) {
       next_type = "string";
       quote_char = char;
-      string_first_newline_cannot_be_ignored = false;
-      string_last_newline_cannot_be_ignored = false;
+      string_content_on_first_line = false;
       string_first_newline_found = false;
       string_content_started = false;
       return string_content_indentation = null;
@@ -172,21 +166,24 @@ Lexer = (function() {
       if (current_type === "string") {
         if (char === quote_char) {
           next_type = null;
-          console.log("end string", current_token_string);
           finish_token();
         } else if (char === "\n") {
           whitespace_after = source.slice(i).match(/^\s*/m);
-          is_last_newline = source[i + whitespace_after.length] === quote_char;
+          is_last_newline_before_quote = source[i + whitespace_after.length] === quote_char;
           if (string_first_newline_found || string_first_newline_cannot_be_ignored) {
-            if (!(is_last_newline && !string_last_newline_cannot_be_ignored)) {
+            if (!is_last_newline_before_quote) {
               current_token_string += char;
             }
           }
           string_first_newline_found = true;
         } else if (char === "\t") {
-          tabs_before = source.slice(0, i - 1).match(/\t*$/m);
-          console.log(row, col, source, indent, indent.length, tabs_before.length);
-          if (tabs_before.length > indent.length) {
+          match = source.slice(0, i + 1).match(/\n(\t*)$/m);
+          if (match != null) {
+            string_indent_level = match[1].length;
+            if (string_indent_level > indent_level + 1) {
+              current_token_string += char;
+            }
+          } else {
             current_token_string += char;
           }
         } else {
