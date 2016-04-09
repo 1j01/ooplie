@@ -167,6 +167,24 @@ suite "tokenize", ->
 			{type: "string", value: "\t¡Hola\n\tDespedida"}
 		])
 	
+	test.skip "multiline strings with ignored spaces", ->
+		tokenize("""
+			'
+			 Zdraveĭte
+			     Dovizhdane
+			'
+		""").to([
+			{type: "string", value: "Zdraveĭte\n    Dovizhdane"}
+		])
+		tokenize("""
+			'
+			    Ciao
+			        Addio
+			'
+		""").to([
+			{type: "string", value: "Ciao\n    Addio"}
+		])
+	
 	test "badly formed strings"
 		# including sudden EOF and mismatched quote characters
 	
@@ -251,6 +269,38 @@ suite "tokenize", ->
 			{type: "dedent", value: ""}
 		])
 	
+	test.skip "spaced indentation", ->
+		tokenize("""
+			If
+			    A
+			        B
+			Else
+			    C
+			        D
+		""").to([
+			{type: "word", value: "If"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "    "}
+			{type: "word", value: "A"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "        "}
+			{type: "word", value: "B"}
+			
+			{type: "newline", value: "\n"}
+			{type: "dedent", value: ""}
+			{type: "dedent", value: ""}
+			{type: "word", value: "Else"}
+			
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "    "}
+			{type: "word", value: "C"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "        "}
+			{type: "word", value: "D"}
+			{type: "dedent", value: ""}
+			{type: "dedent", value: ""}
+		])
+	
 	# TODO: test spaced indentation!
 	
 	test "bad indentation", ->
@@ -277,18 +327,17 @@ suite "tokenize", ->
 				  Spaced
 				Tabbed
 		""")
-		# this is not good:
-		tokenize("""
-			Indented:
-				Tabbed
-				  Spaced
-				 Tabbed
-		""")
-		# nor is this:
 		tokenize("""
 			Indented with spaces:
 			  But then
 			  	omg
+		""")
+		# this should probably be an error:
+		tokenize("""
+			Indented:
+				Tabbed
+				  Spaced
+				 Half-despaced
 		""")
 	
 	test "single-line comments with #", ->

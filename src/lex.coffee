@@ -96,9 +96,10 @@ class Lexer
 							current_token_string += char
 					
 					string_first_newline_found = yes
-				else if char is "\t"
+				else if char.match(/[\t\ ]/)
 					# TODO: support spaces
-					match = source.slice(0, i + 1).match(/\n(\t*)$/m)
+					match = source.slice(0, i + 1).match(/\n([\t\ ]*)$/)
+					# console.log {source, row, col, match}
 					if match?
 						string_indent_level = match[1].length
 						if string_indent_level > indent_level + 1

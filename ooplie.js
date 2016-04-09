@@ -187,8 +187,8 @@ Lexer = (function() {
             }
           }
           string_first_newline_found = true;
-        } else if (char === "\t") {
-          match = source.slice(0, i + 1).match(/\n(\t*)$/m);
+        } else if (char.match(/[\t\ ]/)) {
+          match = source.slice(0, i + 1).match(/\n([\t\ ]*)$/);
           if (match != null) {
             string_indent_level = match[1].length;
             if (string_indent_level > indent_level + 1) {
