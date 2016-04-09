@@ -1,12 +1,13 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, lex;
+var Context, Lexer;
 
-lex = require("./lex");
+Lexer = require("./lex").Lexer;
 
 module.exports = Context = (function() {
   function Context(arg) {
     var ref;
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
+    this.lexer = new Lexer;
   }
 
   Context.prototype.subcontext = function(arg) {
@@ -51,7 +52,7 @@ module.exports = Context = (function() {
         return callback(new Error("No console to clear."));
       }
     } else {
-      tokens = lex(text);
+      tokens = this.lexer.lex(text);
       result = void 0;
       for (i = 0, len = tokens.length; i < len; i++) {
         token = tokens[i];
@@ -284,17 +285,24 @@ Token = (function() {
 
 })();
 
-module.exports = function(source) {
-  var lexer;
-  lexer = new Lexer;
-  return lexer.lex(source);
+module.exports = {
+  Lexer: Lexer,
+  Token: Token
 };
 
 
 },{}],3:[function(require,module,exports){
-module.exports.Context = require('./Context');
+var Context, Lexer, Token, ref;
 
-module.exports.lex = require('./lex');
+Context = require('./Context');
+
+ref = require('./lex'), Lexer = ref.Lexer, Token = ref.Token;
+
+module.exports = {
+  Context: Context,
+  Lexer: Lexer,
+  Token: Token
+};
 
 
 },{"./Context":1,"./lex":2}]},{},[3])(3)

@@ -1,10 +1,11 @@
 
-lex = require "./lex"
+{Lexer} = require "./lex"
 
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
 		# definitions / rules / data / information / stuff = [{[{[]}]}]
+		@lexer = new Lexer
 	
 	subcontext: ({console}={})->
 		console ?= @console
@@ -38,7 +39,7 @@ class Context
 				callback new Error "No console to clear."
 		# TODO: anything useful
 		else
-			tokens = lex(text)
+			tokens = @lexer.lex(text)
 			# console.log (token.value for token in tokens)...
 			result = undefined
 			for token in tokens when token.type in ["number", "string"]

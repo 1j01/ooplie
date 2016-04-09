@@ -174,6 +174,4 @@ class Token
 	constructor: (@type, @col, @row, @value)->
 
 
-module.exports = (source)->
-	lexer = new Lexer
-	lexer.lex(source)
+module.exports = {Lexer, Token}

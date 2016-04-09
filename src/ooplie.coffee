@@ -1,3 +1,4 @@
 
-module.exports.Context = require './Context'
-module.exports.lex = require './lex'
+Context = require './Context'
+{Lexer, Token} = require './lex'
+module.exports = {Context, Lexer, Token}

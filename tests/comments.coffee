@@ -48,4 +48,4 @@ suite "comments", ->
 			# "hiya world"
 			"#wassup world?" # hashes within strings
 			# "Hello World"
-		""").to("Hello, world!")
+		""").to("#wassup world?")
