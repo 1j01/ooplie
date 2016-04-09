@@ -34,7 +34,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var token;
+    var i, len, ref, result, token, tokens;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -51,18 +51,15 @@ module.exports = Context = (function() {
         return callback(new Error("No console to clear."));
       }
     } else {
-      console.log(text);
-      console.log(lex(text));
-      return console.log.apply(console, (function() {
-        var i, len, ref, results;
-        ref = lex(text);
-        results = [];
-        for (i = 0, len = ref.length; i < len; i++) {
-          token = ref[i];
-          results.push(token.value);
+      tokens = lex(text);
+      result = void 0;
+      for (i = 0, len = tokens.length; i < len; i++) {
+        token = tokens[i];
+        if ((ref = token.type) === "number" || ref === "string") {
+          result = token.value;
         }
-        return results;
-      })());
+      }
+      return callback(null, result);
     }
   };
 
@@ -124,7 +121,7 @@ Lexer = (function() {
     string_content_indentation = null;
     indent_level = 0;
     handle_indentation = function(i, row, col) {
-      var indentation, ref;
+      var indentation, ref, results;
       indentation = "";
       while (true) {
         i += 1;
@@ -136,11 +133,14 @@ Lexer = (function() {
       }
       if (indentation.length > indent_level) {
         tokens.push(new Token("indent", row, col, indentation));
+        indent_level = indentation.length;
       }
+      results = [];
       while (indentation.length < indent_level) {
         tokens.push(new Token("dedent", row, col, indentation));
+        results.push(indent_level -= 1);
       }
-      return indent_level = indentation.length;
+      return results;
     };
     start_string = function(char) {
       next_type = "string";
@@ -166,14 +166,18 @@ Lexer = (function() {
       if (current_type === "comment") {
         if (char === "\n") {
           next_type = null;
-          finish_token();
+          if (next_type !== current_type) {
+            finish_token();
+          }
+          current_type = next_type;
+          tokens.push(new Token("newline", row, col, "\n"));
         } else {
           current_token_string += char;
         }
       } else if (current_type === "string") {
         if (char === quote_char) {
-          next_type = null;
           finish_token();
+          next_type = null;
         } else if (char === "\n") {
           whitespace_after = source.slice(i).match(/^\s*/m);
           is_last_newline_before_quote = source[i + whitespace_after.length] === quote_char;
@@ -199,6 +203,14 @@ Lexer = (function() {
           }
           current_token_string += char;
         }
+      } else if (char === "\n") {
+        next_type = null;
+        if (next_type !== current_type) {
+          finish_token();
+        }
+        current_type = next_type;
+        tokens.push(new Token("newline", row, col, "\n"));
+        handle_indentation(i, row, col);
       } else {
         if (char.match(/\d/)) {
           next_type = "number";
@@ -222,8 +234,6 @@ Lexer = (function() {
           }
         } else if (char.match(/"/)) {
           start_string(char);
-        } else if (char === "\n") {
-          handle_indentation(i, row, col);
         } else if (char.match(/\s/)) {
           next_type = null;
         } else {
@@ -248,6 +258,7 @@ Lexer = (function() {
       throw new Error("Missing end quote (" + quote_char + ") for string at row " + row + ", column " + col);
     }
     finish_token();
+    handle_indentation(i, row, col);
     return tokens;
   };
 

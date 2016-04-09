@@ -46,11 +46,11 @@ class Lexer
 			
 			if indentation.length > indent_level
 				tokens.push(new Token("indent", row, col, indentation))
+				indent_level = indentation.length
 			
 			while indentation.length < indent_level
 				tokens.push(new Token("dedent", row, col, indentation))
-			
-			indent_level = indentation.length
+				indent_level -= 1
 		
 		start_string = (char)->
 			next_type = "string"
@@ -74,14 +74,20 @@ class Lexer
 			
 			if current_type is "comment"
 				if char is "\n"
+					# next_type = null
+					# finish_token()
+					# next_type = "newline"
+					# handle_indentation(i, row, col)
 					next_type = null
-					finish_token()
+					finish_token() if next_type isnt current_type
+					current_type = next_type
+					tokens.push(new Token("newline", row, col, "\n"))
 				else
 					current_token_string += char
 			else if current_type is "string"
 				if char is quote_char
-					next_type = null
 					finish_token()
+					next_type = null
 				else if char is "\n"
 					whitespace_after = source.slice(i).match(/^\s*/m)
 					is_last_newline_before_quote = source[i + whitespace_after.length] is quote_char
@@ -102,6 +108,12 @@ class Lexer
 				else
 					string_first_newline_cannot_be_ignored = yes unless string_first_newline_found
 					current_token_string += char
+			else if char is "\n"
+				next_type = null
+				finish_token() if next_type isnt current_type
+				current_type = next_type
+				tokens.push(new Token("newline", row, col, "\n"))
+				handle_indentation(i, row, col)
 			else
 				if char.match(/\d/)
 					next_type = "number"
@@ -125,8 +137,9 @@ class Lexer
 						start_string(char)
 				else if char.match(/"/)
 					start_string(char)
-				else if char is "\n"
-					handle_indentation(i, row, col)
+				# else if char is "\n"
+				# 	handle_indentation(i, row, col)
+				# 	next_type = "newline"
 				else if char.match(/\s/)
 					next_type = null
 				else
@@ -148,6 +161,7 @@ class Lexer
 			throw new Error "Missing end quote (#{quote_char}) for string at row #{row}, column #{col}"
 		
 		finish_token()
+		handle_indentation(i, row, col)
 		
 		tokens
 	
