@@ -16,6 +16,19 @@ suite "tokenize", ->
 		tokenize("1").to([{type: "number", value: 1}])
 		tokenize("1.5").to([{type: "number", value: 1.5}])
 	
+	test.skip "negative numbers", ->
+		tokenize("-1").to([{type: "number", value: -1}])
+		tokenize("-24.8").to([{type: "number", value: -24.8}])
+	
+	test.skip "numbers with exponents", ->
+		tokenize("2e3").to([{type: "number", value: 2e3}])
+		tokenize("1.3e4").to([{type: "number", value: 1.3e4}])
+	
+	test.skip "numbers with radices", ->
+		tokenize("0x5f").to([{type: "number", value: 0x5f}])
+		tokenize("0b01").to([{type: "number", value: 0b01}])
+		tokenize("0o77").to([{type: "number", value: 0o77}])
+	
 	test "words", ->
 		tokenize("3 monkeys").to([
 			{type: "number", value: 3}
@@ -187,8 +200,56 @@ suite "tokenize", ->
 			{type: "string", value: "Ciao\n    Addio"}
 		])
 	
-	test "badly formed strings"
-		# including sudden EOF and mismatched quote characters
+	test "badly formed strings", ->
+		expect(->
+			tokenize('say "hello world')
+		).to.throw('Missing end quote (") for string at row 1, column 17')
+		expect(->
+			tokenize('say "hello world\'')
+		).to.throw('Missing end quote (") for string at row 1, column 18')
+		expect(->
+			tokenize('say \'hello world"')
+		).to.throw("Missing end quote (') for string at row 1, column 18")
+	
+	test "single-line comments with #", ->
+		tokenize("""
+			#!/usr/bin/english
+			# "hiya world"
+			"Hello, world!"
+			# "Hello World"
+		""").to([
+			{type: "comment", value: "!/usr/bin/english"}
+			{type: "newline", value: "\n"}
+			{type: "comment", value: ' "hiya world"'}
+			{type: "newline", value: "\n"}
+			{type: "string", value: "Hello, world!"}
+			{type: "newline", value: "\n"}
+			{type: "comment", value: ' "Hello World"'}
+		])
+		tokenize("""
+			# "hiya world"
+			"Hello, world!" # this is the line that shouldn't be ignored
+			# "Hello World"
+		""").to([
+			{type: "comment", value: ' "hiya world"'}
+			{type: "newline", value: "\n"}
+			{type: "string", value: "Hello, world!"}
+			{type: "comment", value: " this is the line that shouldn't be ignored"}
+			{type: "newline", value: "\n"}
+			{type: "comment", value: ' "Hello World"'}
+		])
+		tokenize("""
+			# "hiya world"
+			"#wassup world?" # hashes within strings
+			# "Hello World"
+		""").to([
+			{type: "comment", value: ' "hiya world"'}
+			{type: "newline", value: "\n"}
+			{type: "string", value: "#wassup world?"}
+			{type: "comment", value: ' hashes within strings'}
+			{type: "newline", value: "\n"}
+			{type: "comment", value: ' "Hello World"'}
+		])
 	
 	test "indentation", ->
 		tokenize("""
@@ -236,6 +297,7 @@ suite "tokenize", ->
 					Alphabet
 			Else,
 				Do something with:
+				# awkward comment
 					Bobbafett
 		""").to([
 			{type: "word", value: "If"}
@@ -264,6 +326,8 @@ suite "tokenize", ->
 			{type: "word", value: "something"}
 			{type: "word", value: "with"}
 			{type: "punctuation", value: ":"}
+			{type: "newline", value: "\n"}
+			{type: "comment", value: " awkward comment"}
 			{type: "newline", value: "\n"}
 			{type: "indent", value: "\t\t"}
 			{type: "word", value: "Bobbafett"}
@@ -303,7 +367,27 @@ suite "tokenize", ->
 			{type: "dedent", value: ""}
 		])
 	
-	# TODO: test spaced indentation!
+	test.skip "keep indentation until content", ->
+		# but ideally if there isn't content, the dedent token would come before other newline tokens?
+		# (shouldn't really matter until the dedent is referenced in an error)
+		tokenize("""
+			A
+				B
+			
+				C
+			D
+		""").to([
+			{type: "word", value: "A"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t"}
+			{type: "word", value: "B"}
+			{type: "newline", value: "\n"}
+			{type: "newline", value: "\n"}
+			{type: "word", value: "C"}
+			{type: "newline", value: "\n"}
+			{type: "dedent", value: ""}
+			{type: "word", value: "D"}
+		])
 	
 	test "bad indentation", ->
 		expect(->
@@ -321,7 +405,7 @@ suite "tokenize", ->
 					omg
 			""")
 		).to.throw("Mixed indentation between lines 2 and 3")
-		
+	
 	test "mediocre indentation", ->
 		tokenize("""
 			Indented:
@@ -341,46 +425,6 @@ suite "tokenize", ->
 				  Spaced
 				 Half-despaced
 		""")
-	
-	test "single-line comments with #", ->
-		tokenize("""
-			#!/usr/bin/english
-			# "hiya world"
-			"Hello, world!"
-			# "Hello World"
-		""").to([
-			{type: "comment", value: "!/usr/bin/english"}
-			{type: "newline", value: "\n"}
-			{type: "comment", value: ' "hiya world"'}
-			{type: "newline", value: "\n"}
-			{type: "string", value: "Hello, world!"}
-			{type: "newline", value: "\n"}
-			{type: "comment", value: ' "Hello World"'}
-		])
-		tokenize("""
-			# "hiya world"
-			"Hello, world!" # this is the line that shouldn't be ignored
-			# "Hello World"
-		""").to([
-			{type: "comment", value: ' "hiya world"'}
-			{type: "newline", value: "\n"}
-			{type: "string", value: "Hello, world!"}
-			{type: "comment", value: " this is the line that shouldn't be ignored"}
-			{type: "newline", value: "\n"}
-			{type: "comment", value: ' "Hello World"'}
-		])
-		tokenize("""
-			# "hiya world"
-			"#wassup world?" # hashes within strings
-			# "Hello World"
-		""").to([
-			{type: "comment", value: ' "hiya world"'}
-			{type: "newline", value: "\n"}
-			{type: "string", value: "#wassup world?"}
-			{type: "comment", value: ' hashes within strings'}
-			{type: "newline", value: "\n"}
-			{type: "comment", value: ' "Hello World"'}
-		])
 	
 	test "CSS colors"
 	test "URLs"

@@ -172,6 +172,7 @@ Lexer = (function() {
           }
           current_type = next_type;
           tokens.push(new Token("newline", row, col, "\n"));
+          handle_indentation(i, row, col);
         } else {
           current_token_string += char;
         }

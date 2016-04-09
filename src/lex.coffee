@@ -74,14 +74,11 @@ class Lexer
 			
 			if current_type is "comment"
 				if char is "\n"
-					# next_type = null
-					# finish_token()
-					# next_type = "newline"
-					# handle_indentation(i, row, col)
 					next_type = null
 					finish_token() if next_type isnt current_type
 					current_type = next_type
 					tokens.push(new Token("newline", row, col, "\n"))
+					handle_indentation(i, row, col)
 				else
 					current_token_string += char
 			else if current_type is "string"
@@ -138,9 +135,6 @@ class Lexer
 						start_string(char)
 				else if char.match(/"/)
 					start_string(char)
-				# else if char is "\n"
-				# 	handle_indentation(i, row, col)
-				# 	next_type = "newline"
 				else if char.match(/\s/)
 					next_type = null
 				else
