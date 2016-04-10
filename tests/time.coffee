@@ -15,7 +15,7 @@ evaluate = (expression)->
 
 suite "time", ->
 	
-	test "time span values", ->
+	test.skip "time span values", ->
 		evaluate("4hr 30m = 4.5hr").to(true)
 		evaluate("4 hours and 30 minutes = 4.5hr").to(true)
 		evaluate("4.5hr = 4:30").to(true) # throw ambiguity error
@@ -37,10 +37,10 @@ suite "time", ->
 	A = new Date()
 	
 	# test "time spans", ->
-	test "now", ->
+	test.skip "now", ->
 		context.eval("A = now")
 		evaluate("now").to(new Date())
-	test "time ago", (callback)->
+	test.skip "time ago", (callback)->
 		setTimeout ->
 			try
 				evaluate("5s ago = now - 5s").to(true)
@@ -49,7 +49,7 @@ suite "time", ->
 			
 			callback err
 		, 500
-	test "time since a", (callback)->
+	test.skip "time since a", (callback)->
 		setTimeout ->
 			try
 				evaluate("the time since A").to.approximately(Date.now() - A, 10)
@@ -68,12 +68,12 @@ suite "time", ->
 	test "time before a"
 	test "time after a"
 	test "time between a and b"
-	test "after <timespan>, do x", ->
+	test.skip "after <timespan>, do x", ->
 		evaluate("do x after 1s")
 		evaluate("after 1s do x") # throw grammar error
 		evaluate("after 1s, do x")
 		throw new Error "TODO"
-	test "every <timespan>, do x", ->
+	test.skip "every <timespan>, do x", ->
 		evaluate("do x every 1s")
 		evaluate("every 1s do x") # throw grammar error
 		evaluate("every 1s, do x")

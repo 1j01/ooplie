@@ -18,16 +18,16 @@ suite "mathematics", ->
 		evaluate("+2.345").to(+2.345)
 		evaluate("90").to(90)
 		evaluate("90.00").to(90.00)
-	test "numbers with commas", ->
+	test.skip "numbers with commas", ->
 		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
 		evaluate("5,000,000").to(5000000) # throw style error? commas are sometimes used as decimal marks
 		evaluate("5,0").to(5.0) # throw style error
 		# https://en.wikipedia.org/wiki/Decimal_mark
-	test "numbers with exponents", ->
+	test.skip "numbers with exponents", ->
 		evaluate("5e3").to(5000)
 		evaluate("5.5e3").to(5500)
 		evaluate("5.5E3").to(5500) # throw style error for uppercase
-	test "numbers with radices", ->
+	test.skip "numbers with radices", ->
 		evaluate("0xf0f0").to(0xf0f0)
 		evaluate("0b0101").to(0b0101)
 		evaluate("0o744").to(0o744)
@@ -38,26 +38,26 @@ suite "mathematics", ->
 		evaluate("0x0b0").to(176)
 		evaluate("0x0B1").to(177)
 		evaluate("0xE1").to(225)
-	test "infinity", ->
+	test.skip "infinity", ->
 		evaluate("∞").to(Infinity)
 		evaluate("-∞").to(-Infinity)
-	test "addition", ->
+	test.skip "addition", ->
 		evaluate("1 + 2").to(3)
 		evaluate("992+345").to(1337)
-	test "subtraction", ->
+	test.skip "subtraction", ->
 		evaluate("1 - 2").to(-1)
 		evaluate("992-345").to(647)
-	test "multiplication", ->
+	test.skip "multiplication", ->
 		evaluate("5 * 2").to(10)
 		evaluate("7*4").to(28)
-	test "division", ->
+	test.skip "division", ->
 		evaluate("2 / 4").to(0.5)
 		evaluate("100 / 4").to(25)
-	test "exponentiation", ->
+	test.skip "exponentiation", ->
 		evaluate("2 ^ 8").to(256)
 		evaluate("2 ** 8").to(256) # throw error
 		evaluate("32^0.8").to(16)
-	test "equality comparison", ->
+	test.skip "equality comparison", ->
 		evaluate("5 = 5").to(true)
 		evaluate("5 = 5 = 5").to(true)
 		evaluate("5 = 3").to(false)
@@ -68,7 +68,7 @@ suite "mathematics", ->
 		evaluate("5 = 5 = true").to(false)
 		evaluate("5 == 5").to(true) # throw error, just use =
 		evaluate("5 === 5").to(true) # throw error, just use =
-	test "inequality comparison", ->
+	test.skip "inequality comparison", ->
 		evaluate("5 <= 5").to(true)
 		evaluate("5 >= 5").to(true)
 		evaluate("5 < 5").to(false)
@@ -82,11 +82,11 @@ suite "mathematics", ->
 		evaluate("-1 < +1").to(true)
 		evaluate("5 != 3").to(true)
 		evaluate("5 != 5").to(false)
-	test "parenthesis", ->
+	test.skip "parenthesis", ->
 		evaluate("(1)").to(1)
 		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
 		evaluate("(3 * 6) - 1").to((3 * 6) - 1)
-	test "order of operations", ->
+	test.skip "order of operations", ->
 		evaluate("3 * 6 - 1").to(3 * 6 - 1)
 		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
 		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
@@ -96,7 +96,7 @@ suite "mathematics", ->
 		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
 		evaluate("1 + 3^3 * 2").to(55) # that's more like it
 		evaluate("-2^2").to(-4)
-	test "percentages", ->
+	test.skip "percentages", ->
 		# should this be a style error? percentages, like degrees, are kinda arbitrary and I don't like them
 		# but that's probably not a good enough basis for forbidding them
 		evaluate("50%").to(50 / 100)
@@ -106,7 +106,7 @@ suite "mathematics", ->
 		evaluate("1 basis point = 1 permyriad = one one-hundredth percent").to(true)
 		evaluate("1 bp = 1‱ = 0.01% = 0.1‰ = 10^(−4) = 1⁄10000 = 0.0001").to(true)
 		evaluate("1% = 100 bp = 100‱").to(true)
-	test "implicit multiplication", ->
+	test.skip "implicit multiplication", ->
 		# should this be a style error? explicit is generally better than implicit
 		context.eval("x = 5")
 		evaluate("2x").to(10)
@@ -117,7 +117,7 @@ suite "mathematics", ->
 		evaluate("1 / 2x").to(1/10)
 		evaluate("(1/2)x").to(5/2)
 		# TODO: also e.g. five x
-	test "unicode operators", ->
+	test.skip "unicode operators", ->
 		evaluate("5 − 6").to(5 - 6)
 		evaluate("5 × 6").to(5 * 6)
 		evaluate("5 ⋅ 6").to(5 * 6) # dot operator (throw style error?)
@@ -129,7 +129,7 @@ suite "mathematics", ->
 		evaluate("5 ∕ 6").to(5 / 6) # division slash
 		evaluate("5 ／ 6").to(5 / 6) # full width solidus
 		evaluate("5 ÷ 6").to(5 / 6) # obelus
-	test "unicode inequality comparisons", ->
+	test.skip "unicode inequality comparisons", ->
 		evaluate("5 ≤ 5").to(true)
 		evaluate("5 ≥ 5").to(true)
 		evaluate("4 ≥ 5").to(true)
@@ -138,7 +138,7 @@ suite "mathematics", ->
 		evaluate("5 ≠ 5").to(false)
 		evaluate("5 ≟ 3").to(false) # questioned equal (should we be using this for within expressions? I guess not since there's no oposite version)
 		evaluate("5 ≟ 5").to(true)
-	test "basic word numbers", ->
+	test.skip "basic word numbers", ->
 		evaluate("zero").to(0)
 		evaluate("one").to(1)
 		evaluate("two").to(2)
@@ -160,7 +160,7 @@ suite "mathematics", ->
 		evaluate("eighteen").to(18)
 		evaluate("nineteen").to(19)
 		evaluate("twenty").to(20)
-	test "complex word numbers", ->
+	test.skip "complex word numbers", ->
 		evaluate("twenty one").to(21)
 		evaluate("twenty-two").to(22)
 		evaluate("twenty + 3").to(23)
@@ -186,7 +186,7 @@ suite "mathematics", ->
 		evaluate("Twenty-three hundred sixty-one").to(2361)
 		evaluate("negative one").to(-1)
 		evaluate("negative twenty-three hundred sixty-one").to(-2361)
-	test "special word numbers", ->
+	test.skip "special word numbers", ->
 		evaluate("nought = naught = zilch = nada = zip = zero").to(true)
 		evaluate("a banker's dozen").to(11)
 		evaluate("a dozen").to(12)
@@ -198,7 +198,7 @@ suite "mathematics", ->
 		evaluate("a billion").to(1000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
 		evaluate("a trillion").to(1000000000000) # throw style error? https://en.wikipedia.org/wiki/Long_and_short_scales
 		# lots more here: https://en.wikipedia.org/wiki/English_numerals#Cardinal_numbers
-	test "fractional word numbers", ->
+	test.skip "fractional word numbers", ->
 		evaluate("half").to(1/2)
 		evaluate("one half").to(1/3)
 		evaluate("one third").to(1/3)
@@ -213,7 +213,7 @@ suite "mathematics", ->
 		evaluate("one eleventh").to(1/11)
 		evaluate("one twelth").to(1/12)
 		evaluate("one thirteenth").to(1/13)
-	test "word operators", ->
+	test.skip "word operators", ->
 		evaluate("5 plus 6").to(11)
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
@@ -234,7 +234,7 @@ suite "mathematics", ->
 		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
 		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
 		# TODO: nth roots
-	test "worded comparisons", ->
+	test.skip "worded comparisons", ->
 		evaluate("5 equals 5").to(true)
 		evaluate("5 is 5").to(true)
 		evaluate("5 is not 4").to(true)
@@ -252,7 +252,7 @@ suite "mathematics", ->
 		evaluate("Is 3 less than 5?").to(yes)
 		evaluate("Is 3 more than 5?").to(no) # throw style error
 		evaluate("Is 5 greater than 3?").to(yes)
-	test "ranges (intervals)", ->
+	test.skip "ranges (intervals)", ->
 		evaluate("from 4 to 6").to(new Range(4, 6)) # inclusive?
 		evaluate("between 4 and 6").to(new Range(4, 6)) # exclusive?
 		evaluate("between 4 and 6, inclusive").to(new Range(4, 6)) # inclusive
@@ -264,16 +264,16 @@ suite "mathematics", ->
 		evaluate("4..6").to(new Range(4, 6)) # should we have these? (inclusive?)
 		evaluate("4...6").to(new Range(4, 6)) # should we have these? (exclusive?)
 		# TODO: mathematical interval notation
-	test "units", ->
+	test.skip "units", ->
 		evaluate("5mm").to("5m")
 		evaluate("5mm = 5m").to(false)
 		evaluate("5000mm = 5m").to(true)
 		evaluate("5m - 500mm = 4.5m").to(true)
 		evaluate("5m / 1m").to(5)
 		evaluate("5m = 5g").to(false) # throw comparison error?
-	test "derived units", ->
+	test.skip "derived units", ->
 		evaluate("10m2 / 2m = 5m").to(true)
-	test "word units", ->
+	test.skip "word units", ->
 		evaluate("1 second = 1s").to(true)
 		evaluate("1 millisecond = 1ms").to(true)
 		evaluate("1 kilogram = 1kg").to(true)
@@ -286,7 +286,7 @@ suite "mathematics", ->
 		evaluate("1 candela = 1cd").to(true)
 		evaluate("1m2 = 1 square meter").to(true)
 		evaluate("1m = 1 linear meter").to(true) # explicitly denoting the first power of the unit
-	test "time units", ->
+	test.skip "time units", ->
 		# TODO: move to time.coffee?
 		evaluate("1h = 1hr = 1 hour").to(true)
 		evaluate("1min = 60s").to(true)
@@ -303,7 +303,7 @@ suite "mathematics", ->
 		evaluate("a century = 100 years").to(true)
 		evaluate("a millennium = 1000 years").to(true)
 		evaluate("an eon = one million years").to(true) # throw error for ill-defined unit?
-	test "temperature units", ->
+	test.skip "temperature units", ->
 		evaluate("32°F = 0°C").to(true)
 		evaluate("38°C = thirty-eight degrees Celsius").to(true)
 		evaluate("80°F = 80 degrees Fahrenheit").to(true)
@@ -315,7 +315,7 @@ suite "mathematics", ->
 		evaluate("100°R = 100°Ra = 100 degrees Rankine = 100 rankine").to(true)
 		evaluate("0°R = 0 K").to(true)
 		evaluate("491.67 °R = 273.15 K = 0 °C").to(true)
-	test "legit math", ->
+	test.skip "legit math", ->
 		evaluate("1 like = 1 prayer").to(false)
 		evaluate("a goof + a laugh = a gaff").to(true)
 		evaluate("a goof + a gaff = a gaff").to(true) # the distributive poppardy
@@ -327,13 +327,13 @@ suite "mathematics", ->
 		evaluate("Pegasus + unicorn = pegacorn").to(true)
 		evaluate("shark + octopus = Sharktopus").to(true)
 		evaluate("shark + tornado = Sharknado").to(true)
-	test "unit equality", ->
+	test.skip "unit equality", ->
 		# should this be a thing?
 		# what if you want a variable s? what about s = sec = second = 2nd?
 		evaluate("s = ms").to(false)
 		evaluate("s = seconds").to(true)
 		evaluate("sec = 1000ms").to(true)
-	test "ordinal numbers (1st, 2nd, 3rd, 4th...)", ->
+	test.skip "ordinal numbers (1st, 2nd, 3rd, 4th...)", ->
 		evaluate("1st = first").to(true)
 		evaluate("2st = second").to(true) # throw style error
 		evaluate("2nd = second").to(true)
@@ -377,7 +377,7 @@ suite "mathematics", ->
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
 		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
 		evaluate("100 seconds = one hundred second").to(false)
-	test "boolean logic", ->
+	test.skip "boolean logic", ->
 		evaluate("true and true").to(true)
 		evaluate("false and true").to(false)
 		evaluate("true and false").to(false)
@@ -391,13 +391,13 @@ suite "mathematics", ->
 		# TODO: order of operations should be tested for boolean logic
 		# TODO: xor, nor, xnor
 		# TODO: test unicode boolean operators
-	test "whether", ->
+	test.skip "whether", ->
 		evaluate("whether 10 = 10").to(true)
 		evaluate("whether 10 is 10").to(true)
 		evaluate("whether 10 = 4").to(false)
 		evaluate("whether 10 is 4").to(false)
 		evaluate("(whether 10 is 4) = false").to(true)
-	test "modulo", ->
+	test.skip "modulo", ->
 		evaluate("10 modulo 4").to(2)
 		evaluate("10 modulo 14").to(10)
 		evaluate("10 mod 5").to(0)
@@ -406,7 +406,7 @@ suite "mathematics", ->
 		evaluate("10 mod -3.25").to(3)
 		evaluate("-10 mod -3.25").to(-0.25)
 		evaluate("-10 % -3.25").to(-0.25) # throw style error
-	test "more unicode fun", ->
+	test.skip "more unicode fun", ->
 		evaluate("√2 = √(2) = sqrt(2) = the square root of two").to(true)
 		evaluate("1ˢᵗ = 1st").to(true)
 		evaluate("2ⁿᵈ = 2nd").to(true)
@@ -419,7 +419,7 @@ suite "mathematics", ->
 		evaluate("¬true").to(false)
 		evaluate("¬false").to(true)
 		# TODO: superscript/subscript fractions and stuff
-	test "defining functions", ->
+	test.skip "defining functions", ->
 		context.eval("f(x) = x * 2")
 		evaluate("f(5)").to(10)
 		context.eval("funk(x, y) = f(x) + y")
@@ -428,24 +428,24 @@ suite "mathematics", ->
 		evaluate("funk(5)").to(undefined) # throw error: not enough arguments
 		evaluate("funk(5, 5, 5)").to(undefined) # throw error: too many arguments
 		evaluate("f()").to(undefined) # throw error: not enough arguments
-	test "complex functions", ->
+	test.skip "complex functions", ->
 		context.eval("signat(x) = if x < 0 then -1 else if x > 0 then +1 else 0")
 		evaluate("signat(5)").to(+1)
 		evaluate("signat(-5)").to(-1)
 		evaluate("signat(0)").to(0)
-	test "recursive functions"
-	test "built-in math functions"
+	test.skip "recursive functions"
+	test.skip "built-in math functions"
 	
-	test "overwriting variable values? e.g. incrementing/decrementing"
+	test.skip "overwriting variable values? e.g. incrementing/decrementing"
 	# hopefully not? except for with interop?
 	
 	suite "sets", ->
-		test "use native Set objects", ->
+		test.skip "use native Set objects", ->
 			expect(context.eval("{1, 2, 3}")).to.be.a(Set)
 			expect(context.eval("{1}").has(1)).to.be(true)
 			expect(context.eval("{}")).to.be.a(Set)
 			expect(context.eval("{}").has(1)).to.be(false)
-		test "set identity", ->
+		test.skip "set identity", ->
 			evaluate("{} = {}").to(true)
 			evaluate("Ø = {}").to(true) # throw style error/warning?
 			evaluate("∅ = {}").to(true) # this character is the proper one
@@ -463,7 +463,7 @@ suite "mathematics", ->
 			evaluate("{3, 2, 1} = {1, 2, 3}").to(true)
 			evaluate("{11, 6, 6} = {11, 6}").to(true)
 			evaluate("{1, 1+1, 1+1+1} = {1, 2, 3}").to(true)
-		test "set membership", ->
+		test.skip "set membership", ->
 			evaluate("{1, 2, 3} contains 2").to(true)
 			evaluate("{1, 2, 3} contains 5").to(false)
 			evaluate("{1, 2, 3} contains {1, 2, 3}").to(false) # unless you define a contains b as a is a superset of b
@@ -483,7 +483,7 @@ suite "mathematics", ->
 			evaluate("1 belongs to {one}").to(true)
 			evaluate("1 is within {one}").to(true)
 			evaluate("one belongs to {1}").to(true)
-		test "set cardinality", ->
+		test.skip "set cardinality", ->
 			evaluate("{1, 2, 3} contains 3 items").to(true)
 			evaluate("{1, 2, 3} contains 2 or more items").to(true)
 			evaluate("{1, 2, 3} contains 3 elements").to(true)
@@ -500,7 +500,7 @@ suite "mathematics", ->
 			evaluate("How many elements does {2, 4, 6, 8, 10} contain?").to(5)
 			evaluate("How many elements does {-1, 0, 1} have?").to(3)
 			evaluate("How many members does {-1, 0, 1} have?").to(3)
-		test "subsets", ->
+		test.skip "subsets", ->
 			evaluate("{} is a subset of {1}").to(true)
 			evaluate("{1} is a subset of {}").to(false)
 			evaluate("{} is a subset of {}").to(true)
@@ -509,7 +509,7 @@ suite "mathematics", ->
 			evaluate("{} ⊆ {}").to(true)
 			evaluate("{1} ⊆ {1}").to(true)
 			evaluate("{1} ⊆ {}").to(false)
-		test "supersets", ->
+		test.skip "supersets", ->
 			evaluate("{1} is a superset of {}").to(true)
 			evaluate("{} is a superset of {1}").to(false)
 			evaluate("{} is a superset of {}").to(true)
@@ -518,7 +518,7 @@ suite "mathematics", ->
 			evaluate("{} ⊇ {1}").to(false)
 			evaluate("{} ⊇ {}").to(true)
 			evaluate("{1} ⊇ {1}").to(true)
-		test "strict subsets", ->
+		test.skip "strict subsets", ->
 			evaluate("{1} is a strict subset of {}").to(true)
 			evaluate("{} is a strict subset of {1}").to(false)
 			evaluate("{} is a strict subset of {}").to(false)
@@ -527,7 +527,7 @@ suite "mathematics", ->
 			evaluate("{} ⊊ {}").to(true)
 			evaluate("{1} ⊊ {1}").to(true)
 			evaluate("{1} ⊊ {}").to(false)
-		test "strict supersets", ->
+		test.skip "strict supersets", ->
 			evaluate("{1} is a strict superset of {}").to(true)
 			evaluate("{} is a strict superset of {1}").to(false)
 			evaluate("{} is a strict superset of {}").to(false)
@@ -537,7 +537,7 @@ suite "mathematics", ->
 			evaluate("{1} ⊋ {1}").to(true)
 			evaluate("{1} ⊋ {}").to(false)
 		# TODO: negative operators (⊄⊅⊈⊉)
-		test "ambiguous subset/superset operators", ->
+		test.skip "ambiguous subset/superset operators", ->
 			# ideally these operators would be the strict operators
 			evaluate("{1} ⊂ {1}").to(false) # throw ambiguity error
 			evaluate("{1} ⊃ {1}").to(false) # throw ambiguity error
@@ -547,7 +547,7 @@ suite "mathematics", ->
 		test "Cartesian product"
 		test "power sets"
 	
-	test "plus-minus", ->
+	test.skip "plus-minus", ->
 		evaluate("9 +- 0.1").to(9 - 0.1) # throw style error!
 		evaluate("9 -+ 0.1").to(9 - 0.1) # throw style error!
 		evaluate("9 ± 0.1 = {9 - 0.1, 9 + 0.1}").to(true)

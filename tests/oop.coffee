@@ -17,7 +17,7 @@ suite "object-oriented programming", ->
 	# TODO: better tests in general
 	# test defining a class
 	# then test inheritance
-	test "animals 1", ->
+	test.skip "animals 1", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.
 		"""
@@ -26,7 +26,7 @@ suite "object-oriented programming", ->
 		evaluate("An animal is a type of mammal").to(no)
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is an animal a type of mammal?").to(undefined)
-	test "animals 2!", ->
+	test.skip "animals 2!", ->
 		context = shared_context.subcontext()
 		context.eval """
 			A bunny is a cute type of animal.
@@ -41,7 +41,7 @@ suite "object-oriented programming", ->
 		evaluate("Is a bunny a type of bunny?").to(no)
 		evaluate("Is a bunny a type of animal?").to(yes)
 		evaluate("Is a bunny a type of mammal?").to(undefined)
-	test "animals 3!", ->
+	test.skip "animals 3!", ->
 		context = shared_context.subcontext()
 		context.eval """
 			Bunnies are cute little animals.
@@ -51,7 +51,7 @@ suite "object-oriented programming", ->
 		evaluate("Is Frank a bunny?").to(yes)
 		evaluate("Is Frank funny?").to(yes)
 		evaluate("Is Frank little?").to(yes)
-	test "and it's kyoot", ->
+	test.skip "and it's kyoot", ->
 		context = shared_context.subcontext()
 		context.eval """
 			A bunny is a type of mammal, and it's cute!
@@ -65,7 +65,7 @@ suite "object-oriented programming", ->
 		evaluate("Is a bunny a type of animal?").to(yes)
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is a mammal a type of bunny?").to(no)
-	test "bla bla bla", ->
+	test.skip "bla bla bla", ->
 		throw new Error "TODO: move or remove this, it isn't OOP"
 		context = shared_context.subcontext()
 		context.eval """

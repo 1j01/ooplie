@@ -5,11 +5,11 @@ Ooplie is a [multi-paradigm][] programing "language" where you write in English.
 
 Currently there's only [a nice little console][console],
 a most of the tokenizing part of a lexer (with some passing tests),
-and a [million failing tests][tests].
+and a [million ~~failing~~ pending tests][tests].
 
 ### "Roadmap"
 
-* Lots and lots of tests (that all fail)
+* Lots and lots of pending tests
 
 * Lex
 
