@@ -396,7 +396,7 @@ suite "tokenize", ->
 				    Four spaces
 					Tabs
 			""")
-		).to.throw("Mixed indentation between lines 2 and 3")
+		).to.throw("Mixed indentation between lines 2 and 3 at column 1")
 		
 		expect(->
 			tokenize("""
@@ -404,7 +404,16 @@ suite "tokenize", ->
 				  But then
 					omg
 			""")
-		).to.throw("Mixed indentation between lines 2 and 3")
+		).to.throw("Mixed indentation between lines 2 and 3 at column 1")
+		
+		expect(->
+			tokenize("""
+				Indented with spaces:
+				    But then
+				        suddenly
+				    	omg
+			""")
+		).to.throw("Mixed indentation between lines 3 and 4 at column 5")
 	
 	test "mediocre indentation", ->
 		tokenize("""

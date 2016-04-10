@@ -97,7 +97,7 @@ Lexer = (function() {
                   return JSON.stringify(indentation[column_index]);
               }
             })();
-            throw new Error("Mixed indentation between lines " + line_index + " and " + (line_index + 1) + " on column " + (column_index + 1));
+            throw new Error("Mixed indentation between lines " + line_index + " and " + (line_index + 1) + " at column " + (column_index + 1));
           }
         }
       }

@@ -13,8 +13,7 @@ class Lexer
 						when "\t" then "tab"
 						when " " then "space"
 						else JSON.stringify(indentation[column_index])
-					# throw new Error "Mixed indentation, unexpected #{char_name} on line #{line_index + 1}, column #{column_index + 1}"
-					throw new Error "Mixed indentation between lines #{line_index} and #{line_index + 1} on column #{column_index + 1}"
+					throw new Error "Mixed indentation between lines #{line_index} and #{line_index + 1} at column #{column_index + 1}"
 			previous_indentation = indentation
 	
 	tokenize: (source)->
@@ -71,7 +70,6 @@ class Lexer
 		previous_was_escape = no
 		
 		for char, i in source
-			# prev_char = source[i - 1] ? ""
 			next_char = source[i + 1] ? ""
 			next_type = current_type
 			
@@ -85,9 +83,7 @@ class Lexer
 				else
 					current_token_string += char
 			else if current_type is "string"
-				# if prev_char is "\\"
 				if previous_was_escape
-					# no-op (don't skip bits at the end with continue either)
 					previous_was_escape = no
 				else if char is "\\"
 					switch next_char
