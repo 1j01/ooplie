@@ -3,12 +3,15 @@
 
 Ooplie is a [multi-paradigm][] programing "language" where you write in English.
 
-There's nothing yet except [a nice little console][console]
+Currently there's only [a nice little console][console],
+a most of the tokenizing part of a lexer (with some passing tests),
 and a [million failing tests][tests].
 
 ### "Roadmap"
 
 * Lots and lots of tests (that all fail)
+
+* Lex
 
 * Rewrite this "Roadmap"
 
@@ -45,7 +48,17 @@ and a [million failing tests][tests].
 
 (with lots of rewriting along the way; nothing necessarily in that order; nothing *likely* to be in that order)
 
+
+### Dev
+
+With [Node.js][], run `npm i` to install.
+
+Open [`test.html`][./test.html]
+and/or run `npm test -- --grep "tokenize|strings"`
+
+
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
 [console]: http://1j01.github.io/ooplie/dooplie/
 [tests]: ./test.html
+[Node.js]: https://nodejs.org/
 [Light Table]: http://lighttable.com/

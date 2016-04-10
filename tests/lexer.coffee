@@ -85,19 +85,19 @@ suite "tokenize", ->
 			{type: "string", value: ""}
 		])
 	
-	test.skip "escaped quotes", ->
+	test "escaped quotes", ->
 		tokenize("say '\\'hi\\''").to([
 			{type: "word", value: "say"}
 			{type: "string", value: "'hi'"}
 		])
 		tokenize('say "\\"hi\\""').to([
 			{type: "word", value: "say"}
-			{type: "string", value: "hi"}
-			{type: "punctuation", value: ","}
-			{type: "word", value: "then"}
-			{type: "word", value: "say"}
-			{type: "string", value: "bye bye"}
-			{type: "punctuation", value: "!"}
+			{type: "string", value: '"hi"'}
+		])
+	
+	test "escape characters", ->
+		tokenize("'\0\b\r\n\v'").to([
+			{type: "string", value: "\0\b\r\n\v"}
 		])
 	
 	test "multiline strings", ->

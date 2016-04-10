@@ -68,7 +68,10 @@ class Lexer
 			current_token_string = ""
 			current_type = null
 		
+		previous_was_escape = no
+		
 		for char, i in source
+			# prev_char = source[i - 1] ? ""
 			next_char = source[i + 1] ? ""
 			next_type = current_type
 			
@@ -82,7 +85,24 @@ class Lexer
 				else
 					current_token_string += char
 			else if current_type is "string"
-				if char is quote_char
+				# if prev_char is "\\"
+				if previous_was_escape
+					# no-op (don't skip bits at the end with continue either)
+					previous_was_escape = no
+				else if char is "\\"
+					switch next_char
+						when "n" then current_token_string += "\n"
+						when "r" then current_token_string += "\r"
+						when "t" then current_token_string += "\t"
+						when "v" then current_token_string += "\v"
+						when "b" then current_token_string += "\b"
+						when "0" then current_token_string += "\0"
+						when "\\" then current_token_string += "\\"
+						when "'" then current_token_string += "'"
+						when '"' then current_token_string += '"'
+						else throw new Error "Unknown backslash escape \\#{char} (Do you need to escape the backslash?)"
+					previous_was_escape = yes
+				else if char is quote_char
 					finish_token()
 					next_type = null
 				else if char is "\n"

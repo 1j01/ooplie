@@ -107,7 +107,7 @@ Lexer = (function() {
   };
 
   Lexer.prototype.tokenize = function(source) {
-    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent_level, is_last_newline_before_quote, j, len, match, next_char, next_type, quote_char, ref, row, start_string, string_content_indentation, string_content_on_first_line, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_indent_level, tokens, whitespace_after;
+    var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent_level, is_last_newline_before_quote, j, len, match, next_char, next_type, previous_was_escape, quote_char, ref, row, start_string, string_content_indentation, string_content_on_first_line, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_indent_level, tokens, whitespace_after;
     this.check_indentation(source);
     tokens = [];
     row = 1;
@@ -160,6 +160,7 @@ Lexer = (function() {
       current_token_string = "";
       return current_type = null;
     };
+    previous_was_escape = false;
     for (i = j = 0, len = source.length; j < len; i = ++j) {
       char = source[i];
       next_char = (ref = source[i + 1]) != null ? ref : "";
@@ -177,7 +178,42 @@ Lexer = (function() {
           current_token_string += char;
         }
       } else if (current_type === "string") {
-        if (char === quote_char) {
+        if (previous_was_escape) {
+          previous_was_escape = false;
+        } else if (char === "\\") {
+          switch (next_char) {
+            case "n":
+              current_token_string += "\n";
+              break;
+            case "r":
+              current_token_string += "\r";
+              break;
+            case "t":
+              current_token_string += "\t";
+              break;
+            case "v":
+              current_token_string += "\v";
+              break;
+            case "b":
+              current_token_string += "\b";
+              break;
+            case "0":
+              current_token_string += "\0";
+              break;
+            case "\\":
+              current_token_string += "\\";
+              break;
+            case "'":
+              current_token_string += "'";
+              break;
+            case '"':
+              current_token_string += '"';
+              break;
+            default:
+              throw new Error("Unknown backslash escape \\" + char + " (Do you need to escape the backslash?)");
+          }
+          previous_was_escape = true;
+        } else if (char === quote_char) {
           finish_token();
           next_type = null;
         } else if (char === "\n") {
