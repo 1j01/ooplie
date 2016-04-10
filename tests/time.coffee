@@ -79,3 +79,35 @@ suite "time", ->
 		evaluate("every 1s, do x")
 		throw new Error "TODO"
 	test "every <timespan> for <timespan>, do x"
+	test "every frame, do x"
+		# requestAnimationFrame
+	test "every frame for <timespan>, do x"
+	test "immediately and after <timespan>, do x"
+	test "immediately and every <timespan>, do x"
+	test "'initially' and after <timespan>, do x"
+		# throw style error ("immediately" is better)
+	test "'initially' and every <timespan>, do x"
+		# throw style error ("immediately" is better)
+	test "every other <timespan> [for <timespan>], do x"
+		# throw style error/warning? "every 2s" isn't particularly better imo
+	test "every nth <timespan> [for <timespan>], do x"
+		# e.g. every 5th second
+		# throw style error/warning? "every 5s" is better
+	test "every once in a while"
+		# throw style error
+	test "twice per <timespan>"
+	test "n times per <timespan>"
+	test "twice 'every' <timespan>"
+		# throw style error, "per" is better because
+		# "do something twice every 5min" is somewhat ambiguous as to
+		# whether it should space it out over the period or do it twice at once
+	test "n times 'every' <timespan>"
+		# throw style error, see above
+	test "every <timespan> 'until' <timespan>, do x"
+		# throw style error, "for" is better in this case
+	test "every <timespan> 'until' <timespan> 'has passed', do x"
+		# throw style error, "for" is better in this case
+	test "every <timespan>[,] until <condition>, do x"
+	test "after <timespan>[,] unless <condition>, do x"
+	test "every <timespan> after <timespan>, do x"
+	test "after <timespan>, do x every <timespan>"

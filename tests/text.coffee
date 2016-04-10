@@ -77,9 +77,13 @@ suite "strings", ->
 		evaluate('"Hello ""World"').to("Hello World") # "Hello "+"World"
 		evaluate('"Hello"" ""World"').to("Hello World") # "Hello"+" "+"World"
 		evaluate('"Hello" "World"').to("Hello World") # Hello + World with space added automatically
+		# but that's probably too complicated
 	test.skip "string concatenation with numbers", ->
+		evaluate("'Completed '5' iterations'").to("Completed 5 iterations")
 		context.eval("iterations = 1024")
 		evaluate("'Completed 'iterations' iterations'").to("Completed 1024 iterations")
+		evaluate("iterations' iterations'").to("1024 iterations")
+		evaluate("'Completed 'iterations").to("Completed 1024")
 	test.skip "string concatenation with nully values", ->
 		# have to decide which nully values we actually want to have
 		# null? nil? undefined? unknown? nothing? notta? "the lack of anything in particular"?
