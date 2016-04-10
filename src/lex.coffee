@@ -115,7 +115,7 @@ class Lexer
 			else
 				if char.match(/\d/)
 					next_type = "number"
-				else if char is "."
+				else if char in [".", "-"]
 					if next_char.match(/\d/)
 						next_type = "number"
 					else
@@ -126,14 +126,14 @@ class Lexer
 					next_type = "punctuation"
 				else if char.match(/[a-z]/i)
 					next_type = "word"
-				else if char.match(/'/)
+				else if char is "'"
 					if current_type is "word" and next_char.match(/[a-z]/i)
 						# e.g. it's, isn't, doesn't, shouldn't etc.
 						# (but not e.g. 'tis or fightin')
 						next_type = "word"
 					else
 						start_string(char)
-				else if char.match(/"/)
+				else if char is '"'
 					start_string(char)
 				else if char.match(/\s/)
 					next_type = null

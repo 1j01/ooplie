@@ -216,7 +216,7 @@ Lexer = (function() {
       } else {
         if (char.match(/\d/)) {
           next_type = "number";
-        } else if (char === ".") {
+        } else if (char === "." || char === "-") {
           if (next_char.match(/\d/)) {
             next_type = "number";
           } else {
@@ -228,13 +228,13 @@ Lexer = (function() {
           next_type = "punctuation";
         } else if (char.match(/[a-z]/i)) {
           next_type = "word";
-        } else if (char.match(/'/)) {
+        } else if (char === "'") {
           if (current_type === "word" && next_char.match(/[a-z]/i)) {
             next_type = "word";
           } else {
             start_string(char);
           }
-        } else if (char.match(/"/)) {
+        } else if (char === '"') {
           start_string(char);
         } else if (char.match(/\s/)) {
           next_type = null;

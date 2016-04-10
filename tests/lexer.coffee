@@ -16,7 +16,7 @@ suite "tokenize", ->
 		tokenize("1").to([{type: "number", value: 1}])
 		tokenize("1.5").to([{type: "number", value: 1.5}])
 	
-	test.skip "negative numbers", ->
+	test "negative numbers", ->
 		tokenize("-1").to([{type: "number", value: -1}])
 		tokenize("-24.8").to([{type: "number", value: -24.8}])
 	
