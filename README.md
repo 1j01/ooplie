@@ -13,7 +13,7 @@ and [a million pending tests][tests].
 At the risk of citing an article where the author calls out a programming system citing the author's work as inspiration as terrible as inspiration,
 Brett Victor's [Learnable Programming][] expresses some great ideas about the future of programming.
 
-If you're not excited by the prospect of programming in your native language,
+If you're not excited by the prospect of programming in English,
 then at least check out some of [Brett Victor's work][],
 or maybe [Toward a better programming][],
 and get excited about the future of programming in general.
@@ -55,6 +55,9 @@ It would feature "Did you mean?" style error handling that can update your actua
 It could let you dig down into commands to see the underlying meaning and implementation
 (through your code to libraries to underlying JavaScript)
 (similarly to features [of other IDEs][Peek Definition], but maybe better)
+and it should let you write code that isn't understood
+that you can then implement in detail.
+(I can imagine it working like code folding, folding layers of [abstraction][] rather than just blocks of code.)
 
 It would try to show you what's going on with the program as much as possible.
 I'd add a dynamic underline to "Every N seconds" / "After N seconds" representing the timer, and maybe underlines to any line of code being executed.
@@ -63,7 +66,7 @@ This might warrant some controls to toggle or dim the underlines as they could b
 
 ![Execution underlines](./execution-underlines.gif)
 
-([Execution underlines animation multifiddle](http://multifiddle.ml/#execution-underlines))
+([Execution underlines CSS animation on multifiddle](http://multifiddle.ml/#execution-underlines))
 
 When you have multiple asynchronous pieces of code,
 it could show the flow of execution with lines in the margin.
@@ -86,7 +89,7 @@ Dragging the line could change the control flow, updating the code to reflect th
 ![Control flow indication mockup](./control-flow-indication-mockup.svg)
 
 
-The IDE could support mathematical equation/expression editing (you know, the kind that isn't equivalent to using Notepad), and resources like images could be drag-and-droppable and be used directly in expressions.
+The IDE could support visual mathematical equation/expression editing, and resources like images could be drag-and-droppable and be used directly in expressions.
 
 It could automatically search for modules related to code you type that isn't understood.
 
@@ -106,6 +109,7 @@ and/or run `npm test`
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
+[abstraction]: https://en.wikipedia.org/wiki/Abstraction_(computer_science)
 [console]: http://1j01.github.io/ooplie/dooplie/
 [tests]: ./test.html
 [npm]: https://www.npmjs.com/

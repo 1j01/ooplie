@@ -5,9 +5,44 @@ Lexer = require("./lex").Lexer;
 
 module.exports = Context = (function() {
   function Context(arg) {
-    var ref;
+    var perform, ref;
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
     this.lexer = new Lexer;
+    perform = function(actions) {
+      var action, i, len, result;
+      result = void 0;
+      for (i = 0, len = actions.length; i < len; i++) {
+        action = actions[i];
+        result = action();
+      }
+      return result;
+    };
+    this.patterns = [
+      {
+        match: ["if <condition>, <actions>", "if <condition> then <actions>", "<actions> if <condition>"],
+        action: function(condition, actions) {
+          if (condition) {
+            return perform(actions);
+          }
+        }
+      }, {
+        match: ["unless <condition>, <actions>", "unless <condition> then <actions>", "<actions> unless <condition>"],
+        action: function(condition, actions) {
+          if (!condition) {
+            return perform(actions);
+          }
+        }
+      }, {
+        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "say <text>"],
+        action: (function(_this) {
+          return function(text) {
+            return _this.console.log(text);
+          };
+        })(this)
+      }
+    ];
+    this.classes = [];
+    this.objects = [];
   }
 
   Context.prototype.subcontext = function(arg) {
@@ -42,9 +77,9 @@ module.exports = Context = (function() {
       return callback(null, (text.match(/^[A-Z]/) ? "Not much" : "not much") + (text.match(/\?|!/) ? "." : ""));
     } else if (text.match(/^>?[:;8X][()O3PCD]$/i)) {
       return callback(null, text);
-    } else if (text.match(/^\?|help/i)) {
+    } else if (text.match(/^(!*\?+!*|(I (want|need) |display|show|view)?help)/i)) {
       return callback(null, "Sorry, I can't help.");
-    } else if (text.match(/^(clr|clear)( console| output)?/i)) {
+    } else if (text.match(/^(clr|clear)( console| output)?$/i)) {
       if (this.console != null) {
         this.console.clear();
         return callback(null, "Console cleared.");
@@ -61,6 +96,18 @@ module.exports = Context = (function() {
         }
       }
       return callback(null, result);
+
+      /*
+      			i = 0
+      			expr_tokens = []
+      			while i < tokens.length
+      				token = tokens[i]
+      				unless token.type is "comment"
+      					expr_tokens.push token
+      					 * try to match expr_tokens to each known pattern?
+      					 * if found, you can't just execute it right away
+      				i++
+       */
     }
   };
 
