@@ -12,7 +12,7 @@ evaluate = (expression)->
 
 suite "comments", ->
 	
-	test "notes", ->
+	test.skip "notes", ->
 		evaluate("Note: Replace with your own token in production.").to(undefined)
 		evaluate("NOTE: This is not something you should really do.").to(undefined)
 		evaluate("""

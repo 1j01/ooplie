@@ -71,19 +71,23 @@ suite "strings", ->
 		evaluate("'\\v'").to("\v")
 		evaluate("'\\0'").to("\0")
 	test "unicode escape characters"
-	test.skip "string concatenation", ->
+	test "string concatenation", ->
 		evaluate('"Hello " "World"').to("Hello World")
 		# or maybe two different concatenation operations based on the presence of whitespace
-		evaluate('"Hello ""World"').to("Hello World") # "Hello "+"World"
-		evaluate('"Hello"" ""World"').to("Hello World") # "Hello"+" "+"World"
-		evaluate('"Hello" "World"').to("Hello World") # Hello + World with space added automatically
+		# evaluate('"Hello ""World"').to("Hello World") # "Hello "+"World"
+		# evaluate('"Hello"" ""World"').to("Hello World") # "Hello"+" "+"World"
+		# evaluate('"Hello" "World"').to("Hello World") # Hello + World with space added automatically
 		# but that's probably too complicated
 	test.skip "string concatenation with numbers", ->
 		evaluate("'Completed '5' iterations'").to("Completed 5 iterations")
+	test.skip "string concatenation with variables", ->
 		context.eval("iterations = 1024")
 		evaluate("'Completed 'iterations' iterations'").to("Completed 1024 iterations")
 		evaluate("iterations' iterations'").to("1024 iterations")
 		evaluate("'Completed 'iterations").to("Completed 1024")
+		context.eval("message = 'hello'")
+		evaluate("'The message is 'message").to("The message is hello")
+		evaluate("'He said 'message' but left shortly").to("He said hello but left shortly")
 	test.skip "string concatenation with nully values", ->
 		# have to decide which nully values we actually want to have
 		# null? nil? undefined? unknown? nothing? notta? "the lack of anything in particular"?

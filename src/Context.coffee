@@ -1,5 +1,6 @@
 
 {Lexer} = require "./lex"
+Pattern = require "./Pattern"
 
 module.exports =
 class Context
@@ -21,7 +22,7 @@ class Context
 		# (which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack)
 		# (semantics are quite tied to context in this case)
 		@patterns = [
-			{
+			new Pattern
 				match: [
 					"if <condition>, <actions>"
 					"if <condition> then <actions>"
@@ -29,8 +30,8 @@ class Context
 				]
 				action: (condition, actions)->
 					perform actions if condition
-			}
-			{
+			
+			new Pattern
 				match: [
 					"unless <condition>, <actions>"
 					"unless <condition> then <actions>" # doesn't sound like good English
@@ -38,18 +39,27 @@ class Context
 				]
 				action: (condition, actions)->
 					perform actions unless condition
-			}
-			{
+			
+			new Pattern
 				match: [
 					"output <text>"
 					"output <text> to the console"
 					"log <text>"
 					"log <text> to the console"
+					"print <text>"
+					"print <text> to the console"
+					"println <text>" # no
 					"say <text>"
 				]
 				action: (text)=>
 					@console.log text
-			}
+			
+			new Pattern
+				match: [
+					"<text> <text>"
+				]
+				action: (text)=>
+					"#{text}#{text}"
 		]
 		@classes = []
 		@objects = []
@@ -90,10 +100,36 @@ class Context
 			
 			tokens = @lexer.lex(text)
 			# console.log (token.value for token in tokens)...
-			result = undefined
-			for token in tokens when token.type in ["number", "string"]
-				result = token.value
-			callback null, result
+			# result = undefined
+			# for token in tokens when token.type in ["number", "string"]
+			# 	result = token.value
+			# callback null, result
+			
+			# non_comment_tokens = (token for token in tokens when token.type isnt "comment")
+			non_comment_tokens = (token for token in tokens when token.type isnt "comment" and token.type isnt "newline")
+			
+			console.log non_comment_tokens
+			
+			if non_comment_tokens.length is 0
+				callback null, undefined
+			else if non_comment_tokens.length is 1
+				[token] = non_comment_tokens
+				if token.type in ["number", "string"]
+					callback null, token.value
+				else
+					callback new Error "I don't understand"
+			else if non_comment_tokens.length is 2
+				[token_a, token_b] = non_comment_tokens
+				if token_a.type is "number" and token_b.type is "number"
+					callback new Error "I don't understand... two numbers? Should I multiply them or something?"
+				else if token_a.type in ["number", "string"] and token_b.type in ["number", "string"]
+					callback null, "#{token_a.value}#{token_b.value}"
+				else if token_a.type is "punctuation" and token_a.value is "+" and token_b.type is "number"
+					callback null, token_b.value
+				else
+					callback new Error "I don't understand"
+			else
+				callback new Error "I don't understand"
 			
 			###
 			i = 0

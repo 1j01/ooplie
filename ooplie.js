@@ -1,7 +1,9 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Lexer;
+var Context, Lexer, Pattern;
 
 Lexer = require("./lex").Lexer;
+
+Pattern = require("./Pattern");
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -18,28 +20,35 @@ module.exports = Context = (function() {
       return result;
     };
     this.patterns = [
-      {
+      new Pattern({
         match: ["if <condition>, <actions>", "if <condition> then <actions>", "<actions> if <condition>"],
         action: function(condition, actions) {
           if (condition) {
             return perform(actions);
           }
         }
-      }, {
+      }), new Pattern({
         match: ["unless <condition>, <actions>", "unless <condition> then <actions>", "<actions> unless <condition>"],
         action: function(condition, actions) {
           if (!condition) {
             return perform(actions);
           }
         }
-      }, {
-        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "say <text>"],
+      }), new Pattern({
+        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "println <text>", "say <text>"],
         action: (function(_this) {
           return function(text) {
             return _this.console.log(text);
           };
         })(this)
-      }
+      }), new Pattern({
+        match: ["<text> <text>"],
+        action: (function(_this) {
+          return function(text) {
+            return "" + text + text;
+          };
+        })(this)
+      })
     ];
     this.classes = [];
     this.objects = [];
@@ -70,7 +79,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var i, len, ref, result, token, tokens;
+    var non_comment_tokens, ref, ref1, ref2, token, token_a, token_b, tokens;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -88,14 +97,41 @@ module.exports = Context = (function() {
       }
     } else {
       tokens = this.lexer.lex(text);
-      result = void 0;
-      for (i = 0, len = tokens.length; i < len; i++) {
-        token = tokens[i];
-        if ((ref = token.type) === "number" || ref === "string") {
-          result = token.value;
+      non_comment_tokens = (function() {
+        var i, len, results;
+        results = [];
+        for (i = 0, len = tokens.length; i < len; i++) {
+          token = tokens[i];
+          if (token.type !== "comment" && token.type !== "newline") {
+            results.push(token);
+          }
         }
+        return results;
+      })();
+      console.log(non_comment_tokens);
+      if (non_comment_tokens.length === 0) {
+        return callback(null, void 0);
+      } else if (non_comment_tokens.length === 1) {
+        token = non_comment_tokens[0];
+        if ((ref = token.type) === "number" || ref === "string") {
+          return callback(null, token.value);
+        } else {
+          return callback(new Error("I don't understand"));
+        }
+      } else if (non_comment_tokens.length === 2) {
+        token_a = non_comment_tokens[0], token_b = non_comment_tokens[1];
+        if (token_a.type === "number" && token_b.type === "number") {
+          return callback(new Error("I don't understand... two numbers? Should I multiply them or something?"));
+        } else if (((ref1 = token_a.type) === "number" || ref1 === "string") && ((ref2 = token_b.type) === "number" || ref2 === "string")) {
+          return callback(null, "" + token_a.value + token_b.value);
+        } else if (token_a.type === "punctuation" && token_a.value === "+" && token_b.type === "number") {
+          return callback(null, token_b.value);
+        } else {
+          return callback(new Error("I don't understand"));
+        }
+      } else {
+        return callback(new Error("I don't understand"));
       }
-      return callback(null, result);
 
       /*
       			i = 0
@@ -116,7 +152,44 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./lex":2}],2:[function(require,module,exports){
+},{"./Pattern":2,"./lex":3}],2:[function(require,module,exports){
+var Pattern;
+
+module.exports = Pattern = (function() {
+  function Pattern(arg) {
+    var action, match;
+    match = arg.match, action = arg.action;
+    this.defs = match;
+    this.fn = action;
+  }
+
+  Pattern.prototype.match = function(tokens) {
+    var def, i, j, len, len1, token;
+    for (i = 0, len = defs.length; i < len; i++) {
+      def = defs[i];
+      for (j = 0, len1 = tokens.length; j < len1; j++) {
+        token = tokens[j];
+        if (the(token(matches(up(w / the(def)))))) {
+          looks(good);
+          continue;
+        } else {
+          nope;
+        }
+      }
+      wow(did(you(match(the(whole(typeof thing !== "undefined" && thing !== null))))));
+      if (so) {
+        return the(match);
+      }
+      otherwise(you(have(failed)));
+    }
+  };
+
+  return Pattern;
+
+})();
+
+
+},{}],3:[function(require,module,exports){
 var Lexer, Token;
 
 Lexer = (function() {
@@ -375,7 +448,7 @@ module.exports = {
 };
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var Context, Lexer, Token, ref;
 
 Context = require('./Context');
@@ -389,5 +462,5 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./lex":2}]},{},[3])(3)
+},{"./Context":1,"./lex":3}]},{},[4])(4)
 });
