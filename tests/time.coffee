@@ -72,6 +72,8 @@ suite "time", ->
 			, 500
 		test "time before a"
 		test "time after a"
+			# 5 seconds after today: when today? today when exactly?
+			# whereas 5 days after today is a fine expression
 		test "time between a and b"
 	
 	suite "timers", ->
