@@ -79,7 +79,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var non_comment_tokens, ref, ref1, ref2, token, token_a, token_b, tokens;
+    var handle_line, i, len, line_tokens, result, token, tokens;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -97,41 +97,49 @@ module.exports = Context = (function() {
       }
     } else {
       tokens = this.lexer.lex(text);
-      non_comment_tokens = (function() {
-        var i, len, results;
-        results = [];
-        for (i = 0, len = tokens.length; i < len; i++) {
-          token = tokens[i];
-          if (token.type !== "comment" && token.type !== "newline") {
-            results.push(token);
+      result = void 0;
+      console.log(result);
+      line_tokens = [];
+      handle_line = (function(_this) {
+        return function() {
+          var i, last_token, len, str, token;
+          if (line_tokens.every(function(token) {
+            var ref;
+            return (ref = token.type) === "string" || ref === "number";
+          })) {
+            if (line_tokens.some(function(token) {
+              return token.type === "string";
+            })) {
+              str = "";
+              for (i = 0, len = line_tokens.length; i < len; i++) {
+                token = line_tokens[i];
+                str += token.value;
+              }
+              result = str;
+            } else if (line_tokens.length) {
+              last_token = line_tokens[line_tokens.length - 1];
+              result = last_token.value;
+            }
+          } else {
+            console.log("can't handle", line_tokens);
+            throw new Error("IDK");
+          }
+          return line_tokens = [];
+        };
+      })(this);
+      for (i = 0, len = tokens.length; i < len; i++) {
+        token = tokens[i];
+        if (token.type !== "comment") {
+          if (token.type === "newline") {
+            handle_line();
+          } else {
+            line_tokens.push(token);
           }
         }
-        return results;
-      })();
-      console.log(non_comment_tokens);
-      if (non_comment_tokens.length === 0) {
-        return callback(null, void 0);
-      } else if (non_comment_tokens.length === 1) {
-        token = non_comment_tokens[0];
-        if ((ref = token.type) === "number" || ref === "string") {
-          return callback(null, token.value);
-        } else {
-          return callback(new Error("I don't understand"));
-        }
-      } else if (non_comment_tokens.length === 2) {
-        token_a = non_comment_tokens[0], token_b = non_comment_tokens[1];
-        if (token_a.type === "number" && token_b.type === "number") {
-          return callback(new Error("I don't understand... two numbers? Should I multiply them or something?"));
-        } else if (((ref1 = token_a.type) === "number" || ref1 === "string") && ((ref2 = token_b.type) === "number" || ref2 === "string")) {
-          return callback(null, "" + token_a.value + token_b.value);
-        } else if (token_a.type === "punctuation" && token_a.value === "+" && token_b.type === "number") {
-          return callback(null, token_b.value);
-        } else {
-          return callback(new Error("I don't understand"));
-        }
-      } else {
-        return callback(new Error("I don't understand"));
       }
+      handle_line();
+      console.log(result);
+      return callback(null, result);
 
       /*
       			i = 0

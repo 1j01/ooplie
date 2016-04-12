@@ -78,7 +78,7 @@ suite "strings", ->
 		# evaluate('"Hello"" ""World"').to("Hello World") # "Hello"+" "+"World"
 		# evaluate('"Hello" "World"').to("Hello World") # Hello + World with space added automatically
 		# but that's probably too complicated
-	test.skip "string concatenation with numbers", ->
+	test "string concatenation with numbers", ->
 		evaluate("'Completed '5' iterations'").to("Completed 5 iterations")
 	test.skip "string concatenation with variables", ->
 		context.eval("iterations = 1024")

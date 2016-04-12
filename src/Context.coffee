@@ -99,37 +99,47 @@ class Context
 			# actually useful stuff goes here
 			
 			tokens = @lexer.lex(text)
-			# console.log (token.value for token in tokens)...
-			# result = undefined
-			# for token in tokens when token.type in ["number", "string"]
-			# 	result = token.value
-			# callback null, result
 			
-			# non_comment_tokens = (token for token in tokens when token.type isnt "comment")
-			non_comment_tokens = (token for token in tokens when token.type isnt "comment" and token.type isnt "newline")
+			# tokens = (token for token in tokens when token.type isnt "comment" and token.type isnt "newline")
+			# tokens = (token for token in tokens when token.type isnt "comment")
 			
-			console.log non_comment_tokens
+			# console.log non_comment_tokens
 			
-			if non_comment_tokens.length is 0
-				callback null, undefined
-			else if non_comment_tokens.length is 1
-				[token] = non_comment_tokens
-				if token.type in ["number", "string"]
-					callback null, token.value
+			result = undefined
+			console.log result
+			
+			line_tokens = []
+			
+			handle_line = =>
+				# if all the tokens are either numbers or strings
+				if line_tokens.every((token)-> token.type in ["string", "number"])
+					# if there are two consecutive numbers
+					# 	TODO: throw an error
+					# if there's at least one string
+					if line_tokens.some((token)-> token.type is "string")
+						str = ""
+						str += token.value for token in line_tokens
+						result = str
+					else if line_tokens.length
+						last_token = line_tokens[line_tokens.length - 1]
+						result = last_token.value
+						# console.log last_token.value, last_token
 				else
-					callback new Error "I don't understand"
-			else if non_comment_tokens.length is 2
-				[token_a, token_b] = non_comment_tokens
-				if token_a.type is "number" and token_b.type is "number"
-					callback new Error "I don't understand... two numbers? Should I multiply them or something?"
-				else if token_a.type in ["number", "string"] and token_b.type in ["number", "string"]
-					callback null, "#{token_a.value}#{token_b.value}"
-				else if token_a.type is "punctuation" and token_a.value is "+" and token_b.type is "number"
-					callback null, token_b.value
+					console.log "can't handle", line_tokens
+					throw new Error "IDK"
+				
+				line_tokens = []
+			
+			for token in tokens when token.type isnt "comment"
+				if token.type is "newline"
+					handle_line()
 				else
-					callback new Error "I don't understand"
-			else
-				callback new Error "I don't understand"
+					line_tokens.push token
+			
+			handle_line()
+			
+			console.log result
+			callback null, result
 			
 			###
 			i = 0
