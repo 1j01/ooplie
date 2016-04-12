@@ -6,7 +6,7 @@ Ooplie is a [multi-paradigm][] programming system where you write in English.
 <!-- An NLP system? https://en.wikipedia.org/wiki/Natural_language_programming seems to have a somewhat narrow definition, and https://en.wikipedia.org/wiki/Natural_language_processing is rather broad -->
 
 Currently you can output text, eval JS, and write trivial (read: useless because there are no variables or comparisons yet) conditionals.
-There are expressions, but the only operation so far is concatenation.
+There are *expressions*, but the order of operations is all wrong.
 
 There's [a nice little console][console] where you can try it out so far,
 and [a million pending tests][tests].

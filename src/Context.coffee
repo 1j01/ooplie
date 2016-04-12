@@ -31,10 +31,10 @@ class Context
 					# comma misplacement should really be handled dynamically by the near-match system
 				]
 				fn: ({condition, actions, alt_actions})=>
-					if @eval_expression(condition)
-						@eval_expression(actions)
+					if @eval_tokens(condition)
+						@eval_tokens(actions)
 					else
-						@eval_expression(alt_actions)
+						@eval_tokens(alt_actions)
 			
 			new Pattern
 				match: [
@@ -43,8 +43,8 @@ class Context
 					"<actions> if <condition>"
 				]
 				fn: ({condition, actions})=>
-					if @eval_expression(condition)
-						@eval_expression(actions)
+					if @eval_tokens(condition)
+						@eval_tokens(actions)
 			
 			new Pattern
 				match: [
@@ -53,8 +53,8 @@ class Context
 					"<actions> unless <condition>"
 				]
 				fn: ({condition, actions})=>
-					unless @eval_expression(condition)
-						@eval_expression(actions)
+					unless @eval_tokens(condition)
+						@eval_tokens(actions)
 			
 			new Pattern
 				match: [
@@ -78,7 +78,7 @@ class Context
 					"print <text> to the terminal"
 				]
 				fn: ({text})=>
-					@console.log @eval_expression(text)
+					@console.log @eval_tokens(text)
 					return
 			
 			new Pattern
@@ -104,34 +104,7 @@ class Context
 				]
 				fn: ({text})=>
 					{console} = @
-					eval @eval_expression(text)
-			
-			# new Pattern
-			# 	match: [
-			# 		"<text> <text>"
-			# 	]
-			# 	fn: (text)=>
-			# 		"#{text}#{text}"
-			
-			# # within an expression
-			# new Pattern
-			# 	match: [
-			# 		"<expression a> = <expression b>"
-			# 	]
-			# 	fn: (a, b)=>
-			# 		a is b
-			
-			# # as a statement
-			# new Pattern
-			# 	match: [
-			# 		"<variable name> = <expression b>"
-			# 	]
-			# 	fn: (a, b)=>
-			# 		if a of (@variables or @definitions)
-			# 			unless (@variables or @definitions)[a] is b
-			# 				throw new Error "#{a} is already defined as #{(@variables or @definitions)[a]} (which does not equal #{b})"
-			# 		else
-			# 			(@variables or @definitions)[a] = b
+					eval @eval_tokens(text)
 			
 			new Pattern
 				match: [
@@ -142,7 +115,7 @@ class Context
 					"<a> ** <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) ** @eval_expression(b)
+					@eval_tokens(a) ** @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -150,7 +123,7 @@ class Context
 					"<a> times <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) * @eval_expression(b)
+					@eval_tokens(a) * @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -158,7 +131,7 @@ class Context
 					"<a> divided by <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) / @eval_expression(b)
+					@eval_tokens(a) / @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -166,7 +139,7 @@ class Context
 					"<a> plus <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) + @eval_expression(b)
+					@eval_tokens(a) + @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -174,7 +147,7 @@ class Context
 					"<a> minus <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) - @eval_expression(b)
+					@eval_tokens(a) - @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -188,7 +161,19 @@ class Context
 					"<a> === <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) == @eval_expression(b)
+					# if a.every((token)-> token.type is "word")
+					# 	name = a.join(" ")
+					# 	value = @eval_tokens(b)
+					# 	if @constants.has(name)
+					# 		unless @constants.get(name) is value
+					# 			throw new Error "#{name} is already defined as #{@constants.get(name)} (which does not equal #{value})"
+					# 	else if @constants.has(name)
+					# 		unless @constants.get(name) is value
+					# 			throw new Error "#{name} is already defined as #{@variables.get(name)} (which does not equal #{value})"
+					# 	else
+					# 		@variables.set(name, value)
+					# else
+					@eval_tokens(a) == @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -203,7 +188,7 @@ class Context
 					"<a> isn't equal to <b>" # this just sounds silly; be formal or don't
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) != @eval_expression(b)
+					@eval_tokens(a) != @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -214,7 +199,7 @@ class Context
 					"<a> is more than <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) > @eval_expression(b)
+					@eval_tokens(a) > @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -222,7 +207,7 @@ class Context
 					"<a> is less than <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) < @eval_expression(b)
+					@eval_tokens(a) < @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -233,7 +218,7 @@ class Context
 					"<a> is more than or equal to <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) >= @eval_expression(b)
+					@eval_tokens(a) >= @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -241,7 +226,26 @@ class Context
 					"<a> is less than or equal to <b>"
 				]
 				fn: ({a, b})=>
-					@eval_expression(a) <= @eval_expression(b)
+					@eval_tokens(a) <= @eval_tokens(b)
+			
+			# TODO: these should just be constants, not "patterns"
+			new Pattern
+				match: [
+					"true"
+					"yes"
+					"on"
+				]
+				fn: ({a, b})=>
+					true
+			new Pattern
+				match: [
+					"false"
+					"no"
+					"off"
+				]
+				fn: ({a, b})=>
+					false
+			
 		]
 		@classes = []
 		@objects = []
@@ -259,7 +263,8 @@ class Context
 			result = res
 		result
 	
-	eval_expression: (tokens)->
+	eval_tokens: (tokens)->
+		# result = undefined
 		if tokens.every((token)-> token.type in ["string", "number"])
 			# if there are two consecutive numbers
 			# 	TODO: throw an error
@@ -271,15 +276,22 @@ class Context
 			else if tokens.length
 				last_token = tokens[tokens.length - 1]
 				return last_token.value
-		else if tokens.length is 1
-			[token] = tokens
-			if token.type is "word"
-				switch token.value
-					when "true" then return true
-					when "false" then return false
-					else throw new Error "I don't understand the expression `#{stringify_tokens(tokens)}`"
-		else
-			throw new Error "I don't understand the expression `#{stringify_tokens(tokens)}`"
+		else if tokens.length
+			bad_match = null
+			for pattern in @patterns
+				match = pattern.match(tokens)
+				if match?
+					if match.bad or match.near
+						bad_match = match
+					else
+						break
+			if match
+				return pattern.fn(match)
+			else if bad_match
+				throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
+			else
+				throw new Error "I don't understand `#{stringify_tokens(tokens)}`"
+		# return result
 	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here
@@ -303,39 +315,14 @@ class Context
 		else
 			result = undefined
 			
-			# TODO: treat statements as expressions
-			
-			handle_expression = (tokens)=>
-				@eval_expression(tokens)
-			
-			handle_statement = (tokens)=>
-				bad_match = null
-				for pattern in @patterns
-					match = pattern.match(tokens)
-					if match?
-						if match.bad or match.near
-							bad_match = match
-						else
-							break
-				if match
-					result = pattern.fn(match)
-				else if bad_match
-					# FIXME: should callback!
-					throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
-				else
-					# FIXME: should callback!
-					throw new Error "I don't understand"
-			
 			line_tokens = []
 			
 			handle_line = =>
 				if line_tokens.length
 					try
-						result = handle_statement(line_tokens)
+						result = @eval_tokens(line_tokens)
 					catch e
-						if e.message isnt "I don't understand"
-							throw e
-						result = handle_expression(line_tokens)
+						callback e
 				line_tokens = []
 			
 			for token in tokenize(text) when token.type isnt "comment"

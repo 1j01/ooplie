@@ -19,10 +19,10 @@ module.exports = Context = (function() {
           return function(arg1) {
             var actions, alt_actions, condition;
             condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
-            if (_this.eval_expression(condition)) {
-              return _this.eval_expression(actions);
+            if (_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
             } else {
-              return _this.eval_expression(alt_actions);
+              return _this.eval_tokens(alt_actions);
             }
           };
         })(this)
@@ -32,8 +32,8 @@ module.exports = Context = (function() {
           return function(arg1) {
             var actions, condition;
             condition = arg1.condition, actions = arg1.actions;
-            if (_this.eval_expression(condition)) {
-              return _this.eval_expression(actions);
+            if (_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
             }
           };
         })(this)
@@ -43,8 +43,8 @@ module.exports = Context = (function() {
           return function(arg1) {
             var actions, condition;
             condition = arg1.condition, actions = arg1.actions;
-            if (!_this.eval_expression(condition)) {
-              return _this.eval_expression(actions);
+            if (!_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
             }
           };
         })(this)
@@ -55,7 +55,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var text;
             text = arg1.text;
-            _this.console.log(_this.eval_expression(text));
+            _this.console.log(_this.eval_tokens(text));
           };
         })(this)
       }), new Pattern({
@@ -66,7 +66,7 @@ module.exports = Context = (function() {
             var console, text;
             text = arg1.text;
             console = _this.console;
-            return eval(_this.eval_expression(text));
+            return eval(_this.eval_tokens(text));
           };
         })(this)
       }), new Pattern({
@@ -76,7 +76,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return Math.pow(_this.eval_expression(a), _this.eval_expression(b));
+            return Math.pow(_this.eval_tokens(a), _this.eval_tokens(b));
           };
         })(this)
       }), new Pattern({
@@ -85,7 +85,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) * _this.eval_expression(b);
+            return _this.eval_tokens(a) * _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -94,7 +94,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) / _this.eval_expression(b);
+            return _this.eval_tokens(a) / _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -103,7 +103,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) + _this.eval_expression(b);
+            return _this.eval_tokens(a) + _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -112,7 +112,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) - _this.eval_expression(b);
+            return _this.eval_tokens(a) - _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -122,7 +122,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) === _this.eval_expression(b);
+            return _this.eval_tokens(a) === _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -132,7 +132,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) !== _this.eval_expression(b);
+            return _this.eval_tokens(a) !== _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -142,7 +142,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) > _this.eval_expression(b);
+            return _this.eval_tokens(a) > _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -151,7 +151,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) < _this.eval_expression(b);
+            return _this.eval_tokens(a) < _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -161,7 +161,7 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) >= _this.eval_expression(b);
+            return _this.eval_tokens(a) >= _this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -170,7 +170,25 @@ module.exports = Context = (function() {
           return function(arg1) {
             var a, b;
             a = arg1.a, b = arg1.b;
-            return _this.eval_expression(a) <= _this.eval_expression(b);
+            return _this.eval_tokens(a) <= _this.eval_tokens(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["true", "yes", "on"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return true;
+          };
+        })(this)
+      }), new Pattern({
+        match: ["false", "no", "off"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return false;
           };
         })(this)
       })
@@ -204,8 +222,8 @@ module.exports = Context = (function() {
     return result;
   };
 
-  Context.prototype.eval_expression = function(tokens) {
-    var i, last_token, len, str, token;
+  Context.prototype.eval_tokens = function(tokens) {
+    var bad_match, i, j, last_token, len, len1, match, pattern, ref, str, token;
     if (tokens.every(function(token) {
       var ref;
       return (ref = token.type) === "string" || ref === "number";
@@ -223,25 +241,32 @@ module.exports = Context = (function() {
         last_token = tokens[tokens.length - 1];
         return last_token.value;
       }
-    } else if (tokens.length === 1) {
-      token = tokens[0];
-      if (token.type === "word") {
-        switch (token.value) {
-          case "true":
-            return true;
-          case "false":
-            return false;
-          default:
-            throw new Error("I don't understand the expression `" + (stringify_tokens(tokens)) + "`");
+    } else if (tokens.length) {
+      bad_match = null;
+      ref = this.patterns;
+      for (j = 0, len1 = ref.length; j < len1; j++) {
+        pattern = ref[j];
+        match = pattern.match(tokens);
+        if (match != null) {
+          if (match.bad || match.near) {
+            bad_match = match;
+          } else {
+            break;
+          }
         }
       }
-    } else {
-      throw new Error("I don't understand the expression `" + (stringify_tokens(tokens)) + "`");
+      if (match) {
+        return pattern.fn(match);
+      } else if (bad_match) {
+        throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
+      } else {
+        throw new Error("I don't understand `" + (stringify_tokens(tokens)) + "`");
+      }
     }
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, token;
+    var handle_line, i, len, line_tokens, ref, result, token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -259,49 +284,16 @@ module.exports = Context = (function() {
       }
     } else {
       result = void 0;
-      handle_expression = (function(_this) {
-        return function(tokens) {
-          return _this.eval_expression(tokens);
-        };
-      })(this);
-      handle_statement = (function(_this) {
-        return function(tokens) {
-          var bad_match, i, len, match, pattern, ref;
-          bad_match = null;
-          ref = _this.patterns;
-          for (i = 0, len = ref.length; i < len; i++) {
-            pattern = ref[i];
-            match = pattern.match(tokens);
-            if (match != null) {
-              if (match.bad || match.near) {
-                bad_match = match;
-              } else {
-                break;
-              }
-            }
-          }
-          if (match) {
-            return result = pattern.fn(match);
-          } else if (bad_match) {
-            throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
-          } else {
-            throw new Error("I don't understand");
-          }
-        };
-      })(this);
       line_tokens = [];
       handle_line = (function(_this) {
         return function() {
           var e, error;
           if (line_tokens.length) {
             try {
-              result = handle_statement(line_tokens);
+              result = _this.eval_tokens(line_tokens);
             } catch (error) {
               e = error;
-              if (e.message !== "I don't understand") {
-                throw e;
-              }
-              result = handle_expression(line_tokens);
+              callback(e);
             }
           }
           return line_tokens = [];
