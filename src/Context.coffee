@@ -40,7 +40,7 @@ class Context
 					"if <condition>, then <actions>, else <alt_actions>"
 					"if <condition>, then <actions>, else, <alt_actions>"
 					"if <condition>, <actions>, else, <alt_actions>"
-					# and other things; it might be sort of arbitrary
+					# and other things; also this might be sort of arbitrary
 					# comma misplacement should really be handled dynamically by the near-match system
 				]
 				fn: ({condition, actions, alt_actions})=>

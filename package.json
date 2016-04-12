@@ -1,7 +1,7 @@
 {
   "name": "ooplie",
   "description": "Program in English",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "repository": {
     "type": "git",
@@ -21,6 +21,10 @@
     "programming-language",
     "program",
     "natural-language",
+    "natural-language-programming",
+    "NLP",
+    "multi-paradigm",
+    "imperative",
     "natural",
     "command",
     "interpret",
