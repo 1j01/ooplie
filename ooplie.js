@@ -7,57 +7,49 @@ Pattern = require("./Pattern");
 
 module.exports = Context = (function() {
   function Context(arg) {
-    var perform, ref;
+    var ref;
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
     this.lexer = new Lexer;
-    perform = function(actions) {
-      var action, i, len, result;
-      result = void 0;
-      for (i = 0, len = actions.length; i < len; i++) {
-        action = actions[i];
-        result = action();
-      }
-      return result;
-    };
     this.patterns = [
       new Pattern({
-        match: ["if <condition>, <actions>", "if <condition> then <actions>", "<actions> if <condition>"],
-        fn: function(condition, actions) {
-          if (condition) {
-            return perform(actions);
-          }
-        }
+        match: ["If <condition>, <actions>", "If <condition> then <actions>", "<actions> if <condition>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, condition;
+            condition = arg1.condition, actions = arg1.actions;
+            if (_this.eval_expression(condition)) {
+              return _this.eval_expression(actions);
+            }
+          };
+        })(this)
       }), new Pattern({
-        match: ["unless <condition>, <actions>", "unless <condition> then <actions>", "<actions> unless <condition>"],
-        fn: function(condition, actions) {
-          if (!condition) {
-            return perform(actions);
-          }
-        }
-      }), new Pattern({
-        match: ["if <condition>, <actions>, else <alternative actions>", "if <condition> then <actions>, else <alternative actions>", "if <condition> then <actions> else <alternative actions>", "<actions> if <condition> else <alternative actions>"],
-        bad_match: ["if <condition>, then <actions>, else <alternative actions>", "if <condition>, then <actions>, else, <alternative actions>", "if <condition>, <actions>, else, <alternative actions>"],
-        fn: function(condition, actions) {
-          if (condition) {
-            return perform(actions);
-          }
-        }
+        match: [],
+        fn: (function(_this) {
+          return function(condition, actions) {
+            if (!condition) {
+              return perform(actions);
+            }
+          };
+        })(this)
       }), new Pattern({
         match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
         bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
         fn: (function(_this) {
-          return function(text) {
-            _this.console.log(text);
+          return function(arg1) {
+            var text;
+            text = arg1.text;
+            _this.console.log(_this.eval_expression(text));
           };
         })(this)
       }), new Pattern({
         match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
         bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
         fn: (function(_this) {
-          return function(text) {
-            var console;
+          return function(arg1) {
+            var console, text;
+            text = arg1.text;
             console = _this.console;
-            return eval(text);
+            return eval(_this.eval_expression(text));
           };
         })(this)
       })
@@ -91,8 +83,44 @@ module.exports = Context = (function() {
     return result;
   };
 
+  Context.prototype.eval_expression = function(tokens) {
+    var i, last_token, len, str, token;
+    if (tokens.every(function(token) {
+      var ref;
+      return (ref = token.type) === "string" || ref === "number";
+    })) {
+      if (tokens.some(function(token) {
+        return token.type === "string";
+      })) {
+        str = "";
+        for (i = 0, len = tokens.length; i < len; i++) {
+          token = tokens[i];
+          str += token.value;
+        }
+        return str;
+      } else if (tokens.length) {
+        last_token = tokens[tokens.length - 1];
+        return last_token.value;
+      }
+    } else if (tokens.length === 1) {
+      token = tokens[0];
+      if (token.type === "word") {
+        switch (token.value) {
+          case "true":
+            return true;
+          case "false":
+            return false;
+          default:
+            throw new Error("I don't understand the expression `" + (stringify_tokens(tokens)) + "`");
+        }
+      }
+    } else {
+      throw new Error("I don't understand the expression `" + (stringify_tokens(tokens)) + "`");
+    }
+  };
+
   Context.prototype.interpret = function(text, callback) {
-    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, token;
+    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, stringify_tokens, token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -110,65 +138,50 @@ module.exports = Context = (function() {
       }
     } else {
       result = void 0;
+      stringify_tokens = function(tokens) {
+        var i, len, ref, str, token;
+        str = "";
+        for (i = 0, len = tokens.length; i < len; i++) {
+          token = tokens[i];
+          if (token.type === "punctuation") {
+            if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
+              str += token.value;
+            } else {
+              str += " " + token.value;
+            }
+          } else if (token.type === "string") {
+            str += " " + (JSON.stringify(token.value));
+          } else {
+            str += " " + token.value;
+          }
+        }
+        return str.trim();
+      };
       handle_expression = (function(_this) {
         return function(tokens) {
-          var i, last_token, len, str, token;
-          if (tokens.every(function(token) {
-            var ref;
-            return (ref = token.type) === "string" || ref === "number";
-          })) {
-            if (tokens.some(function(token) {
-              return token.type === "string";
-            })) {
-              str = "";
-              for (i = 0, len = tokens.length; i < len; i++) {
-                token = tokens[i];
-                str += token.value;
-              }
-              return str;
-            } else if (tokens.length) {
-              last_token = tokens[tokens.length - 1];
-              return last_token.value;
-            }
-          } else if (tokens.length === 1) {
-            token = tokens[0];
-            if (token.type === "word") {
-              switch (token.value) {
-                case "true":
-                  return true;
-                case "false":
-                  return false;
-                default:
-                  throw new Error("I don't understand the expression `" + (tokens.join(" ")) + "`");
-              }
-            }
-          } else {
-            throw new Error("I don't understand the expression `" + (tokens.join(" ")) + "`");
-          }
+          return _this.eval_expression(tokens);
         };
       })(this);
       handle_statement = (function(_this) {
         return function(tokens) {
-          var args, i, len, match, pattern, ref, variable;
+          var bad_match, i, len, match, pattern, ref;
+          bad_match = null;
           ref = _this.patterns;
           for (i = 0, len = ref.length; i < len; i++) {
             pattern = ref[i];
             match = pattern.match(tokens);
             if (match != null) {
-              break;
+              if (match.bad || match.near) {
+                bad_match = match;
+              } else {
+                break;
+              }
             }
           }
           if (match) {
-            args = (function() {
-              var j, len1, results;
-              results = [];
-              for (j = 0, len1 = match.length; j < len1; j++) {
-                variable = match[j];
-                results.push(handle_expression(variable.tokens));
-              }
-              return results;
-            })();
-            return result = pattern.fn.apply(pattern, args);
+            return result = pattern.fn(match);
+          } else if (bad_match) {
+            throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + pattern.prefered + " instead");
           } else {
             throw new Error("I don't understand");
           }
@@ -218,16 +231,16 @@ var Pattern;
 
 module.exports = Pattern = (function() {
   function Pattern(arg) {
-    var def, match, segment, segments;
-    match = arg.match, this.fn = arg.fn;
-    this.matchers = (function() {
-      var j, len, results;
+    var bad_match, match, parse_matchers;
+    match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
+    parse_matchers = function(matcher_defs) {
+      var def, j, len, results, segment, segments;
       results = [];
-      for (j = 0, len = match.length; j < len; j++) {
-        def = match[j];
-        segments = def.replace(/<([^>]*)(\ )/, function(m, words, space) {
+      for (j = 0, len = matcher_defs.length; j < len; j++) {
+        def = matcher_defs[j];
+        segments = def.replace(/<([^>]*)(\ )/g, function(m, words, space) {
           return words + "_";
-        }).split(" ");
+        }).replace(/>\ /g, ">").replace(/>/g, "> ").trim().split(" ");
         results.push((function() {
           var k, len1, results1;
           results1 = [];
@@ -243,7 +256,7 @@ module.exports = Pattern = (function() {
               });
             } else {
               results1.push({
-                type: "word",
+                type: segment.match(/\w/) ? "word" : "punctuation",
                 value: segment,
                 toString: function() {
                   return this.value;
@@ -255,35 +268,35 @@ module.exports = Pattern = (function() {
         })());
       }
       return results;
-    })();
+    };
+    this.matchers = parse_matchers(match);
+    this.bad_matchers = parse_matchers(bad_match != null ? bad_match : []);
+    this.prefered = match[0];
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var current_variable, i, j, len, matching, token, variables;
-    variables = [];
-    current_variable = null;
+    var current_variable_tokens, i, j, len, matching, token, variables;
+    variables = {};
+    current_variable_tokens = null;
     i = 0;
     for (j = 0, len = tokens.length; j < len; j++) {
       token = tokens[j];
       matching = matcher[i];
       if (matching.type === "variable") {
-        if (current_variable != null) {
+        if (current_variable_tokens != null) {
           if (token.type === matcher[i + 1].type && token.value === matcher[i + 1].value) {
-            current_variable = null;
+            current_variable_tokens = null;
             i += 2;
           } else {
-            current_variable.tokens.push(token);
+            current_variable_tokens.push(token);
           }
         } else {
-          current_variable = {
-            name: matching.name,
-            tokens: []
-          };
-          variables.push(current_variable);
-          current_variable.tokens.push(token);
+          current_variable_tokens = [];
+          variables[matching.name] = current_variable_tokens;
+          current_variable_tokens.push(token);
         }
       } else {
-        current_variable = null;
+        current_variable_tokens = null;
         if (token.type === matching.type && token.value === matching.value) {
           i += 1;
         } else {
@@ -300,12 +313,21 @@ module.exports = Pattern = (function() {
   };
 
   Pattern.prototype.match = function(tokens) {
-    var j, len, match, matcher, ref;
+    var j, k, len, len1, match, matcher, ref, ref1;
     ref = this.matchers;
     for (j = 0, len = ref.length; j < len; j++) {
       matcher = ref[j];
       match = this.match_with(tokens, matcher);
       if (match != null) {
+        return match;
+      }
+    }
+    ref1 = this.bad_matchers;
+    for (k = 0, len1 = ref1.length; k < len1; k++) {
+      matcher = ref1[k];
+      match = this.match_with(tokens, matcher);
+      if (match != null) {
+        match.bad = true;
         return match;
       }
     }

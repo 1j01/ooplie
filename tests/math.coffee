@@ -47,6 +47,9 @@ suite "mathematics", ->
 		evaluate("0x0b0").to(176)
 		evaluate("0x0B1").to(177)
 		evaluate("0xE1").to(225)
+	test "boolean values", ->
+		evaluate("true").to(true)
+		evaluate("false").to(false)
 	test.skip "infinity", ->
 		evaluate("∞").to(Infinity)
 		evaluate("-∞").to(-Infinity)
@@ -386,9 +389,6 @@ suite "mathematics", ->
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
 		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
 		evaluate("100 seconds = one hundred second").to(false)
-	test "boolean values", ->
-		evaluate("true").to(true)
-		evaluate("false").to(false)
 	test.skip "boolean logic", ->
 		evaluate("true and true").to(true)
 		evaluate("false and true").to(false)

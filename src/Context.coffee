@@ -9,10 +9,12 @@ class Context
 		
 		@lexer = new Lexer
 		
-		perform = (actions)->
-			result = undefined
-			result = do action for action in actions
-			result
+		# perform = (actions)->
+		# 	result = undefined
+		# 	console.log "performing actions", actions
+		# 	console.log action for action in actions
+		# 	result = do action for action in actions
+		# 	result
 		
 		# maybe this stuff should be handled in the lexer
 		# (but then the lexer would be coupled with the context
@@ -21,38 +23,48 @@ class Context
 		@patterns = [
 			new Pattern
 				match: [
-					"if <condition>, <actions>"
-					"if <condition> then <actions>"
+					"If <condition>, <actions>"
+					"If <condition> then <actions>"
 					"<actions> if <condition>"
 				]
-				fn: (condition, actions)->
-					perform actions if condition
+				# fn: (condition, actions)->
+				# 	console.log "do", actions, "if", condition
+				# 	console.log not not condition
+				# 	if condition
+				# 		console.log "perform actions"
+				# 		perform actions
+				# 	# hm, this isn't going to work with it having already evaluated the actions
+				fn: ({condition, actions})=>
+					# console.log "do", actions, "if", condition
+					if @eval_expression(condition)
+						# console.log "perform actions"
+						@eval_expression(actions)
 			
 			new Pattern
 				match: [
-					"unless <condition>, <actions>"
-					"unless <condition> then <actions>" # doesn't sound like good English
-					"<actions> unless <condition>"
+					# "Unless <condition>, <actions>"
+					# "Unless <condition> then <actions>" # doesn't sound like good English
+					# "<actions> unless <condition>"
 				]
-				fn: (condition, actions)->
+				fn: (condition, actions)=>
 					perform actions unless condition
 			
-			new Pattern
-				match: [
-					"if <condition>, <actions>, else <alternative actions>"
-					"if <condition> then <actions>, else <alternative actions>"
-					"if <condition> then <actions> else <alternative actions>"
-					"<actions> if <condition> else <alternative actions>"
-				]
-				bad_match: [
-					"if <condition>, then <actions>, else <alternative actions>"
-					"if <condition>, then <actions>, else, <alternative actions>"
-					"if <condition>, <actions>, else, <alternative actions>"
-					# and other things; it might be sort of arbitrary
-					# comma misplacement should really be handled dynamically by the near-match system
-				]
-				fn: (condition, actions)->
-					perform actions if condition
+			# new Pattern
+			# 	match: [
+			# 		"If <condition>, <actions>, else <alternative actions>"
+			# 		"If <condition> then <actions>, else <alternative actions>"
+			# 		"If <condition> then <actions> else <alternative actions>"
+			# 		"<actions> if <condition> else <alternative actions>"
+			# 	]
+			# 	bad_match: [
+			# 		"if <condition>, then <actions>, else <alternative actions>"
+			# 		"if <condition>, then <actions>, else, <alternative actions>"
+			# 		"if <condition>, <actions>, else, <alternative actions>"
+			# 		# and other things; it might be sort of arbitrary
+			# 		# comma misplacement should really be handled dynamically by the near-match system
+			# 	]
+			# 	fn: ({condition, actions})=>
+			# 		perform actions if condition else bla
 			
 			new Pattern
 				match: [
@@ -75,8 +87,8 @@ class Context
 					"log <text> to the terminal"
 					"print <text> to the terminal"
 				]
-				fn: (text)=>
-					@console.log text
+				fn: ({text})=>
+					@console.log @eval_expression(text)
 					return
 			
 			new Pattern
@@ -100,9 +112,9 @@ class Context
 					"JavaScript <text>" # not sure JavaScript is a verb
 					"JS <text>"
 				]
-				fn: (text)=>
+				fn: ({text})=>
 					{console} = @
-					eval text
+					eval @eval_expression(text)
 			
 			# new Pattern
 			# 	match: [
@@ -147,6 +159,28 @@ class Context
 			result = res
 		result
 	
+	eval_expression: (tokens)->
+		if tokens.every((token)-> token.type in ["string", "number"])
+			# if there are two consecutive numbers
+			# 	TODO: throw an error
+			# if there's at least one string
+			if tokens.some((token)-> token.type is "string")
+				str = ""
+				str += token.value for token in tokens
+				return str
+			else if tokens.length
+				last_token = tokens[tokens.length - 1]
+				return last_token.value
+		else if tokens.length is 1
+			[token] = tokens
+			if token.type is "word"
+				switch token.value
+					when "true" then return true
+					when "false" then return false
+					else throw new Error "I don't understand the expression `#{stringify_tokens(tokens)}`"
+		else
+			throw new Error "I don't understand the expression `#{stringify_tokens(tokens)}`"
+	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here
 		# Conversational trivialities
@@ -169,27 +203,23 @@ class Context
 		else
 			result = undefined
 			
+			stringify_tokens = (tokens)->
+				# tokens.join(" ")
+				str = ""
+				for token in tokens
+					if token.type is "punctuation"
+						if token.value in [",", ".", ";", ":"]
+							str += token.value
+						else
+							str += " #{token.value}"
+					else if token.type is "string"
+						str += " #{JSON.stringify(token.value)}"
+					else
+						str += " #{token.value}"
+				str.trim()
+			
 			handle_expression = (tokens)=>
-				if tokens.every((token)-> token.type in ["string", "number"])
-					# if there are two consecutive numbers
-					# 	TODO: throw an error
-					# if there's at least one string
-					if tokens.some((token)-> token.type is "string")
-						str = ""
-						str += token.value for token in tokens
-						return str
-					else if tokens.length
-						last_token = tokens[tokens.length - 1]
-						return last_token.value
-				else if tokens.length is 1
-					[token] = tokens
-					if token.type is "word"
-						switch token.value
-							when "true" then return true
-							when "false" then return false
-							else throw new Error "I don't understand the expression `#{tokens.join(" ")}`"
-				else
-					throw new Error "I don't understand the expression `#{tokens.join(" ")}`"
+				@eval_expression(tokens)
 			
 			handle_statement = (tokens)=>
 				# TODO: we need to find the outermost pattern, which can be anchored before or after (or both)
@@ -200,14 +230,18 @@ class Context
 				# as well as
 				# 	unless b, a
 				
+				bad_match = null
 				for pattern in @patterns
 					match = pattern.match(tokens)
-					break if match?
+					if match?
+						if match.bad or match.near
+							bad_match = match
+						else
+							break
 				if match
-					args =
-						for variable in match
-							handle_expression(variable.tokens)
-					result = pattern.fn(args...)
+					result = pattern.fn(match)
+				else if bad_match
+					throw new Error "For `#{stringify_tokens(tokens)}`, use #{pattern.prefered} instead"
 				else
 					throw new Error "I don't understand"
 			

@@ -14,7 +14,6 @@ expect_output = (output, fn)->
 	mock_console.log = (text)->
 		gotten_outputs.push text
 	fn()
-	# console.log output, gotten_outputs
 	mock_console.log = log_to_actual_console
 	if typeof output is "string"
 		unless output in gotten_outputs
@@ -23,7 +22,7 @@ expect_output = (output, fn)->
 			else if gotten_outputs.length is 1
 				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got output #{JSON.stringify(gotten_outputs[0])})"
 			else
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}"
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} but got no output"
 	else
 		throw new Error "TODO: expect an exact array of outputs"
 
@@ -89,7 +88,7 @@ suite "control flow", ->
 			# like in CoffeeScript
 	
 	suite "conditionals", ->
-		test.skip "if", ->
+		test "if", ->
 			# TODO: test multiline and actual actions
 			evaluate("If true, 5").to(5)
 			evaluate("If false, 5").to(undefined)

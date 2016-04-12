@@ -1,44 +1,55 @@
 
 module.exports =
 class Pattern
-	constructor: ({match, @fn})->
+	constructor: ({match, bad_match, @fn})->
 		# TODO: also allow [optional phrase segments]
 		# and maybe (either|or|groups)
 		# TODO: try longer matchers first
-		# TODO: throw error if duplicate variable names and store variables keyed by name
-		@matchers =
-			for def in match
-				segments = def.replace(/<([^>]*)(\ )/, (m, words, space)-> "#{words}_").split(" ")
+		# TODO: throw error if duplicate variable names and store variables keyed by name...
+		
+		parse_matchers = (matcher_defs)->
+			for def in matcher_defs
+				segments = def
+					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_")
+					.replace(/>\ /g, ">")
+					.replace(/>/g, "> ")
+					.trim()
+					.split(" ")
 				for segment in segments
 					if segment.match /^<.*>$/
 						type: "variable"
 						name: segment.replace(/[<>]/g, "")
 						toString: -> "<#{@name}>"
 					else
-						type: "word"
+						type: if segment.match(/\w/) then "word" else "punctuation"
 						value: segment
 						toString: -> @value
+		
+		@matchers = parse_matchers(match)
+		@bad_matchers = parse_matchers(bad_match ? [])
+		
+		@prefered = match[0]
 	
 	match_with: (tokens, matcher)->
-		variables = []
-		current_variable = null
+		variables = {}
+		current_variable_tokens = null
 		
 		i = 0
 		for token in tokens
 			matching = matcher[i]
 			if matching.type is "variable"
-				if current_variable?
+				if current_variable_tokens?
 					if token.type is matcher[i + 1].type and token.value is matcher[i + 1].value
-						current_variable = null
+						current_variable_tokens = null
 						i += 2 # end of the variable, plus we already matched the next token
 					else
-						current_variable.tokens.push token
+						current_variable_tokens.push token
 				else
-					current_variable = {name: matching.name, tokens: []}
-					variables.push current_variable
-					current_variable.tokens.push token
+					current_variable_tokens = []
+					variables[matching.name] = current_variable_tokens
+					current_variable_tokens.push token
 			else
-				current_variable = null
+				current_variable_tokens = null
 				if token.type is matching.type and token.value is matching.value
 					i += 1
 				else
@@ -49,14 +60,21 @@ class Pattern
 		if i is matcher.length
 			return variables
 		# else
-		# 	console.log "almost matched", @, tokens, variables
+		# 	console.log "almost matched", tokens, "against", @
+		# 	console.log "got variables", variables
+		# 	console.log "but ended at index", i, "on", matcher
 	
 	match: (tokens)->
 		for matcher in @matchers
 			match = @match_with(tokens, matcher)
 			return match if match?
 		
-		# TODO: match bad matches
+		for matcher in @bad_matchers
+			match = @match_with(tokens, matcher)
+			if match?
+				match.bad = true
+				return match
+		
 		# TODO: find near-matches (i.e. differing case, typos, differing gramatical structure if possible)
 		# differing case is obviously usually not a problem whereas typos would be more likely to be incorrectly detected
 		# so differing case should probably run it and maybe suggest the proper capitalization (if it can without being wrong in context)
