@@ -69,6 +69,52 @@ module.exports = Context = (function() {
             return eval(_this.eval_expression(text));
           };
         })(this)
+      }), new Pattern({
+        match: ["<a> ^ <b>", "<a> to the power of <b>"],
+        bad_match: ["<a> ** <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return Math.pow(_this.eval_expression(a), _this.eval_expression(b));
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> * <b>", "<a> times <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) * _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> / <b>", "<a> divided by <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) / _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> + <b>", "<a> plus <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) + _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> - <b>", "<a> minus <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) - _this.eval_expression(b);
+          };
+        })(this)
       })
     ];
     this.classes = [];

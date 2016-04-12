@@ -53,22 +53,24 @@ suite "mathematics", ->
 	test.skip "infinity", ->
 		evaluate("∞").to(Infinity)
 		evaluate("-∞").to(-Infinity)
-	test.skip "addition", ->
+	test "addition", ->
 		evaluate("1 + 2").to(3)
 		evaluate("992+345").to(1337)
-	test.skip "subtraction", ->
+	test "subtraction", ->
 		evaluate("1 - 2").to(-1)
 		evaluate("992-345").to(647)
-	test.skip "multiplication", ->
+	test "multiplication", ->
 		evaluate("5 * 2").to(10)
 		evaluate("7*4").to(28)
-	test.skip "division", ->
+	test "division", ->
 		evaluate("2 / 4").to(0.5)
 		evaluate("100 / 4").to(25)
-	test.skip "exponentiation", ->
+	test "exponentiation", ->
 		evaluate("2 ^ 8").to(256)
-		evaluate("2 ** 8").to(256) # throw error
-		evaluate("32^0.8").to(16)
+		evaluate("32^0.8").to(Math.pow(32, 0.8)) # comes out to 16.000000000000004
+		expect(->
+			evaluate("2 ** 8").to(256)
+		).to.throw() # TODO: expect something like "Just use ^ instead"
 	test.skip "equality comparison", ->
 		evaluate("5 = 5").to(true)
 		evaluate("5 = 5 = 5").to(true)

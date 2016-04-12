@@ -132,6 +132,49 @@ class Context
 			# 				throw new Error "#{a} is already defined as #{(@variables or @definitions)[a]} (which does not equal #{b})"
 			# 		else
 			# 			(@variables or @definitions)[a] = b
+			
+			new Pattern
+				match: [
+					"<a> ^ <b>"
+					"<a> to the power of <b>"
+				]
+				bad_match: [
+					"<a> ** <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) ** @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> * <b>"
+					"<a> times <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) * @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> / <b>"
+					"<a> divided by <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) / @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> + <b>"
+					"<a> plus <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) + @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> - <b>"
+					"<a> minus <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) - @eval_expression(b)
 		]
 		@classes = []
 		@objects = []
