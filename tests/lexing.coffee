@@ -27,6 +27,20 @@ suite "tokenize", ->
 		tokenize("0b01").to([{type: "number", value: 0b01}])
 		tokenize("0o77").to([{type: "number", value: 0o77}])
 	
+	test "expressions", ->
+		tokenize("1-6").to([
+			{type: "number", value: 1}
+			{type: "punctuation", value: "-"}
+			{type: "number", value: 6}
+		])
+		tokenize("1*6 + 4").to([
+			{type: "number", value: 1}
+			{type: "punctuation", value: "*"}
+			{type: "number", value: 6}
+			{type: "punctuation", value: "+"}
+			{type: "number", value: 4}
+		])
+	
 	test "words", ->
 		tokenize("3 monkeys").to([
 			{type: "number", value: 3}
@@ -44,14 +58,70 @@ suite "tokenize", ->
 		])
 	
 	test.skip "starting/ending contractions", ->
-		tokenize("'tis goin' ta be a g'day t'day").to([
+		tokenize("'tis nothin', really").to([
 			{type: "word", value: "'tis"}
-			{type: "word", value: "goin'"}
-			{type: "word", value: "ta"}
-			{type: "word", value: "be"}
-			{type: "word", value: "a"}
-			{type: "word", value: "g'day"}
-			{type: "word", value: "t'day"}
+			{type: "word", value: "nothin'"}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "really"}
+		])
+	
+	test "punctuation", ->
+		tokenize("Comma, semicolon; period. Exclamation! Question?").to([
+			{type: "word", value: "Comma"}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "semicolon"}
+			{type: "punctuation", value: ";"}
+			{type: "word", value: "period"}
+			{type: "punctuation", value: "."}
+			{type: "word", value: "Exclamation"}
+			{type: "punctuation", value: "!"}
+			{type: "word", value: "Question"}
+			{type: "punctuation", value: "?"}
+		])
+	
+	test "combined punctuation", ->
+		tokenize("Exclamatory question!?").to([
+			{type: "word", value: "Exclamatory"}
+			{type: "word", value: "question"}
+			{type: "punctuation", value: "!?"}
+		])
+		tokenize("Exclamatory question?!").to([
+			{type: "word", value: "Exclamatory"}
+			{type: "word", value: "question"}
+			{type: "punctuation", value: "?!"}
+		])
+		tokenize("Elipses...").to([
+			{type: "word", value: "Elipses"}
+			{type: "punctuation", value: "..."}
+		])
+	
+	test "punctuation that shouldn't be combined", ->
+		tokenize("{()}").to([
+			{type: "punctuation", value: "{"}
+			{type: "punctuation", value: "("}
+			{type: "punctuation", value: ")"}
+			{type: "punctuation", value: "}"}
+		])
+		tokenize("+-*/").to([
+			{type: "punctuation", value: "+"}
+			{type: "punctuation", value: "-"}
+			{type: "punctuation", value: "*"}
+			{type: "punctuation", value: "/"}
+		])
+		tokenize("Dr., uh, Frankenstein, was it?").to([
+			# I guess ideally this would be {type: "word", value: "Dr."}
+			# or maybe a further lexing step could transform it to {type: "noun", proper: true, value: "Dr."}
+			# or whatever... anyways
+			{type: "word", value: "Dr"}
+			{type: "punctuation", value: "."}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "uh"}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "Frankenstein"}
+			{type: "punctuation", value: ","}
+			{type: "word", value: "was"}
+			{type: "word", value: "it"}
+			{type: "punctuation", value: "?"}
 		])
 	
 	test "simple strings", ->

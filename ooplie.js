@@ -447,7 +447,7 @@ check_indentation = function(source) {
 };
 
 module.exports = function(source) {
-  var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent_level, is_last_newline_before_quote, j, len, match, next_char, next_type, previous_was_escape, quote_char, ref, row, start_string, string_content_indentation, string_content_on_first_line, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_indent_level, tokens, whitespace_after;
+  var char, col, current_token_string, current_type, finish_token, handle_indentation, i, indent_level, is_last_newline_before_quote, j, len, match, next_char, next_type, prev_char, previous_was_escape, quote_char, ref, ref1, row, start_string, string_content_indentation, string_content_on_first_line, string_content_started, string_first_newline_cannot_be_ignored, string_first_newline_found, string_indent_level, tokens, whitespace_after;
   check_indentation(source);
   tokens = [];
   row = 1;
@@ -503,7 +503,8 @@ module.exports = function(source) {
   previous_was_escape = false;
   for (i = j = 0, len = source.length; j < len; i = ++j) {
     char = source[i];
-    next_char = (ref = source[i + 1]) != null ? ref : "";
+    prev_char = (ref = source[i - 1]) != null ? ref : "";
+    next_char = (ref1 = source[i + 1]) != null ? ref1 : "";
     next_type = current_type;
     if (current_type === "comment") {
       if (char === "\n") {
@@ -592,15 +593,21 @@ module.exports = function(source) {
     } else {
       if (char.match(/\d/)) {
         next_type = "number";
-      } else if (char === "." || char === "-") {
+      } else if (char === ".") {
         if (next_char.match(/\d/)) {
+          next_type = "number";
+        } else {
+          next_type = "punctuation";
+        }
+      } else if (char === "-") {
+        if (next_char.match(/\d/) && !prev_char.match(/\d/)) {
           next_type = "number";
         } else {
           next_type = "punctuation";
         }
       } else if (char === "#") {
         next_type = "comment";
-      } else if (char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)) {
+      } else if (char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\/\|\\\-+=~:;]/)) {
         next_type = "punctuation";
       } else if (char.match(/[a-z]/i)) {
         next_type = "word";
@@ -619,6 +626,10 @@ module.exports = function(source) {
       }
       if (next_type !== current_type) {
         finish_token();
+      } else if (next_type === "punctuation" && current_type === "punctuation") {
+        if (!((prev_char === "?" || prev_char === "!") && (char === "?" || char === "!") || prev_char === "." && char === ".")) {
+          finish_token();
+        }
       }
       current_type = next_type;
       if (next_type !== "string" && next_type !== "comment") {

@@ -68,6 +68,7 @@ module.exports = (source)->
 	previous_was_escape = no
 	
 	for char, i in source
+		prev_char = source[i - 1] ? ""
 		next_char = source[i + 1] ? ""
 		next_type = current_type
 		
@@ -129,14 +130,19 @@ module.exports = (source)->
 		else
 			if char.match(/\d/)
 				next_type = "number"
-			else if char in [".", "-"]
+			else if char is "."
 				if next_char.match(/\d/)
+					next_type = "number"
+				else
+					next_type = "punctuation"
+			else if char is "-"
+				if next_char.match(/\d/) and not prev_char.match(/\d/)
 					next_type = "number"
 				else
 					next_type = "punctuation"
 			else if char is "#"
 				next_type = "comment"
-			else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\|\\\-+=~:;]/)
+			else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\/\|\\\-+=~:;]/)
 				next_type = "punctuation"
 			else if char.match(/[a-z]/i)
 				next_type = "word"
@@ -154,7 +160,11 @@ module.exports = (source)->
 			else
 				next_type = "unknown"
 			
-			finish_token() if next_type isnt current_type
+			if next_type isnt current_type
+				finish_token()
+			else if next_type is "punctuation" and current_type is "punctuation"
+				unless prev_char in ["?", "!"] and char in ["?", "!"] or prev_char is "." and char is "."
+					finish_token()
 			
 			current_type = next_type
 			unless next_type in ["string", "comment"]
