@@ -9,13 +9,6 @@ class Context
 		
 		@lexer = new Lexer
 		
-		# perform = (actions)->
-		# 	result = undefined
-		# 	console.log "performing actions", actions
-		# 	console.log action for action in actions
-		# 	result = do action for action in actions
-		# 	result
-		
 		# maybe this stuff should be handled in the lexer
 		# (but then the lexer would be coupled with the context
 		# which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
@@ -27,44 +20,39 @@ class Context
 					"If <condition> then <actions>"
 					"<actions> if <condition>"
 				]
-				# fn: (condition, actions)->
-				# 	console.log "do", actions, "if", condition
-				# 	console.log not not condition
-				# 	if condition
-				# 		console.log "perform actions"
-				# 		perform actions
-				# 	# hm, this isn't going to work with it having already evaluated the actions
 				fn: ({condition, actions})=>
-					# console.log "do", actions, "if", condition
 					if @eval_expression(condition)
-						# console.log "perform actions"
 						@eval_expression(actions)
 			
 			new Pattern
 				match: [
-					# "Unless <condition>, <actions>"
-					# "Unless <condition> then <actions>" # doesn't sound like good English
-					# "<actions> unless <condition>"
+					"Unless <condition>, <actions>"
+					"Unless <condition> then <actions>" # doesn't sound like good English
+					"<actions> unless <condition>"
 				]
-				fn: (condition, actions)=>
-					perform actions unless condition
+				fn: ({condition, actions})=>
+					unless @eval_expression(condition)
+						@eval_expression(actions)
 			
-			# new Pattern
-			# 	match: [
-			# 		"If <condition>, <actions>, else <alternative actions>"
-			# 		"If <condition> then <actions>, else <alternative actions>"
-			# 		"If <condition> then <actions> else <alternative actions>"
-			# 		"<actions> if <condition> else <alternative actions>"
-			# 	]
-			# 	bad_match: [
-			# 		"if <condition>, then <actions>, else <alternative actions>"
-			# 		"if <condition>, then <actions>, else, <alternative actions>"
-			# 		"if <condition>, <actions>, else, <alternative actions>"
-			# 		# and other things; it might be sort of arbitrary
-			# 		# comma misplacement should really be handled dynamically by the near-match system
-			# 	]
-			# 	fn: ({condition, actions})=>
-			# 		perform actions if condition else bla
+			new Pattern
+				match: [
+					"If <condition>, <actions>, else <alt_actions>"
+					"If <condition> then <actions>, else <alt_actions>"
+					"If <condition> then <actions> else <alt_actions>"
+					"<actions> if <condition> else <alt_actions>" # pythonic ternary
+				]
+				bad_match: [
+					"if <condition>, then <actions>, else <alt_actions>"
+					"if <condition>, then <actions>, else, <alt_actions>"
+					"if <condition>, <actions>, else, <alt_actions>"
+					# and other things; it might be sort of arbitrary
+					# comma misplacement should really be handled dynamically by the near-match system
+				]
+				fn: ({condition, actions, alt_actions})=>
+					if @eval_expression(condition)
+						@eval_expression(actions)
+					else
+						@eval_expression(alt_actions)
 			
 			new Pattern
 				match: [
@@ -204,7 +192,6 @@ class Context
 			result = undefined
 			
 			stringify_tokens = (tokens)->
-				# tokens.join(" ")
 				str = ""
 				for token in tokens
 					if token.type is "punctuation"

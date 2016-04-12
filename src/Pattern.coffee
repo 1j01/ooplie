@@ -5,20 +5,27 @@ class Pattern
 		# TODO: also allow [optional phrase segments]
 		# and maybe (either|or|groups)
 		# TODO: try longer matchers first
-		# TODO: throw error if duplicate variable names and store variables keyed by name...
 		
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs
 				segments = def
-					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_")
+					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_**")
 					.replace(/>\ /g, ">")
 					.replace(/>/g, "> ")
 					.trim()
 					.split(" ")
+				variable_names_used = []
 				for segment in segments
 					if segment.match /^<.*>$/
+						variable_name = segment
+							.replace(/[<>]/g, "")
+							.replace(/_\*\*/g, " ")
+						if variable_name in variable_names_used
+							throw new Error "Variable name `#{variable_name}` used twice in pattern `#{def}`"
+						variable_names_used.push variable_name
+						
 						type: "variable"
-						name: segment.replace(/[<>]/g, "")
+						name: variable_name
 						toString: -> "<#{@name}>"
 					else
 						type: if segment.match(/\w/) then "word" else "punctuation"

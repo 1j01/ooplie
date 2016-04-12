@@ -105,7 +105,7 @@ suite "control flow", ->
 			evaluate("5 if true else 0").to(5)
 			evaluate("5 if false else 0").to(0)
 			# TODO: test else-ifs
-		test.skip "unless", ->
+		test "unless", ->
 			# TODO: test multiline and actual actions
 			evaluate("Unless true, 5").to(undefined)
 			evaluate("Unless false, 5").to(5)

@@ -23,11 +23,27 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Pattern({
-        match: [],
+        match: ["Unless <condition>, <actions>", "Unless <condition> then <actions>", "<actions> unless <condition>"],
         fn: (function(_this) {
-          return function(condition, actions) {
-            if (!condition) {
-              return perform(actions);
+          return function(arg1) {
+            var actions, condition;
+            condition = arg1.condition, actions = arg1.actions;
+            if (!_this.eval_expression(condition)) {
+              return _this.eval_expression(actions);
+            }
+          };
+        })(this)
+      }), new Pattern({
+        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
+        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, alt_actions, condition;
+            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
+            if (_this.eval_expression(condition)) {
+              return _this.eval_expression(actions);
+            } else {
+              return _this.eval_expression(alt_actions);
             }
           };
         })(this)
@@ -227,29 +243,36 @@ module.exports = Context = (function() {
 
 
 },{"./Pattern":2,"./lex":3}],2:[function(require,module,exports){
-var Pattern;
+var Pattern,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 module.exports = Pattern = (function() {
   function Pattern(arg) {
     var bad_match, match, parse_matchers;
     match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
     parse_matchers = function(matcher_defs) {
-      var def, j, len, results, segment, segments;
+      var def, j, len, results, segment, segments, variable_name, variable_names_used;
       results = [];
       for (j = 0, len = matcher_defs.length; j < len; j++) {
         def = matcher_defs[j];
         segments = def.replace(/<([^>]*)(\ )/g, function(m, words, space) {
-          return words + "_";
+          return words + "_**";
         }).replace(/>\ /g, ">").replace(/>/g, "> ").trim().split(" ");
+        variable_names_used = [];
         results.push((function() {
           var k, len1, results1;
           results1 = [];
           for (k = 0, len1 = segments.length; k < len1; k++) {
             segment = segments[k];
             if (segment.match(/^<.*>$/)) {
+              variable_name = segment.replace(/[<>]/g, "").replace(/_\*\*/g, " ");
+              if (indexOf.call(variable_names_used, variable_name) >= 0) {
+                throw new Error("Variable name `" + variable_name + "` used twice in pattern `" + def + "`");
+              }
+              variable_names_used.push(variable_name);
               results1.push({
                 type: "variable",
-                name: segment.replace(/[<>]/g, ""),
+                name: variable_name,
                 toString: function() {
                   return "<" + this.name + ">";
                 }
