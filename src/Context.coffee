@@ -51,16 +51,41 @@ class Context
 					"say <text>"
 				]
 				bad_match: [
-					"puts <text>" # this ain't Ruby or C or nothing'
-					"println <text>" # this ain't Processing
+					"puts <text>"
+					"println <text>"
 					"print line <text>" # you can only output one or more lines
-					"printf <text>" # sorry, this isn't a thing unless you define it
-					"console.log <text>" # *sigh*, you're really not getting this, are you?
-					"writeln <text>" # this ain't Processing
+					"printf <text>"
+					"console.log <text>"
+					"writeln <text>"
 				]
 				fn: (text)=>
 					@console.log text
 					return
+			
+			new Pattern
+				match: [
+					"run JS <text>"
+					"run JavaScript <text>"
+					"run <text> as JS"
+					"run <text> as JavaScript"
+					"execute JS <text>"
+					"execute JavaScript <text>"
+					"execute <text> as JS"
+					"execute <text> as JavaScript"
+					"eval JS <text>"
+					"eval JavaScript <text>"
+					"eval <text> as JS"
+					"eval <text> as JavaScript"
+				]
+				bad_match: [
+					"eval <text>" # as what? (should the error message say something like "as what?"?)
+					"execute <text>"
+					"JavaScript <text>" # not sure JavaScript is a verb
+					"JS <text>"
+				]
+				fn: (text)=>
+					{console} = @
+					eval text
 			
 			# new Pattern
 			# 	match: [

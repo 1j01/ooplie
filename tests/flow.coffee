@@ -133,17 +133,23 @@ suite "control flow", ->
 			evaluate("If there are no towers then 1 else 0").to(1)
 			evaluate("Are there no towers?").to(true)
 	
+	# this isn't really "control flow"
 	suite "imperative", ->
 		test "output to the console", ->
 			expect_output "Hello world", ->
 				context.eval("""
 					output "Hello world"
 				""")
-		test.skip "run JS", ->
+		test "run JS", ->
 			expect_output "Hello world thru JavaScript from Ooplie", ->
 				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
 				context.eval("""
 					run JS 'console.log("Hello world thru JavaScript from Ooplie")'
+				""")
+			expect_output "Hello world again", ->
+				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
+				context.eval("""
+					execute 'console.log("Hello world again")' as JavaScript
 				""")
 		test.skip "JS interop", ->
 			expect_output "Hello world thru JavaScript from a variable in Ooplie", ->

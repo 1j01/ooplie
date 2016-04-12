@@ -182,6 +182,11 @@ class Lexer
 
 class Token
 	constructor: (@type, @col, @row, @value)->
-
+	
+	toString: ->
+		if @type is "comment"
+			"#" + @value
+		else
+			@value
 
 module.exports = {Lexer, Token}

@@ -28,6 +28,16 @@ module.exports = Context = (function() {
             _this.console.log(text);
           };
         })(this)
+      }), new Pattern({
+        match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
+        bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
+        fn: (function(_this) {
+          return function(text) {
+            var console;
+            console = _this.console;
+            return eval(text);
+          };
+        })(this)
       })
     ];
     this.classes = [];
@@ -181,12 +191,18 @@ module.exports = Pattern = (function() {
             if (segment.match(/^<.*>$/)) {
               results1.push({
                 type: "variable",
-                name: segment.replace(/[<>]/g, "")
+                name: segment.replace(/[<>]/g, ""),
+                toString: function() {
+                  return "<" + this.name + ">";
+                }
               });
             } else {
               results1.push({
                 type: "word",
-                value: segment
+                value: segment,
+                toString: function() {
+                  return this.value;
+                }
               });
             }
           }
@@ -208,8 +224,9 @@ module.exports = Pattern = (function() {
       if (matching.type === "variable") {
         if (current_variable != null) {
           if (token.type === matcher[i + 1].type && token.value === matcher[i + 1].value) {
+            console.log("end of variable");
             current_variable = null;
-            i += 1;
+            i += 2;
           } else {
             current_variable.tokens.push(token);
           }
@@ -503,6 +520,14 @@ Token = (function() {
     this.row = row1;
     this.value = value;
   }
+
+  Token.prototype.toString = function() {
+    if (this.type === "comment") {
+      return "#" + this.value;
+    } else {
+      return this.value;
+    }
+  };
 
   return Token;
 
