@@ -1,4 +1,5 @@
 
 Context = require './Context'
-{Lexer, Token} = require './lex'
-module.exports = {Context, Lexer, Token}
+Token = require './Token'
+tokenize = require './tokenize'
+module.exports = {Context, Token, tokenize}

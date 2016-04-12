@@ -1,8 +1,9 @@
 
-{Lexer} = require "./lex"
+tokenize = require "./tokenize"
 Pattern = require "./Pattern"
 
 stringify_tokens = (tokens)->
+	# TODO: Token.stringify_tokens
 	str = ""
 	for token in tokens
 		if token.type is "punctuation"
@@ -21,12 +22,12 @@ class Context
 	constructor: ({@console, @supercontext}={})->
 		# TODO: decouple from console
 		
-		@lexer = new Lexer
+		# semantics are quite tied to context in the case of natural language
+		# so maybe this stuff should be handled a Lexer class
+		# but then the lexer would be coupled with the context
+		# which can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
+		# but may be overall reasonable
 		
-		# maybe this stuff should be handled in the lexer
-		# (but then the lexer would be coupled with the context
-		# which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
-		# semantics are quite tied to context in this case)
 		@patterns = [
 			# NOTE: If-else has to be above If, otherwise If will be matched first
 			new Pattern
@@ -245,7 +246,7 @@ class Context
 						result = handle_expression(line_tokens)
 				line_tokens = []
 			
-			for token in @lexer.lex(text) when token.type isnt "comment"
+			for token in tokenize(text) when token.type isnt "comment"
 				if token.type is "newline"
 					handle_line()
 				else

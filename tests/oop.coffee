@@ -12,11 +12,17 @@ evaluate = (expression)->
 	{to}
 
 suite "object-oriented programming", ->
+	# TODO: put the oop in ooplie
+	
 	shared_context = new Context
-	# put the OOP in Ooplie
+	
 	# TODO: better tests in general
 	# test defining a class
 	# then test inheritance
+	# also all these tests require questioning, which they probably shouldn't
+	# we should have some tests at the begining that test functionality
+	# and then we can have a section with questioning
+	
 	test.skip "animals 1", ->
 		shared_context.eval """
 			A mammal is a type of animal with a neocortex, hair, three middle ear bones, and mammary glands.
@@ -26,6 +32,7 @@ suite "object-oriented programming", ->
 		evaluate("An animal is a type of mammal").to(no)
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is an animal a type of mammal?").to(undefined)
+	
 	test.skip "animals 2!", ->
 		context = shared_context.subcontext()
 		context.eval """
@@ -41,6 +48,7 @@ suite "object-oriented programming", ->
 		evaluate("Is a bunny a type of bunny?").to(no)
 		evaluate("Is a bunny a type of animal?").to(yes)
 		evaluate("Is a bunny a type of mammal?").to(undefined)
+	
 	test.skip "animals 3!", ->
 		context = shared_context.subcontext()
 		context.eval """
@@ -51,6 +59,7 @@ suite "object-oriented programming", ->
 		evaluate("Is Frank a bunny?").to(yes)
 		evaluate("Is Frank funny?").to(yes)
 		evaluate("Is Frank little?").to(yes)
+	
 	test.skip "and it's kyoot", ->
 		context = shared_context.subcontext()
 		context.eval """
@@ -65,6 +74,7 @@ suite "object-oriented programming", ->
 		evaluate("Is a bunny a type of animal?").to(yes)
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is a mammal a type of bunny?").to(no)
+	
 	test.skip "bla bla bla", ->
 		throw new Error "TODO: move or remove this, it isn't OOP"
 		context = shared_context.subcontext()
@@ -75,4 +85,3 @@ suite "object-oriented programming", ->
 			Log greeting " world!"
 			output the greeting followed by " world!"
 		"""
-		

@@ -1,11 +1,9 @@
 
 {expect} = require?("chai") ? chai
-{Lexer} = require?("../src/ooplie.coffee") ? Ooplie
-
-lexer = new Lexer
+Ooplie = require?("../src/ooplie.coffee") ? @Ooplie
 
 tokenize = (source)->
-	tokens = lexer.tokenize(source)
+	tokens = Ooplie.tokenize(source)
 	stripped_tokens = ({type, value} for {type, value} in tokens)
 	to = (value)-> expect(stripped_tokens).to.eql(value)
 	{to}
