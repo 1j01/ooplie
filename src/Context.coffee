@@ -1,21 +1,7 @@
 
 tokenize = require "./tokenize"
 Pattern = require "./Pattern"
-
-stringify_tokens = (tokens)->
-	# TODO: Token.stringify_tokens
-	str = ""
-	for token in tokens
-		if token.type is "punctuation"
-			if token.value in [",", ".", ";", ":"]
-				str += token.value
-			else
-				str += " #{token.value}"
-		else if token.type is "string"
-			str += " #{JSON.stringify(token.value)}"
-		else
-			str += " #{token.value}"
-	str.trim()
+{stringify_tokens} = require "./Token"
 
 module.exports =
 class Context

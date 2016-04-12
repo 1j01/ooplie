@@ -5,25 +5,7 @@ tokenize = require("./tokenize");
 
 Pattern = require("./Pattern");
 
-stringify_tokens = function(tokens) {
-  var i, len, ref, str, token;
-  str = "";
-  for (i = 0, len = tokens.length; i < len; i++) {
-    token = tokens[i];
-    if (token.type === "punctuation") {
-      if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
-        str += token.value;
-      } else {
-        str += " " + token.value;
-      }
-    } else if (token.type === "string") {
-      str += " " + (JSON.stringify(token.value));
-    } else {
-      str += " " + token.value;
-    }
-  }
-  return str.trim();
-};
+stringify_tokens = require("./Token").stringify_tokens;
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -242,9 +224,15 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Pattern":2,"./tokenize":5}],2:[function(require,module,exports){
-var Pattern,
+},{"./Pattern":2,"./Token":3,"./tokenize":5}],2:[function(require,module,exports){
+var Pattern, stringify_matcher, stringify_tokens,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+stringify_tokens = require("./Token").stringify_tokens;
+
+stringify_matcher = function(matcher) {
+  return matcher.join(" ");
+};
 
 module.exports = Pattern = (function() {
   function Pattern(arg) {
@@ -364,7 +352,7 @@ module.exports = Pattern = (function() {
 })();
 
 
-},{}],3:[function(require,module,exports){
+},{"./Token":3}],3:[function(require,module,exports){
 var Token;
 
 module.exports = Token = (function() {
@@ -376,11 +364,29 @@ module.exports = Token = (function() {
   }
 
   Token.prototype.toString = function() {
-    if (this.type === "comment") {
-      return "#" + this.value;
-    } else {
-      return this.value;
+    return Token.stringify_tokens(this);
+  };
+
+  Token.stringify_tokens = function(tokens) {
+    var i, len, ref, str, token;
+    str = "";
+    for (i = 0, len = tokens.length; i < len; i++) {
+      token = tokens[i];
+      if (token.type === "punctuation") {
+        if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
+          str += token.value;
+        } else {
+          str += " " + token.value;
+        }
+      } else if (token.type === "string") {
+        str += " " + (JSON.stringify(token.value));
+      } else if (token.type === "comment") {
+        str += "#" + token.value;
+      } else {
+        str += " " + token.value;
+      }
     }
+    return str.trim();
   };
 
   return Token;

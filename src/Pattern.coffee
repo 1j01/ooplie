@@ -1,4 +1,9 @@
 
+{stringify_tokens} = require "./Token"
+
+stringify_matcher = (matcher)->
+	matcher.join(" ")
+
 module.exports =
 class Pattern
 	constructor: ({match, bad_match, @fn})->
@@ -44,7 +49,7 @@ class Pattern
 		i = 0
 		for token in tokens
 			if i >= matcher.length
-				# console.log "failed to match", tokens.join(" "), "against", matcher.join(" "), "(ended)"
+				# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "(ended)"
 				return
 			matching = matcher[i]
 			if matching.type is "variable"
@@ -63,7 +68,7 @@ class Pattern
 				if token.type is matching.type and token.value is matching.value
 					i += 1
 				else
-					# console.log "failed to match", tokens.join(" "), "against", matcher.join(" "), "at", i, matching, "vs", token
+					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", i, matching, "vs", token
 					return
 		if matching.type is "variable"
 			i += 1
