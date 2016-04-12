@@ -29,7 +29,6 @@ class Pattern
 			if matching.type is "variable"
 				if current_variable?
 					if token.type is matcher[i + 1].type and token.value is matcher[i + 1].value
-						console.log "end of variable"
 						current_variable = null
 						i += 2 # end of the variable, plus we already matched the next token
 					else

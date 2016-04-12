@@ -102,7 +102,7 @@ suite "control flow", ->
 			# pythonic ternary:
 			evaluate("5 if true else 0").to(5)
 			evaluate("5 if false else 0").to(0)
-			# TODO: test if-else-if
+			# TODO: test else-ifs
 		test.skip "unless", ->
 			# TODO: test multiline and actual actions
 			evaluate("Unless true, 5").to(undefined)

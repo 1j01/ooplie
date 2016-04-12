@@ -22,7 +22,7 @@ module.exports = Context = (function() {
     this.patterns = [
       new Pattern({
         match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
-        bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>"],
+        bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
         fn: (function(_this) {
           return function(text) {
             _this.console.log(text);
@@ -42,6 +42,7 @@ module.exports = Context = (function() {
     ];
     this.classes = [];
     this.objects = [];
+    this.variables = {};
   }
 
   Context.prototype.subcontext = function(arg) {
@@ -69,7 +70,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var handle_line, i, len, line_tokens, result, token, tokens;
+    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -86,58 +87,76 @@ module.exports = Context = (function() {
         return callback(new Error("No console to clear."));
       }
     } else {
-      tokens = this.lexer.lex(text);
       result = void 0;
-      line_tokens = [];
-      handle_line = (function(_this) {
-        return function() {
-          var args, i, j, last_token, len, len1, match, pattern, ref, str, token, variable;
-          if (line_tokens.every(function(token) {
+      handle_expression = (function(_this) {
+        return function(tokens) {
+          var i, last_token, len, str, token;
+          if (tokens.every(function(token) {
             var ref;
             return (ref = token.type) === "string" || ref === "number";
           })) {
-            if (line_tokens.some(function(token) {
+            if (tokens.some(function(token) {
               return token.type === "string";
             })) {
               str = "";
-              for (i = 0, len = line_tokens.length; i < len; i++) {
-                token = line_tokens[i];
+              for (i = 0, len = tokens.length; i < len; i++) {
+                token = tokens[i];
                 str += token.value;
               }
-              result = str;
-            } else if (line_tokens.length) {
-              last_token = line_tokens[line_tokens.length - 1];
-              result = last_token.value;
+              return str;
+            } else if (tokens.length) {
+              last_token = tokens[tokens.length - 1];
+              return last_token.value;
             }
-          } else {
-            ref = _this.patterns;
-            for (j = 0, len1 = ref.length; j < len1; j++) {
-              pattern = ref[j];
-              match = pattern.match(line_tokens);
-              if (match != null) {
-                break;
+          }
+        };
+      })(this);
+      handle_statement = (function(_this) {
+        return function(tokens) {
+          var args, i, len, match, pattern, ref, variable;
+          ref = _this.patterns;
+          for (i = 0, len = ref.length; i < len; i++) {
+            pattern = ref[i];
+            match = pattern.match(tokens);
+            if (match != null) {
+              break;
+            }
+          }
+          if (match) {
+            args = (function() {
+              var j, len1, results;
+              results = [];
+              for (j = 0, len1 = match.length; j < len1; j++) {
+                variable = match[j];
+                results.push(handle_expression(variable.tokens));
               }
-            }
-            if (match) {
-              args = (function() {
-                var k, len2, results;
-                results = [];
-                for (k = 0, len2 = match.length; k < len2; k++) {
-                  variable = match[k];
-                  results.push(variable.tokens[0].value);
-                }
-                return results;
-              })();
-              result = pattern.fn.apply(pattern, args);
+              return results;
+            })();
+            return result = pattern.fn.apply(pattern, args);
+          } else {
+            throw new Error("I don't understand");
+          }
+        };
+      })(this);
+      line_tokens = [];
+      handle_line = (function(_this) {
+        return function() {
+          if (line_tokens.length) {
+            if (line_tokens.every(function(token) {
+              var ref;
+              return (ref = token.type) === "string" || ref === "number";
+            })) {
+              result = handle_expression(line_tokens);
             } else {
-              throw new Error("I don't understand");
+              result = handle_statement(line_tokens);
             }
           }
           return line_tokens = [];
         };
       })(this);
-      for (i = 0, len = tokens.length; i < len; i++) {
-        token = tokens[i];
+      ref = this.lexer.lex(text);
+      for (i = 0, len = ref.length; i < len; i++) {
+        token = ref[i];
         if (token.type !== "comment") {
           if (token.type === "newline") {
             handle_line();
@@ -148,18 +167,6 @@ module.exports = Context = (function() {
       }
       handle_line();
       return callback(null, result);
-
-      /*
-      			i = 0
-      			expr_tokens = []
-      			while i < tokens.length
-      				token = tokens[i]
-      				unless token.type is "comment"
-      					expr_tokens.push token
-      					 * try to match expr_tokens to each known pattern?
-      					 * if found, you can't just execute it right away
-      				i++
-       */
     }
   };
 
@@ -224,7 +231,6 @@ module.exports = Pattern = (function() {
       if (matching.type === "variable") {
         if (current_variable != null) {
           if (token.type === matcher[i + 1].type && token.value === matcher[i + 1].value) {
-            console.log("end of variable");
             current_variable = null;
             i += 2;
           } else {

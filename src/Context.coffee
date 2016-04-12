@@ -9,18 +9,15 @@ class Context
 		
 		@lexer = new Lexer
 		
-		# definitions / rules / data / information / stuff
-		
 		perform = (actions)->
 			result = undefined
 			result = do action for action in actions
 			result
 		
-		# we should have a class Pattern
-		# (and maybe this stuff should be handled in the lexer)
-		# (but then the lexer would be coupled with the context)
-		# (which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack)
-		# (semantics are quite tied to context in this case)
+		# maybe this stuff should be handled in the lexer
+		# (but then the lexer would be coupled with the context
+		# which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
+		# semantics are quite tied to context in this case)
 		@patterns = [
 			# new Pattern
 			# 	match: [
@@ -57,6 +54,9 @@ class Context
 					"printf <text>"
 					"console.log <text>"
 					"writeln <text>"
+					"output <text> to the terminal"
+					"log <text> to the terminal"
+					"print <text> to the terminal"
 				]
 				fn: (text)=>
 					@console.log text
@@ -116,6 +116,7 @@ class Context
 		]
 		@classes = []
 		@objects = []
+		@variables = {}
 	
 	subcontext: ({console}={})->
 		console ?= @console
@@ -149,55 +150,52 @@ class Context
 			else
 				callback new Error "No console to clear."
 		else
-			# actually useful stuff goes here
-			
-			tokens = @lexer.lex(text)
-			
-			# tokens = (token for token in tokens when token.type isnt "comment" and token.type isnt "newline")
-			# tokens = (token for token in tokens when token.type isnt "comment")
-			
-			# console.log non_comment_tokens
-			
 			result = undefined
+			
+			handle_expression = (tokens)=>
+				if tokens.every((token)-> token.type in ["string", "number"])
+					# if there are two consecutive numbers
+					# 	TODO: throw an error
+					# if there's at least one string
+					if tokens.some((token)-> token.type is "string")
+						str = ""
+						str += token.value for token in tokens
+						return str
+					else if tokens.length
+						last_token = tokens[tokens.length - 1]
+						return last_token.value
+			
+			handle_statement = (tokens)=>
+				# TODO: we need to find the outermost pattern, which can be anchored before or after (or both)
+				# this is ridiculous:
+				# 	if a then b (unless y) else c or 5 and true but not 7
+				# but we should handle
+				# 	a unless b
+				# as well as
+				# 	unless b, a
+				
+				for pattern in @patterns
+					match = pattern.match(tokens)
+					break if match?
+				if match
+					args =
+						for variable in match
+							handle_expression(variable.tokens)
+					result = pattern.fn(args...)
+				else
+					throw new Error "I don't understand"
 			
 			line_tokens = []
 			
 			handle_line = =>
-				# if all the tokens are either numbers or strings
-				# handle expressions
-				if line_tokens.every((token)-> token.type in ["string", "number"])
-					# if there are two consecutive numbers
-					# 	TODO: throw an error
-					# if there's at least one string
-					if line_tokens.some((token)-> token.type is "string")
-						str = ""
-						str += token.value for token in line_tokens
-						result = str
-					else if line_tokens.length
-						last_token = line_tokens[line_tokens.length - 1]
-						result = last_token.value
-						# console.log last_token.value, last_token
-				# handle statements
-				# (obviously we'll need to handle expressions within statements (and vice-versa) but we'll get to that)
-				else
-					# console.log "can't handle", line_tokens
-					# throw new Error "IDK"
-					for pattern in @patterns
-						match = pattern.match(line_tokens)
-						break if match?
-					if match
-						# console.log "matched", pattern, "for", line_tokens
-						# result = pattern.fn(match...)
-						args =
-							for variable in match
-								variable.tokens[0].value # TODO: evaluate variable.tokens as an expression
-						result = pattern.fn(args...)
+				if line_tokens.length
+					if line_tokens.every((token)-> token.type in ["string", "number"])
+						result = handle_expression(line_tokens)
 					else
-						throw new Error "I don't understand"
-				
+						result = handle_statement(line_tokens)
 				line_tokens = []
 			
-			for token in tokens when token.type isnt "comment"
+			for token in @lexer.lex(text) when token.type isnt "comment"
 				if token.type is "newline"
 					handle_line()
 				else
@@ -207,19 +205,3 @@ class Context
 			
 			callback null, result
 			
-			###
-			i = 0
-			expr_tokens = []
-			while i < tokens.length
-				token = tokens[i]
-				unless token.type is "comment"
-					expr_tokens.push token
-					# try to match expr_tokens to each known pattern?
-					# if found, you can't just execute it right away
-				i++
-			###
-			
-			# we need to find the outermost pattern, which can come before or after
-			# "if a then b (unless y) else c or 5 and true but not 7"
-			# alright, maybe first just match a single pattern per line
-			# and then do conditionals and stuff later
