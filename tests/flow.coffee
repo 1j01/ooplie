@@ -10,16 +10,22 @@ mock_console =
 context = new Context console: mock_console
 
 expect_output = (output, fn)->
-	got_expected_output = no
+	gotten_outputs = []
 	mock_console.log = (text)->
-		if text is output
-			got_expected_output = yes
-		else
-			log_to_actual_console arguments...
+		gotten_outputs.push text
 	fn()
-	unless got_expected_output
-		throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}"
-	# TODO: expect an exact array of outputs
+	# console.log output, gotten_outputs
+	mock_console.log = log_to_actual_console
+	if typeof output is "string"
+		unless output in gotten_outputs
+			if gotten_outputs.length > 1
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got outputs #{JSON.stringify(gotten_outputs)})"
+			else if gotten_outputs.length is 1
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got output #{JSON.stringify(gotten_outputs[0])})"
+			else
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}"
+	else
+		throw new Error "TODO: expect an exact array of outputs"
 
 evaluate = (expression)->
 	result = context.eval(expression)
@@ -128,6 +134,11 @@ suite "control flow", ->
 			evaluate("Are there no towers?").to(true)
 	
 	suite "imperative", ->
+		test "output to the console", ->
+			expect_output "Hello world", ->
+				context.eval("""
+					output "Hello world"
+				""")
 		test.skip "run JS", ->
 			expect_output "Hello world thru JavaScript from Ooplie", ->
 				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter

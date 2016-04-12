@@ -21,31 +21,11 @@ module.exports = Context = (function() {
     };
     this.patterns = [
       new Pattern({
-        match: ["if <condition>, <actions>", "if <condition> then <actions>", "<actions> if <condition>"],
-        action: function(condition, actions) {
-          if (condition) {
-            return perform(actions);
-          }
-        }
-      }), new Pattern({
-        match: ["unless <condition>, <actions>", "unless <condition> then <actions>", "<actions> unless <condition>"],
-        action: function(condition, actions) {
-          if (!condition) {
-            return perform(actions);
-          }
-        }
-      }), new Pattern({
-        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "println <text>", "say <text>"],
-        action: (function(_this) {
+        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
+        bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>"],
+        fn: (function(_this) {
           return function(text) {
-            return _this.console.log(text);
-          };
-        })(this)
-      }), new Pattern({
-        match: ["<text> <text>"],
-        action: (function(_this) {
-          return function(text) {
-            return "" + text + text;
+            _this.console.log(text);
           };
         })(this)
       })
@@ -98,11 +78,10 @@ module.exports = Context = (function() {
     } else {
       tokens = this.lexer.lex(text);
       result = void 0;
-      console.log(result);
       line_tokens = [];
       handle_line = (function(_this) {
         return function() {
-          var i, last_token, len, str, token;
+          var args, i, j, last_token, len, len1, match, pattern, ref, str, token, variable;
           if (line_tokens.every(function(token) {
             var ref;
             return (ref = token.type) === "string" || ref === "number";
@@ -121,8 +100,28 @@ module.exports = Context = (function() {
               result = last_token.value;
             }
           } else {
-            console.log("can't handle", line_tokens);
-            throw new Error("IDK");
+            ref = _this.patterns;
+            for (j = 0, len1 = ref.length; j < len1; j++) {
+              pattern = ref[j];
+              match = pattern.match(line_tokens);
+              if (match != null) {
+                break;
+              }
+            }
+            if (match) {
+              args = (function() {
+                var k, len2, results;
+                results = [];
+                for (k = 0, len2 = match.length; k < len2; k++) {
+                  variable = match[k];
+                  results.push(variable.tokens[0].value);
+                }
+                return results;
+              })();
+              result = pattern.fn.apply(pattern, args);
+            } else {
+              throw new Error("I don't understand");
+            }
           }
           return line_tokens = [];
         };
@@ -138,7 +137,6 @@ module.exports = Context = (function() {
         }
       }
       handle_line();
-      console.log(result);
       return callback(null, result);
 
       /*
@@ -165,30 +163,90 @@ var Pattern;
 
 module.exports = Pattern = (function() {
   function Pattern(arg) {
-    var action, match;
-    match = arg.match, action = arg.action;
-    this.defs = match;
-    this.fn = action;
+    var def, match, segment, segments;
+    match = arg.match, this.fn = arg.fn;
+    this.matchers = (function() {
+      var j, len, results;
+      results = [];
+      for (j = 0, len = match.length; j < len; j++) {
+        def = match[j];
+        segments = def.replace(/<([^>]*)(\ )/, function(m, words, space) {
+          return words + "_";
+        }).split(" ");
+        results.push((function() {
+          var k, len1, results1;
+          results1 = [];
+          for (k = 0, len1 = segments.length; k < len1; k++) {
+            segment = segments[k];
+            if (segment.match(/^<.*>$/)) {
+              results1.push({
+                type: "variable",
+                name: segment.replace(/[<>]/g, "")
+              });
+            } else {
+              results1.push({
+                type: "word",
+                value: segment
+              });
+            }
+          }
+          return results1;
+        })());
+      }
+      return results;
+    })();
   }
 
-  Pattern.prototype.match = function(tokens) {
-    var def, i, j, len, len1, token;
-    for (i = 0, len = defs.length; i < len; i++) {
-      def = defs[i];
-      for (j = 0, len1 = tokens.length; j < len1; j++) {
-        token = tokens[j];
-        if (the(token(matches(up(w / the(def)))))) {
-          looks(good);
-          continue;
+  Pattern.prototype.match_with = function(tokens, matcher) {
+    var current_variable, i, j, len, matching, token, variables;
+    variables = [];
+    current_variable = null;
+    i = 0;
+    for (j = 0, len = tokens.length; j < len; j++) {
+      token = tokens[j];
+      matching = matcher[i];
+      if (matching.type === "variable") {
+        if (current_variable != null) {
+          if (token.type === matcher[i + 1].type && token.value === matcher[i + 1].value) {
+            current_variable = null;
+            i += 1;
+          } else {
+            current_variable.tokens.push(token);
+          }
         } else {
-          nope;
+          current_variable = {
+            name: matching.name,
+            tokens: []
+          };
+          variables.push(current_variable);
+          current_variable.tokens.push(token);
+        }
+      } else {
+        current_variable = null;
+        if (token.type === matching.type && token.value === matching.value) {
+          i += 1;
+        } else {
+          return;
         }
       }
-      wow(did(you(match(the(whole(typeof thing !== "undefined" && thing !== null))))));
-      if (so) {
-        return the(match);
+    }
+    if (matching.type === "variable") {
+      i += 1;
+    }
+    if (i === matcher.length) {
+      return variables;
+    }
+  };
+
+  Pattern.prototype.match = function(tokens) {
+    var j, len, match, matcher, ref;
+    ref = this.matchers;
+    for (j = 0, len = ref.length; j < len; j++) {
+      matcher = ref[j];
+      match = this.match_with(tokens, matcher);
+      if (match != null) {
+        return match;
       }
-      otherwise(you(have(failed)));
     }
   };
 

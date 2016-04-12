@@ -22,23 +22,23 @@ class Context
 		# (which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack)
 		# (semantics are quite tied to context in this case)
 		@patterns = [
-			new Pattern
-				match: [
-					"if <condition>, <actions>"
-					"if <condition> then <actions>"
-					"<actions> if <condition>"
-				]
-				action: (condition, actions)->
-					perform actions if condition
+			# new Pattern
+			# 	match: [
+			# 		"if <condition>, <actions>"
+			# 		"if <condition> then <actions>"
+			# 		"<actions> if <condition>"
+			# 	]
+			# 	fn: (condition, actions)->
+			# 		perform actions if condition
 			
-			new Pattern
-				match: [
-					"unless <condition>, <actions>"
-					"unless <condition> then <actions>" # doesn't sound like good English
-					"<actions> unless <condition>"
-				]
-				action: (condition, actions)->
-					perform actions unless condition
+			# new Pattern
+			# 	match: [
+			# 		"unless <condition>, <actions>"
+			# 		"unless <condition> then <actions>" # doesn't sound like good English
+			# 		"<actions> unless <condition>"
+			# 	]
+			# 	fn: (condition, actions)->
+			# 		perform actions unless condition
 			
 			new Pattern
 				match: [
@@ -48,18 +48,46 @@ class Context
 					"log <text> to the console"
 					"print <text>"
 					"print <text> to the console"
-					"println <text>" # no
 					"say <text>"
 				]
-				action: (text)=>
-					@console.log text
-			
-			new Pattern
-				match: [
-					"<text> <text>"
+				bad_match: [
+					"puts <text>" # this ain't Ruby or C or nothing'
+					"println <text>" # this ain't Processing
+					"print line <text>" # you can only output one or more lines
+					"printf <text>" # sorry, this isn't a thing unless you define it
+					"console.log <text>" # *sigh*, you're really not getting this, are you?
+					"writeln <text>" # this ain't Processing
 				]
-				action: (text)=>
-					"#{text}#{text}"
+				fn: (text)=>
+					@console.log text
+					return
+			
+			# new Pattern
+			# 	match: [
+			# 		"<text> <text>"
+			# 	]
+			# 	fn: (text)=>
+			# 		"#{text}#{text}"
+			
+			# # within an expression
+			# new Pattern
+			# 	match: [
+			# 		"<expression a> = <expression b>"
+			# 	]
+			# 	fn: (a, b)=>
+			# 		a is b
+			
+			# # as a statement
+			# new Pattern
+			# 	match: [
+			# 		"<variable name> = <expression b>"
+			# 	]
+			# 	fn: (a, b)=>
+			# 		if a of (@variables or @definitions)
+			# 			unless (@variables or @definitions)[a] is b
+			# 				throw new Error "#{a} is already defined as #{(@variables or @definitions)[a]} (which does not equal #{b})"
+			# 		else
+			# 			(@variables or @definitions)[a] = b
 		]
 		@classes = []
 		@objects = []
@@ -106,12 +134,12 @@ class Context
 			# console.log non_comment_tokens
 			
 			result = undefined
-			console.log result
 			
 			line_tokens = []
 			
 			handle_line = =>
 				# if all the tokens are either numbers or strings
+				# handle expressions
 				if line_tokens.every((token)-> token.type in ["string", "number"])
 					# if there are two consecutive numbers
 					# 	TODO: throw an error
@@ -124,9 +152,23 @@ class Context
 						last_token = line_tokens[line_tokens.length - 1]
 						result = last_token.value
 						# console.log last_token.value, last_token
+				# handle statements
+				# (obviously we'll need to handle expressions within statements (and vice-versa) but we'll get to that)
 				else
-					console.log "can't handle", line_tokens
-					throw new Error "IDK"
+					# console.log "can't handle", line_tokens
+					# throw new Error "IDK"
+					for pattern in @patterns
+						match = pattern.match(line_tokens)
+						break if match?
+					if match
+						# console.log "matched", pattern, "for", line_tokens
+						# result = pattern.fn(match...)
+						args =
+							for variable in match
+								variable.tokens[0].value # TODO: evaluate variable.tokens as an expression
+						result = pattern.fn(args...)
+					else
+						throw new Error "I don't understand"
 				
 				line_tokens = []
 			
@@ -138,7 +180,6 @@ class Context
 			
 			handle_line()
 			
-			console.log result
 			callback null, result
 			
 			###
