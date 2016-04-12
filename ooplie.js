@@ -1,9 +1,29 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Lexer, Pattern;
+var Context, Lexer, Pattern, stringify_tokens;
 
 Lexer = require("./lex").Lexer;
 
 Pattern = require("./Pattern");
+
+stringify_tokens = function(tokens) {
+  var i, len, ref, str, token;
+  str = "";
+  for (i = 0, len = tokens.length; i < len; i++) {
+    token = tokens[i];
+    if (token.type === "punctuation") {
+      if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
+        str += token.value;
+      } else {
+        str += " " + token.value;
+      }
+    } else if (token.type === "string") {
+      str += " " + (JSON.stringify(token.value));
+    } else {
+      str += " " + token.value;
+    }
+  }
+  return str.trim();
+};
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -12,6 +32,20 @@ module.exports = Context = (function() {
     this.lexer = new Lexer;
     this.patterns = [
       new Pattern({
+        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
+        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, alt_actions, condition;
+            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
+            if (_this.eval_expression(condition)) {
+              return _this.eval_expression(actions);
+            } else {
+              return _this.eval_expression(alt_actions);
+            }
+          };
+        })(this)
+      }), new Pattern({
         match: ["If <condition>, <actions>", "If <condition> then <actions>", "<actions> if <condition>"],
         fn: (function(_this) {
           return function(arg1) {
@@ -30,20 +64,6 @@ module.exports = Context = (function() {
             condition = arg1.condition, actions = arg1.actions;
             if (!_this.eval_expression(condition)) {
               return _this.eval_expression(actions);
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
-        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
-        fn: (function(_this) {
-          return function(arg1) {
-            var actions, alt_actions, condition;
-            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
-            if (_this.eval_expression(condition)) {
-              return _this.eval_expression(actions);
-            } else {
-              return _this.eval_expression(alt_actions);
             }
           };
         })(this)
@@ -136,7 +156,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, stringify_tokens, token;
+    var handle_expression, handle_line, handle_statement, i, len, line_tokens, ref, result, token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -154,25 +174,6 @@ module.exports = Context = (function() {
       }
     } else {
       result = void 0;
-      stringify_tokens = function(tokens) {
-        var i, len, ref, str, token;
-        str = "";
-        for (i = 0, len = tokens.length; i < len; i++) {
-          token = tokens[i];
-          if (token.type === "punctuation") {
-            if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
-              str += token.value;
-            } else {
-              str += " " + token.value;
-            }
-          } else if (token.type === "string") {
-            str += " " + (JSON.stringify(token.value));
-          } else {
-            str += " " + token.value;
-          }
-        }
-        return str.trim();
-      };
       handle_expression = (function(_this) {
         return function(tokens) {
           return _this.eval_expression(tokens);
@@ -298,16 +299,19 @@ module.exports = Pattern = (function() {
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var current_variable_tokens, i, j, len, matching, token, variables;
+    var current_variable_tokens, i, j, len, matching, ref, ref1, token, variables;
     variables = {};
     current_variable_tokens = null;
     i = 0;
     for (j = 0, len = tokens.length; j < len; j++) {
       token = tokens[j];
+      if (i >= matcher.length) {
+        return;
+      }
       matching = matcher[i];
       if (matching.type === "variable") {
         if (current_variable_tokens != null) {
-          if (token.type === matcher[i + 1].type && token.value === matcher[i + 1].value) {
+          if (token.type === ((ref = matcher[i + 1]) != null ? ref.type : void 0) && token.value === ((ref1 = matcher[i + 1]) != null ? ref1.value : void 0)) {
             current_variable_tokens = null;
             i += 2;
           } else {

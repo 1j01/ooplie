@@ -43,10 +43,13 @@ class Pattern
 		
 		i = 0
 		for token in tokens
+			if i >= matcher.length
+				# console.log "failed to match", tokens.join(" "), "against", matcher.join(" "), "(ended)"
+				return
 			matching = matcher[i]
 			if matching.type is "variable"
 				if current_variable_tokens?
-					if token.type is matcher[i + 1].type and token.value is matcher[i + 1].value
+					if token.type is matcher[i + 1]?.type and token.value is matcher[i + 1]?.value
 						current_variable_tokens = null
 						i += 2 # end of the variable, plus we already matched the next token
 					else

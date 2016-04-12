@@ -2,6 +2,20 @@
 {Lexer} = require "./lex"
 Pattern = require "./Pattern"
 
+stringify_tokens = (tokens)->
+	str = ""
+	for token in tokens
+		if token.type is "punctuation"
+			if token.value in [",", ".", ";", ":"]
+				str += token.value
+			else
+				str += " #{token.value}"
+		else if token.type is "string"
+			str += " #{JSON.stringify(token.value)}"
+		else
+			str += " #{token.value}"
+	str.trim()
+
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
@@ -14,26 +28,7 @@ class Context
 		# which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
 		# semantics are quite tied to context in this case)
 		@patterns = [
-			new Pattern
-				match: [
-					"If <condition>, <actions>"
-					"If <condition> then <actions>"
-					"<actions> if <condition>"
-				]
-				fn: ({condition, actions})=>
-					if @eval_expression(condition)
-						@eval_expression(actions)
-			
-			new Pattern
-				match: [
-					"Unless <condition>, <actions>"
-					"Unless <condition> then <actions>" # doesn't sound like good English
-					"<actions> unless <condition>"
-				]
-				fn: ({condition, actions})=>
-					unless @eval_expression(condition)
-						@eval_expression(actions)
-			
+			# NOTE: If-else has to be above If, otherwise If will be matched first
 			new Pattern
 				match: [
 					"If <condition>, <actions>, else <alt_actions>"
@@ -53,6 +48,26 @@ class Context
 						@eval_expression(actions)
 					else
 						@eval_expression(alt_actions)
+			
+			new Pattern
+				match: [
+					"If <condition>, <actions>"
+					"If <condition> then <actions>"
+					"<actions> if <condition>"
+				]
+				fn: ({condition, actions})=>
+					if @eval_expression(condition)
+						@eval_expression(actions)
+			
+			new Pattern
+				match: [
+					"Unless <condition>, <actions>"
+					"Unless <condition> then <actions>" # doesn't sound like good English
+					"<actions> unless <condition>"
+				]
+				fn: ({condition, actions})=>
+					unless @eval_expression(condition)
+						@eval_expression(actions)
 			
 			new Pattern
 				match: [
@@ -190,20 +205,6 @@ class Context
 				callback new Error "No console to clear."
 		else
 			result = undefined
-			
-			stringify_tokens = (tokens)->
-				str = ""
-				for token in tokens
-					if token.type is "punctuation"
-						if token.value in [",", ".", ";", ":"]
-							str += token.value
-						else
-							str += " #{token.value}"
-					else if token.type is "string"
-						str += " #{JSON.stringify(token.value)}"
-					else
-						str += " #{token.value}"
-				str.trim()
 			
 			handle_expression = (tokens)=>
 				@eval_expression(tokens)
