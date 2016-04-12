@@ -21,6 +21,28 @@ module.exports = Context = (function() {
     };
     this.patterns = [
       new Pattern({
+        match: ["if <condition>, <actions>", "if <condition> then <actions>", "<actions> if <condition>"],
+        fn: function(condition, actions) {
+          if (condition) {
+            return perform(actions);
+          }
+        }
+      }), new Pattern({
+        match: ["unless <condition>, <actions>", "unless <condition> then <actions>", "<actions> unless <condition>"],
+        fn: function(condition, actions) {
+          if (!condition) {
+            return perform(actions);
+          }
+        }
+      }), new Pattern({
+        match: ["if <condition>, <actions>, else <alternative actions>", "if <condition> then <actions>, else <alternative actions>", "if <condition> then <actions> else <alternative actions>", "<actions> if <condition> else <alternative actions>"],
+        bad_match: ["if <condition>, then <actions>, else <alternative actions>", "if <condition>, then <actions>, else, <alternative actions>", "if <condition>, <actions>, else, <alternative actions>"],
+        fn: function(condition, actions) {
+          if (condition) {
+            return perform(actions);
+          }
+        }
+      }), new Pattern({
         match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
         bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
         fn: (function(_this) {
@@ -108,6 +130,20 @@ module.exports = Context = (function() {
               last_token = tokens[tokens.length - 1];
               return last_token.value;
             }
+          } else if (tokens.length === 1) {
+            token = tokens[0];
+            if (token.type === "word") {
+              switch (token.value) {
+                case "true":
+                  return true;
+                case "false":
+                  return false;
+                default:
+                  throw new Error("I don't understand the expression `" + (tokens.join(" ")) + "`");
+              }
+            }
+          } else {
+            throw new Error("I don't understand the expression `" + (tokens.join(" ")) + "`");
           }
         };
       })(this);
@@ -141,14 +177,16 @@ module.exports = Context = (function() {
       line_tokens = [];
       handle_line = (function(_this) {
         return function() {
+          var e, error;
           if (line_tokens.length) {
-            if (line_tokens.every(function(token) {
-              var ref;
-              return (ref = token.type) === "string" || ref === "number";
-            })) {
-              result = handle_expression(line_tokens);
-            } else {
+            try {
               result = handle_statement(line_tokens);
+            } catch (error) {
+              e = error;
+              if (e.message !== "I don't understand") {
+                throw e;
+              }
+              result = handle_expression(line_tokens);
             }
           }
           return line_tokens = [];

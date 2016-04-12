@@ -386,7 +386,7 @@ suite "mathematics", ->
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
 		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
 		evaluate("100 seconds = one hundred second").to(false)
-	test.skip "boolean values", ->
+	test "boolean values", ->
 		evaluate("true").to(true)
 		evaluate("false").to(false)
 	test.skip "boolean logic", ->

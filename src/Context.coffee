@@ -19,23 +19,40 @@ class Context
 		# which is maybe not a horrible thing, but it can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
 		# semantics are quite tied to context in this case)
 		@patterns = [
-			# new Pattern
-			# 	match: [
-			# 		"if <condition>, <actions>"
-			# 		"if <condition> then <actions>"
-			# 		"<actions> if <condition>"
-			# 	]
-			# 	fn: (condition, actions)->
-			# 		perform actions if condition
+			new Pattern
+				match: [
+					"if <condition>, <actions>"
+					"if <condition> then <actions>"
+					"<actions> if <condition>"
+				]
+				fn: (condition, actions)->
+					perform actions if condition
 			
-			# new Pattern
-			# 	match: [
-			# 		"unless <condition>, <actions>"
-			# 		"unless <condition> then <actions>" # doesn't sound like good English
-			# 		"<actions> unless <condition>"
-			# 	]
-			# 	fn: (condition, actions)->
-			# 		perform actions unless condition
+			new Pattern
+				match: [
+					"unless <condition>, <actions>"
+					"unless <condition> then <actions>" # doesn't sound like good English
+					"<actions> unless <condition>"
+				]
+				fn: (condition, actions)->
+					perform actions unless condition
+			
+			new Pattern
+				match: [
+					"if <condition>, <actions>, else <alternative actions>"
+					"if <condition> then <actions>, else <alternative actions>"
+					"if <condition> then <actions> else <alternative actions>"
+					"<actions> if <condition> else <alternative actions>"
+				]
+				bad_match: [
+					"if <condition>, then <actions>, else <alternative actions>"
+					"if <condition>, then <actions>, else, <alternative actions>"
+					"if <condition>, <actions>, else, <alternative actions>"
+					# and other things; it might be sort of arbitrary
+					# comma misplacement should really be handled dynamically by the near-match system
+				]
+				fn: (condition, actions)->
+					perform actions if condition
 			
 			new Pattern
 				match: [
@@ -164,6 +181,15 @@ class Context
 					else if tokens.length
 						last_token = tokens[tokens.length - 1]
 						return last_token.value
+				else if tokens.length is 1
+					[token] = tokens
+					if token.type is "word"
+						switch token.value
+							when "true" then return true
+							when "false" then return false
+							else throw new Error "I don't understand the expression `#{tokens.join(" ")}`"
+				else
+					throw new Error "I don't understand the expression `#{tokens.join(" ")}`"
 			
 			handle_statement = (tokens)=>
 				# TODO: we need to find the outermost pattern, which can be anchored before or after (or both)
@@ -189,10 +215,12 @@ class Context
 			
 			handle_line = =>
 				if line_tokens.length
-					if line_tokens.every((token)-> token.type in ["string", "number"])
-						result = handle_expression(line_tokens)
-					else
+					try
 						result = handle_statement(line_tokens)
+					catch e
+						if e.message isnt "I don't understand"
+							throw e
+						result = handle_expression(line_tokens)
 				line_tokens = []
 			
 			for token in @lexer.lex(text) when token.type isnt "comment"

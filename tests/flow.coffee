@@ -96,6 +96,9 @@ suite "control flow", ->
 			# post-if:
 			evaluate("5 if true").to(5)
 			evaluate("5 if false").to(undefined)
+		test.skip "if-else", ->
+			evaluate("If true, 5, else 0").to(5)
+			evaluate("If false, 5, else 0").to(0)
 			# ternary:
 			evaluate("If true then 5 else 0").to(5)
 			evaluate("If false then 5 else 0").to(0)
