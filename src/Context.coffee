@@ -318,13 +318,13 @@ class Context
 			callback null, (if text.match /^[A-Z]/ then "Hello" else "hello") + (if text.match /\.|!/ then "." else "")
 		else if text.match /^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i
 			callback null, (if text.match /^[A-Z]/ then "Not much" else "not much") + (if text.match /\?|!/ then "." else "")
-		else if text.match /^>?[:;8X][()O3PCD]$/i
+		else if text.match /^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i
 			callback null, text # top notch emotional mirroring
 		# Unhelp
-		else if text.match /^(!*\?+!*|(I (want|need) |display|show|view)?help)/i
+		else if text.match /^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i # overly comprehensive, much?
 			callback null, "Sorry, I can't help." # TODO
 		# Console
-		else if text.match /^(clr|clear)( console| output)?$/i
+		else if text.match /^(clr|clear)( console)?( output)?|cls$/i
 			if @console?
 				@console.clear()
 				callback null, "Console cleared."
@@ -352,4 +352,3 @@ class Context
 			handle_line()
 			
 			callback null, result
-			

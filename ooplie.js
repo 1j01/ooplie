@@ -290,11 +290,11 @@ module.exports = Context = (function() {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Not much" : "not much") + (text.match(/\?|!/) ? "." : ""));
-    } else if (text.match(/^>?[:;8X][()O3PCD]$/i)) {
+    } else if (text.match(/^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i)) {
       return callback(null, text);
-    } else if (text.match(/^(!*\?+!*|(I (want|need) |display|show|view)?help)/i)) {
+    } else if (text.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)) {
       return callback(null, "Sorry, I can't help.");
-    } else if (text.match(/^(clr|clear)( console| output)?$/i)) {
+    } else if (text.match(/^(clr|clear)( console)?( output)?|cls$/i)) {
       if (this.console != null) {
         this.console.clear();
         return callback(null, "Console cleared.");
