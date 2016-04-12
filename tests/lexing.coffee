@@ -94,6 +94,28 @@ suite "tokenize", ->
 			{type: "word", value: "Elipses"}
 			{type: "punctuation", value: "..."}
 		])
+		tokenize("Greater than >= or equal to").to([
+			{type: "word", value: "Greater"}
+			{type: "word", value: "than"}
+			{type: "punctuation", value: ">="}
+			{type: "word", value: "or"}
+			{type: "word", value: "equal"}
+			{type: "word", value: "to"}
+		])
+		tokenize("Less than <= or equal to").to([
+			{type: "word", value: "Less"}
+			{type: "word", value: "than"}
+			{type: "punctuation", value: "<="}
+			{type: "word", value: "or"}
+			{type: "word", value: "equal"}
+			{type: "word", value: "to"}
+		])
+		tokenize("Not != equal to").to([
+			{type: "word", value: "Not"}
+			{type: "punctuation", value: "!="}
+			{type: "word", value: "equal"}
+			{type: "word", value: "to"}
+		])
 	
 	test "punctuation that shouldn't be combined", ->
 		tokenize("{()}").to([

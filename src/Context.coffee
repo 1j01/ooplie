@@ -175,6 +175,73 @@ class Context
 				]
 				fn: ({a, b})=>
 					@eval_expression(a) - @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> = <b>"
+					"<a> equals <b>"
+					"<a> is equal to <b>"
+					"<a> is <b>"
+				]
+				bad_match: [
+					"<a> == <b>"
+					"<a> === <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) == @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> != <b>"
+					"<a> does not equal <b>"
+					"<a> is not equal to <b>"
+					"<a> isn't <b>"
+				]
+				bad_match: [
+					"<a> isnt <b>" # this isn't coffeescript, you can punctuate contractions
+					"<a> isnt equal to <b>"
+					"<a> isn't equal to <b>" # this just sounds silly; be formal or don't
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) != @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> > <b>"
+					"<a> is greater than <b>"
+				]
+				bad_match: [
+					"<a> is more than <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) > @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> < <b>"
+					"<a> is less than <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) < @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> >= <b>"
+					"<a> is greater than or equal to <b>"
+				]
+				bad_match: [
+					"<a> is more than or equal to <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) >= @eval_expression(b)
+			
+			new Pattern
+				match: [
+					"<a> <= <b>"
+					"<a> is less than or equal to <b>"
+				]
+				fn: ({a, b})=>
+					@eval_expression(a) <= @eval_expression(b)
 		]
 		@classes = []
 		@objects = []
@@ -236,18 +303,12 @@ class Context
 		else
 			result = undefined
 			
+			# TODO: treat statements as expressions
+			
 			handle_expression = (tokens)=>
 				@eval_expression(tokens)
 			
 			handle_statement = (tokens)=>
-				# TODO: we need to find the outermost pattern, which can be anchored before or after (or both)
-				# this is ridiculous:
-				# 	if a then b (unless y) else c or 5 and true but not 7
-				# but we should handle
-				# 	a unless b
-				# as well as
-				# 	unless b, a
-				
 				bad_match = null
 				for pattern in @patterns
 					match = pattern.match(tokens)
@@ -259,8 +320,10 @@ class Context
 				if match
 					result = pattern.fn(match)
 				else if bad_match
-					throw new Error "For `#{stringify_tokens(tokens)}`, use #{pattern.prefered} instead"
+					# FIXME: should callback!
+					throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
 				else
+					# FIXME: should callback!
 					throw new Error "I don't understand"
 			
 			line_tokens = []

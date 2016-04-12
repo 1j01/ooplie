@@ -115,6 +115,64 @@ module.exports = Context = (function() {
             return _this.eval_expression(a) - _this.eval_expression(b);
           };
         })(this)
+      }), new Pattern({
+        match: ["<a> = <b>", "<a> equals <b>", "<a> is equal to <b>", "<a> is <b>"],
+        bad_match: ["<a> == <b>", "<a> === <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) === _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> != <b>", "<a> does not equal <b>", "<a> is not equal to <b>", "<a> isn't <b>"],
+        bad_match: ["<a> isnt <b>", "<a> isnt equal to <b>", "<a> isn't equal to <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) !== _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> > <b>", "<a> is greater than <b>"],
+        bad_match: ["<a> is more than <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) > _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> < <b>", "<a> is less than <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) < _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> >= <b>", "<a> is greater than or equal to <b>"],
+        bad_match: ["<a> is more than or equal to <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) >= _this.eval_expression(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["<a> <= <b>", "<a> is less than or equal to <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return _this.eval_expression(a) <= _this.eval_expression(b);
+          };
+        })(this)
       })
     ];
     this.classes = [];
@@ -225,7 +283,7 @@ module.exports = Context = (function() {
           if (match) {
             return result = pattern.fn(match);
           } else if (bad_match) {
-            throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + pattern.prefered + " instead");
+            throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
           } else {
             throw new Error("I don't understand");
           }
@@ -285,11 +343,11 @@ module.exports = Pattern = (function() {
     var bad_match, match, parse_matchers;
     match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
     parse_matchers = function(matcher_defs) {
-      var def, j, len, results, segment, segments, variable_name, variable_names_used;
+      var def, j, len, results, segment, segments, value, variable_name, variable_names_used;
       results = [];
       for (j = 0, len = matcher_defs.length; j < len; j++) {
         def = matcher_defs[j];
-        segments = def.replace(/<([^>]*)(\ )/g, function(m, words, space) {
+        segments = def.replace(/\ <\ /g, " &lt; ").replace(/\ >\ /g, " &gt; ").replace(/\ <=\ /g, " &lt;= ").replace(/\ >=\ /g, " &gt;= ").replace(/<([^>]*)(\ )/g, function(m, words, space) {
           return words + "_**";
         }).replace(/>\ /g, ">").replace(/>/g, "> ").trim().split(" ");
         variable_names_used = [];
@@ -303,6 +361,9 @@ module.exports = Pattern = (function() {
               if (indexOf.call(variable_names_used, variable_name) >= 0) {
                 throw new Error("Variable name `" + variable_name + "` used twice in pattern `" + def + "`");
               }
+              if (variable_name === "pattern") {
+                throw new Error("Reserved pattern variable `pattern` used in pattern `" + def + "`");
+              }
               variable_names_used.push(variable_name);
               results1.push({
                 type: "variable",
@@ -312,9 +373,10 @@ module.exports = Pattern = (function() {
                 }
               });
             } else {
+              value = segment.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
               results1.push({
-                type: segment.match(/\w/) ? "word" : "punctuation",
-                value: segment,
+                type: value.match(/\w/) ? "word" : "punctuation",
+                value: value,
                 toString: function() {
                   return this.value;
                 }
@@ -368,6 +430,7 @@ module.exports = Pattern = (function() {
       i += 1;
     }
     if (i === matcher.length) {
+      variables.pattern = this;
       return variables;
     }
   };
@@ -441,9 +504,11 @@ module.exports = Token = (function() {
 
 
 },{}],4:[function(require,module,exports){
-var Context, Token, tokenize;
+var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
+
+Pattern = require('./Pattern');
 
 Token = require('./Token');
 
@@ -451,12 +516,13 @@ tokenize = require('./tokenize');
 
 module.exports = {
   Context: Context,
+  Pattern: Pattern,
   Token: Token,
   tokenize: tokenize
 };
 
 
-},{"./Context":1,"./Token":3,"./tokenize":5}],5:[function(require,module,exports){
+},{"./Context":1,"./Pattern":2,"./Token":3,"./tokenize":5}],5:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -673,7 +739,7 @@ module.exports = function(source) {
       if (next_type !== current_type) {
         finish_token();
       } else if (next_type === "punctuation" && current_type === "punctuation") {
-        if (!((prev_char === "?" || prev_char === "!") && (char === "?" || char === "!") || prev_char === "." && char === ".")) {
+        if (!(((prev_char === "?" || prev_char === "!") && (char === "?" || char === "!")) || (prev_char === "." && char === ".") || ((prev_char === "<" || prev_char === ">") && char === "=") || (prev_char === "=" && (char === "<" || char === ">")) || (prev_char === "=" && char === "=") || (prev_char === "!" && char === "="))) {
           finish_token();
         }
       }

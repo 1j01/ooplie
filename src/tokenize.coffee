@@ -149,7 +149,7 @@ module.exports = (source)->
 			else if char is "'"
 				if current_type is "word" and next_char.match(/[a-z]/i)
 					# e.g. it's, isn't, doesn't, shouldn't etc.
-					# (but not e.g. 'tis or fightin')
+					# (but not e.g. 'tis or fightin', sadly)
 					next_type = "word"
 				else
 					start_string(char)
@@ -163,7 +163,14 @@ module.exports = (source)->
 			if next_type isnt current_type
 				finish_token()
 			else if next_type is "punctuation" and current_type is "punctuation"
-				unless prev_char in ["?", "!"] and char in ["?", "!"] or prev_char is "." and char is "."
+				unless (
+					(prev_char in ["?", "!"] and char in ["?", "!"]) or
+					(prev_char is "." and char is ".") or
+					(prev_char in ["<", ">"] and char is "=") or
+					(prev_char is "=" and char in ["<", ">"]) or
+					(prev_char is "=" and char is "=") or
+					(prev_char is "!" and char is "=")
+				)
 					finish_token()
 			
 			current_type = next_type

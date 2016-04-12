@@ -14,6 +14,10 @@ class Pattern
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs
 				segments = def
+					.replace(/\ <\ /g, " &lt; ")
+					.replace(/\ >\ /g, " &gt; ")
+					.replace(/\ <=\ /g, " &lt;= ")
+					.replace(/\ >=\ /g, " &gt;= ")
 					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_**")
 					.replace(/>\ /g, ">")
 					.replace(/>/g, "> ")
@@ -27,14 +31,19 @@ class Pattern
 							.replace(/_\*\*/g, " ")
 						if variable_name in variable_names_used
 							throw new Error "Variable name `#{variable_name}` used twice in pattern `#{def}`"
+						if variable_name is "pattern"
+							throw new Error "Reserved pattern variable `pattern` used in pattern `#{def}`"
 						variable_names_used.push variable_name
 						
 						type: "variable"
 						name: variable_name
 						toString: -> "<#{@name}>"
 					else
-						type: if segment.match(/\w/) then "word" else "punctuation"
-						value: segment
+						value = segment
+							.replace(/&lt;/g, "<")
+							.replace(/&gt;/g, ">")
+						type: if value.match(/\w/) then "word" else "punctuation"
+						value: value
 						toString: -> @value
 		
 		@matchers = parse_matchers(match)
@@ -73,6 +82,7 @@ class Pattern
 		if matching.type is "variable"
 			i += 1
 		if i is matcher.length
+			variables.pattern = @
 			return variables
 		# else
 		# 	console.log "almost matched", tokens, "against", @

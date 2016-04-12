@@ -71,31 +71,41 @@ suite "mathematics", ->
 		expect(->
 			evaluate("2 ** 8").to(256)
 		).to.throw() # TODO: expect something like "Just use ^ instead"
-	test.skip "equality comparison", ->
-		evaluate("5 = 5").to(true)
-		evaluate("5 = 5 = 5").to(true)
-		evaluate("5 = 3").to(false)
-		evaluate("false = false").to(true)
-		evaluate("true = true").to(true)
-		evaluate("true = false").to(false)
-		evaluate("5 = 5 = 3").to(false)
-		evaluate("5 = 5 = true").to(false)
-		evaluate("5 == 5").to(true) # throw error, just use =
-		evaluate("5 === 5").to(true) # throw error, just use =
-	test.skip "inequality comparison", ->
-		evaluate("5 <= 5").to(true)
-		evaluate("5 >= 5").to(true)
-		evaluate("5 < 5").to(false)
-		evaluate("5 > 5").to(false)
-		evaluate("4 > 5").to(false)
-		evaluate("4 < 5").to(true)
-		evaluate("4 > 5").to(true)
-		evaluate("4 >= 5").to(true)
-		evaluate("4 <= 5").to(false)
-		evaluate("-0 < +0").to(false)
-		evaluate("-1 < +1").to(true)
-		evaluate("5 != 3").to(true)
-		evaluate("5 != 5").to(false)
+	suite "comparison", ->
+		test "equality", ->
+			evaluate("5 = 5").to(true)
+			evaluate("5 = 3").to(false)
+			evaluate("false = false").to(true)
+			evaluate("true = true").to(true)
+			evaluate("true = false").to(false)
+			expect(->
+				evaluate("5 == 5").to(true)
+			).to.throw() # TODO: expect something like "Just use = instead"
+			expect(->
+				evaluate("5 === 5").to(true)
+			).to.throw() # TODO: expect something like "Just use = instead"
+		test.skip "multiple equality", ->
+			evaluate("5 = 5 = 5").to(true)
+			evaluate("5 = 5 = 3").to(false)
+			evaluate("5 = 5 = true").to(false)
+		test "inequality", ->
+			evaluate("5 <= 5").to(true)
+			evaluate("5 >= 5").to(true)
+			evaluate("5 < 5").to(false)
+			evaluate("5 > 5").to(false)
+			evaluate("4 > 5").to(false)
+			evaluate("4 < 5").to(true)
+			evaluate("4 > 5").to(false)
+			evaluate("4 >= 5").to(false)
+			evaluate("4 <= 5").to(true)
+			evaluate("-0 < 0").to(false)
+			evaluate("-1 < 1").to(true)
+			# evaluate("-0 < +0").to(false) TODO
+			# evaluate("-1 < +1").to(true)
+			evaluate("5 != 3").to(true)
+			evaluate("5 != 5").to(false)
+		test.skip "multiple inequality"
+		
 	test.skip "parenthesis", ->
 		evaluate("(1)").to(1)
 		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
@@ -227,11 +237,12 @@ suite "mathematics", ->
 		evaluate("one eleventh").to(1/11)
 		evaluate("one twelth").to(1/12)
 		evaluate("one thirteenth").to(1/13)
-	test.skip "word operators", ->
+	test.skip "basic word operators", ->
 		evaluate("5 plus 6").to(11)
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
+	test.skip "word operators", ->
 		evaluate("5 over 6").to(5 / 6) # throw style warning / error
 		evaluate("half of 6").to(3)
 		evaluate("a third of 12").to(4)
@@ -258,6 +269,7 @@ suite "mathematics", ->
 		evaluate("5 is not equal to 4").to(true)
 		evaluate("5 is equal to 4").to(false)
 		evaluate("5 is equal to 5").to(true)
+	test.skip "worded comparison questions", ->
 		evaluate("Does 4 equal 5?").to(no)
 		evaluate("Does 4 = 5?").to(no)
 		evaluate("Does 5 equal 5?").to(yes)
