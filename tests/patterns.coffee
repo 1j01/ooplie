@@ -15,8 +15,8 @@ suite "Pattern", ->
 					@eval_expression(a) + @eval_expression(b)
 		).to.throw("Variable name `expression` used twice in pattern `<expression> + <expression>`")
 	
-	test "greater than / less than", ->
-		console.log new Pattern
+	test.skip "greater than / less than", ->
+		new Pattern
 			match: [
 				"<a> < <b>"
 				"<a> <= <b>"

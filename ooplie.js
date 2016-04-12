@@ -13,42 +13,6 @@ module.exports = Context = (function() {
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
     this.patterns = [
       new Pattern({
-        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
-        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
-        fn: (function(_this) {
-          return function(arg1) {
-            var actions, alt_actions, condition;
-            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
-            if (_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
-            } else {
-              return _this.eval_tokens(alt_actions);
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["If <condition>, <actions>", "If <condition> then <actions>", "<actions> if <condition>"],
-        fn: (function(_this) {
-          return function(arg1) {
-            var actions, condition;
-            condition = arg1.condition, actions = arg1.actions;
-            if (_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["Unless <condition>, <actions>", "Unless <condition> then <actions>", "<actions> unless <condition>"],
-        fn: (function(_this) {
-          return function(arg1) {
-            var actions, condition;
-            condition = arg1.condition, actions = arg1.actions;
-            if (!_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
-            }
-          };
-        })(this)
-      }), new Pattern({
         match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
         bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
         fn: (function(_this) {
@@ -113,6 +77,25 @@ module.exports = Context = (function() {
             var a, b;
             a = arg1.a, b = arg1.b;
             return _this.eval_tokens(a) - _this.eval_tokens(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["- <b>", "negative <b>"],
+        bad_match: ["minus <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return -_this.eval_tokens(b);
+          };
+        })(this)
+      }), new Pattern({
+        match: ["+ <b>", "positive <b>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var a, b;
+            a = arg1.a, b = arg1.b;
+            return +_this.eval_tokens(b);
           };
         })(this)
       }), new Pattern({
@@ -191,6 +174,42 @@ module.exports = Context = (function() {
             return false;
           };
         })(this)
+      }), new Pattern({
+        match: ["If <condition>, <actions>", "If <condition> then <actions>", "<actions> if <condition>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, condition;
+            condition = arg1.condition, actions = arg1.actions;
+            if (_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
+            }
+          };
+        })(this)
+      }), new Pattern({
+        match: ["Unless <condition>, <actions>", "Unless <condition> then <actions>", "<actions> unless <condition>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, condition;
+            condition = arg1.condition, actions = arg1.actions;
+            if (!_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
+            }
+          };
+        })(this)
+      }), new Pattern({
+        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
+        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
+        fn: (function(_this) {
+          return function(arg1) {
+            var actions, alt_actions, condition;
+            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
+            if (_this.eval_tokens(condition)) {
+              return _this.eval_tokens(actions);
+            } else {
+              return _this.eval_tokens(alt_actions);
+            }
+          };
+        })(this)
       })
     ];
     this.classes = [];
@@ -223,7 +242,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var bad_match, i, j, last_token, len, len1, match, pattern, ref, str, token;
+    var bad_match, i, j, last_token, len, match, pattern, ref, str, token;
     if (tokens.every(function(token) {
       var ref;
       return (ref = token.type) === "string" || ref === "number";
@@ -244,7 +263,7 @@ module.exports = Context = (function() {
     } else if (tokens.length) {
       bad_match = null;
       ref = this.patterns;
-      for (j = 0, len1 = ref.length; j < len1; j++) {
+      for (j = ref.length - 1; j >= 0; j += -1) {
         pattern = ref[j];
         match = pattern.match(tokens);
         if (match != null) {
@@ -418,7 +437,7 @@ module.exports = Pattern = (function() {
         }
       }
     }
-    if (matching.type === "variable") {
+    if (current_variable_tokens != null) {
       i += 1;
     }
     if (i === matcher.length) {

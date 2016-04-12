@@ -17,16 +17,16 @@ suite "mathematics", ->
 		evaluate("-2.5").to(-2.5)
 		evaluate("90").to(90)
 		evaluate("90.00").to(90.00)
-	test.skip "unary plus", ->
+	test "unary plus/minus", ->
 		evaluate("+2.345").to(+2.345)
 		evaluate("-+2.345").to(-2.345)
 		evaluate("+-2.345").to(-2.345)
 		# evaluate("2.345+").to(3.345) # throw error
+		# evaluate("2.345-").to(3.345) # throw error
 		# evaluate("2.345++").to(3.345) # throw error
 		# evaluate("++2.345").to(3.345) # throw error
 		# evaluate("--2.345").to(3.345) # throw error
 		# evaluate("2.345--").to(3.345) # throw error
-		# evaluate("2.345-").to(3.345) # throw error
 	test.skip "numbers with commas", ->
 		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
 		evaluate("5,000,000").to(5000000) # throw style error? commas are sometimes used as decimal marks

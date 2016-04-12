@@ -79,7 +79,7 @@ class Pattern
 				else
 					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", i, matching, "vs", token
 					return
-		if matching.type is "variable"
+		if current_variable_tokens?
 			i += 1
 		if i is matcher.length
 			variables.pattern = @

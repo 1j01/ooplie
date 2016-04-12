@@ -15,46 +15,6 @@ class Context
 		# but may be overall reasonable
 		
 		@patterns = [
-			# NOTE: If-else has to be above If, otherwise If will be matched first
-			new Pattern
-				match: [
-					"If <condition>, <actions>, else <alt_actions>"
-					"If <condition> then <actions>, else <alt_actions>"
-					"If <condition> then <actions> else <alt_actions>"
-					"<actions> if <condition> else <alt_actions>" # pythonic ternary
-				]
-				bad_match: [
-					"if <condition>, then <actions>, else <alt_actions>"
-					"if <condition>, then <actions>, else, <alt_actions>"
-					"if <condition>, <actions>, else, <alt_actions>"
-					# and other things; also this might be sort of arbitrary
-					# comma misplacement should really be handled dynamically by the near-match system
-				]
-				fn: ({condition, actions, alt_actions})=>
-					if @eval_tokens(condition)
-						@eval_tokens(actions)
-					else
-						@eval_tokens(alt_actions)
-			
-			new Pattern
-				match: [
-					"If <condition>, <actions>"
-					"If <condition> then <actions>"
-					"<actions> if <condition>"
-				]
-				fn: ({condition, actions})=>
-					if @eval_tokens(condition)
-						@eval_tokens(actions)
-			
-			new Pattern
-				match: [
-					"Unless <condition>, <actions>"
-					"Unless <condition> then <actions>" # doesn't sound like good English
-					"<actions> unless <condition>"
-				]
-				fn: ({condition, actions})=>
-					unless @eval_tokens(condition)
-						@eval_tokens(actions)
 			
 			new Pattern
 				match: [
@@ -148,6 +108,25 @@ class Context
 				]
 				fn: ({a, b})=>
 					@eval_tokens(a) - @eval_tokens(b)
+			
+			new Pattern
+				match: [
+					"- <b>"
+					"negative <b>"
+				]
+				bad_match: [
+					"minus <b>"
+				]
+				fn: ({a, b})=>
+					- @eval_tokens(b)
+			
+			new Pattern
+				match: [
+					"+ <b>"
+					"positive <b>"
+				]
+				fn: ({a, b})=>
+					+ @eval_tokens(b)
 			
 			new Pattern
 				match: [
@@ -246,6 +225,47 @@ class Context
 				fn: ({a, b})=>
 					false
 			
+			new Pattern
+				match: [
+					"If <condition>, <actions>"
+					"If <condition> then <actions>"
+					"<actions> if <condition>"
+				]
+				fn: ({condition, actions})=>
+					if @eval_tokens(condition)
+						@eval_tokens(actions)
+			
+			new Pattern
+				match: [
+					"Unless <condition>, <actions>"
+					"Unless <condition> then <actions>" # doesn't sound like good English
+					"<actions> unless <condition>"
+				]
+				fn: ({condition, actions})=>
+					unless @eval_tokens(condition)
+						@eval_tokens(actions)
+			
+			# NOTE: If-else has to be below If, otherwise If will be matched first
+			new Pattern
+				match: [
+					"If <condition>, <actions>, else <alt_actions>"
+					"If <condition> then <actions>, else <alt_actions>"
+					"If <condition> then <actions> else <alt_actions>"
+					"<actions> if <condition> else <alt_actions>" # pythonic ternary
+				]
+				bad_match: [
+					"if <condition>, then <actions>, else <alt_actions>"
+					"if <condition>, then <actions>, else, <alt_actions>"
+					"if <condition>, <actions>, else, <alt_actions>"
+					# and other things; also this might be sort of arbitrary
+					# comma misplacement should really be handled dynamically by the near-match system
+				]
+				fn: ({condition, actions, alt_actions})=>
+					if @eval_tokens(condition)
+						@eval_tokens(actions)
+					else
+						@eval_tokens(alt_actions)
+			
 		]
 		@classes = []
 		@objects = []
@@ -256,7 +276,7 @@ class Context
 		new Context {console, supercontext: @}
 	
 	eval: (text)->
-		# everything's syncronous for now, so we can do this:
+		# interpret is actually syncronous for now, so we can do this:
 		result = null
 		@interpret text, (err, res)->
 			throw err if err
@@ -264,11 +284,9 @@ class Context
 		result
 	
 	eval_tokens: (tokens)->
-		# result = undefined
+		# console.log "eval_tokens", tokens
 		if tokens.every((token)-> token.type in ["string", "number"])
-			# if there are two consecutive numbers
-			# 	TODO: throw an error
-			# if there's at least one string
+			# TODO: throw an error if there are two consecutive numbers
 			if tokens.some((token)-> token.type is "string")
 				str = ""
 				str += token.value for token in tokens
@@ -277,8 +295,9 @@ class Context
 				last_token = tokens[tokens.length - 1]
 				return last_token.value
 		else if tokens.length
+			# TODO: it might be better if Pattern has a seperate function bad_match
 			bad_match = null
-			for pattern in @patterns
+			for pattern in @patterns by -1
 				match = pattern.match(tokens)
 				if match?
 					if match.bad or match.near
@@ -291,7 +310,6 @@ class Context
 				throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
 			else
 				throw new Error "I don't understand `#{stringify_tokens(tokens)}`"
-		# return result
 	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here
