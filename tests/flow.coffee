@@ -2,29 +2,7 @@
 {expect} = require?("chai") ? chai
 {Context} = require?("../src/ooplie.coffee") ? Ooplie
 
-log_to_actual_console = (stuff)-> console.log stuff...
-
-mock_console =
-	log: log_to_actual_console
-
-context = new Context console: mock_console
-
-expect_output = (output, fn)->
-	gotten_outputs = []
-	mock_console.log = (text)->
-		gotten_outputs.push text
-	fn()
-	mock_console.log = log_to_actual_console
-	if typeof output is "string"
-		unless output in gotten_outputs
-			if gotten_outputs.length > 1
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got outputs #{JSON.stringify(gotten_outputs)})"
-			else if gotten_outputs.length is 1
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got output #{JSON.stringify(gotten_outputs[0])})"
-			else
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} but got no output"
-	else
-		throw new Error "TODO: expect an exact array of outputs"
+context = new Context
 
 evaluate = (expression)->
 	result = context.eval(expression)
@@ -34,7 +12,62 @@ evaluate = (expression)->
 
 suite "control flow", ->
 	
+	suite "conditionals", ->
+		
+		test "if", ->
+			# TODO: test multiline and actual actions
+			evaluate("If true, 5").to(5)
+			evaluate("If false, 5").to(undefined)
+			# post-if:
+			evaluate("5 if true").to(5)
+			evaluate("5 if false").to(undefined)
+		
+		test "if-else", ->
+			evaluate("If true, 5, else 0").to(5)
+			evaluate("If false, 5, else 0").to(0)
+			# ternary:
+			evaluate("If true then 5 else 0").to(5)
+			evaluate("If false then 5 else 0").to(0)
+			# pythonic ternary:
+			evaluate("5 if true else 0").to(5)
+			evaluate("5 if false else 0").to(0)
+			# TODO: test else-ifs
+		
+		test "unless", ->
+			# TODO: test multiline and actual actions
+			evaluate("Unless true, 5").to(undefined)
+			evaluate("Unless false, 5").to(5)
+			# post-unless:
+			evaluate("5 unless true").to(undefined)
+			evaluate("5 unless false").to(5)
+			# TODO: test unless-else, unless-else-if, unless-else-unless etc. but maybe throw style warnings/errors
+		
+		test "as expressions"
+			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)
+		
+		test.skip "if there are any", ->
+			# it would probably be good to make a wrapper for test that creates a new context
+			context.eval("There are five houses.")
+			evaluate("there are any houses").to(true)
+			evaluate("If there are any houses then 1 else 0").to(1)
+			evaluate("Are there any houses?").to(true)
+			context.eval("There are 0 people.")
+			evaluate("there are any people").to(false)
+			evaluate("If there are any people then 1 else 0").to(0)
+			evaluate("Are there any people?").to(false)
+		
+		test.skip "if there are no", ->
+			context.eval("There are 99 balloons.")
+			evaluate("there are no balloons").to(false)
+			evaluate("If there are no balloons then 1 else 0").to(0)
+			evaluate("Are there no balloons?").to(false)
+			context.eval("There are 0 towers.")
+			evaluate("there are no towers").to(true)
+			evaluate("If there are no towers then 1 else 0").to(1)
+			evaluate("Are there no towers?").to(true)
+	
 	suite "loops", ->
+		
 		test "for each from a to b"
 		test "for each from a to b by n"
 		test "for each between a and b"
@@ -84,152 +117,5 @@ suite "control flow", ->
 		test "break out of multiple loops?" # (?)
 		test "GOTO 20" # kidding
 		test "unbounded (infinite loop, loop forever until broken)"
-		test "as values"
+		test "as expressions"
 			# like in CoffeeScript
-	
-	suite "conditionals", ->
-		test "if", ->
-			# TODO: test multiline and actual actions
-			evaluate("If true, 5").to(5)
-			evaluate("If false, 5").to(undefined)
-			# post-if:
-			evaluate("5 if true").to(5)
-			evaluate("5 if false").to(undefined)
-		test "if-else", ->
-			evaluate("If true, 5, else 0").to(5)
-			evaluate("If false, 5, else 0").to(0)
-			# ternary:
-			evaluate("If true then 5 else 0").to(5)
-			evaluate("If false then 5 else 0").to(0)
-			# pythonic ternary:
-			evaluate("5 if true else 0").to(5)
-			evaluate("5 if false else 0").to(0)
-			# TODO: test else-ifs
-		test "unless", ->
-			# TODO: test multiline and actual actions
-			evaluate("Unless true, 5").to(undefined)
-			evaluate("Unless false, 5").to(5)
-			# post-unless:
-			evaluate("5 unless true").to(undefined)
-			evaluate("5 unless false").to(5)
-			# TODO: test unless-else, unless-else-if, unless-else-unless etc. but maybe throw style warnings/errors
-		test "as values"
-			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)
-		test.skip "if there are any", ->
-			# it would probably be good to make a wrapper for test that creates a new context
-			context.eval("There are five houses.")
-			evaluate("there are any houses").to(true)
-			evaluate("If there are any houses then 1 else 0").to(1)
-			evaluate("Are there any houses?").to(true)
-			context.eval("There are 0 people.")
-			evaluate("there are any people").to(false)
-			evaluate("If there are any people then 1 else 0").to(0)
-			evaluate("Are there any people?").to(false)
-		test.skip "if there are no", ->
-			context.eval("There are 99 balloons.")
-			evaluate("there are no balloons").to(false)
-			evaluate("If there are no balloons then 1 else 0").to(0)
-			evaluate("Are there no balloons?").to(false)
-			context.eval("There are 0 towers.")
-			evaluate("there are no towers").to(true)
-			evaluate("If there are no towers then 1 else 0").to(1)
-			evaluate("Are there no towers?").to(true)
-	
-	# this isn't really "control flow"
-	suite "imperative", ->
-		test "output to the console", ->
-			expect_output "Hello world", ->
-				context.eval("""
-					output "Hello world"
-				""")
-		test "run JS", ->
-			expect_output "Hello world thru JavaScript from Ooplie", ->
-				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
-				context.eval("""
-					run JS 'console.log("Hello world thru JavaScript from Ooplie")'
-				""")
-			expect_output "Hello world again", ->
-				# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
-				context.eval("""
-					execute 'console.log("Hello world again")' as JavaScript
-				""")
-		test.skip "JS interop", ->
-			expect_output "Hello world thru JavaScript from a variable in Ooplie", ->
-				context.eval("""
-					message = "Hello world thru JavaScript from a variable in Ooplie"
-					run JS console.log(message)'
-				""")
-		test.skip "to do x, bla bla bla", ->
-			context.eval("to say something, output it to the console")
-			context.eval("to output something to the console, run JS console.log(something)")
-			context.eval("to output something to the console, `console.log(it)`")
-			context.eval("to output something to the console, run JavaScript methed log on the global JavaScript object 'console' with it as a parameter")
-			expect_output "Hello World", ->
-				evaluate("say 'Hello World'!")
-		test.skip "to do x, bla bla bla", ->
-			context.eval("to draw a circle of radius r at (x, y), run JS ctx.arc(x, y, r, 0, Math.PI * 2)")
-			context.eval("""
-				To draw a circle of radius r at (x, y),
-					run JS
-						ctx.beginPath()
-						ctx.arc(x, y, r, 0, Math.PI * 2)
-						ctx.fill()
-			""")
-			context.eval("""
-				To draw a shape, draw a filled shape?
-				To draw a <color> shape?
-				To draw a filled shape,
-					Run JS ctx.beginPath()
-					Run the code for the shape
-					Run JS ctx.fill()
-				To draw a stroked shape, run JS
-					Run JS ctx.beginPath()
-					Run the code for the shape
-					Run JS ctx.stroke()
-				To draw a rectangle at (x, y, w, h),
-					Draw the shape with JS code ctx.rect(x, y, w, h)
-				To draw a circle at (x, y, r),
-					Draw the shape with JS code ctx.arc(x, y, r, 0, Math.PI * 2)
-				To draw a rectangle at (x, y) with width w and height h
-					draw a rectangle at (x, y, w, h)
-					# TODO: DRY
-				To draw a circle at (x, y) with radius r, draw a circle at (x, y, r)
-			""")
-			context.eval("to draw a circle at (x, y), draw a circle of radius 5 at (x, y)")
-			context.eval("""
-				To draw a filled shape,
-					Run JS ctx.beginPath()
-					Run the code for the shape
-					Run JS ctx.fill()
-				
-				To draw a stroked shape, run JS
-					Run JS ctx.beginPath()
-					Run the code for the shape
-					Run JS ctx.stroke()
-				
-				The code for a circle is: ctx.arc(x, y, r, 0, Math.PI * 2)
-				The code for a rectangle is: ctx.rect(x, y, w, h)
-				
-				The code for a circle is: ctx.arc(x, y, r, 0, Math.PI * 2)
-				The code for a rectangle is: ctx.rect(x, y, w, h)
-				
-				The code for a rectangle requires variables such as x, y, w, and h which shall be taken from the rectangle's properties of x, y, width and height respectively.
-				
-				To draw a rectangle at (x, y, w, h), or
-				To draw a rectangle at (x, y) with width w and height h,
-					nevermind!
-				
-			""")
-			context.eval("draw a circle")
-			context.eval("draw a circle of radius 5")
-			context.eval("draw a circle with radius 5")
-			context.eval("draw a circle with radius 5 at the center of the screen/canvas")
-			throw new Error "TODO: mock canvas and test"
-		
-		test.skip "physics!", ->
-			context.eval("""
-				create a ragdoll
-				set the ragdoll's head's velocity to a vector of random orientation with a magnitude between 0 and 10 every frame
-				hope it doesn't fall off
-			""")
-			throw new Error "TODO: what is this?"
