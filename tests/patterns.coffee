@@ -71,9 +71,9 @@ suite "Pattern", ->
 				"<a> is more than <b>"
 			]
 		expect(pattern.match(tokenize("a is greater than b"))).to.exist
-		expect(pattern.match(tokenize("a is greater than b")).bad).not.to.be.true
-		expect(pattern.match(tokenize("a is more than b"))).to.exist
-		expect(pattern.match(tokenize("a is more than b")).bad).to.be.true
+		expect(pattern.match(tokenize("a is more than b"))).not.to.exist
+		expect(pattern.bad_match(tokenize("a is greater than b"))).not.to.exist
+		expect(pattern.bad_match(tokenize("a is more than b"))).to.exist
 	
 	test "near matches"
 	

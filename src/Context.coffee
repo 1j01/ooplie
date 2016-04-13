@@ -318,21 +318,19 @@ class Context
 				last_token = tokens[tokens.length - 1]
 				return last_token.value
 		else if tokens.length
-			# TODO: it might be better if Pattern has a seperate function bad_match
-			bad_match = null
 			for pattern in @patterns by -1
 				match = pattern.match(tokens)
-				if match?
-					if match.bad or match.near
-						bad_match = match
-					else
-						break
-			if match
+				break if match?
+			if match?
 				return pattern.fn(match)
-			else if bad_match
-				throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
 			else
-				throw new Error "I don't understand `#{stringify_tokens(tokens)}`"
+				for pattern in @patterns by -1
+					bad_match = pattern.bad_match(tokens)
+					break if bad_match?
+				if bad_match?
+					throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
+				else
+					throw new Error "I don't understand `#{stringify_tokens(tokens)}`"
 	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here

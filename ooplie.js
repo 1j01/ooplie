@@ -244,7 +244,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var bad_match, i, j, last_token, len, match, pattern, ref, str, token;
+    var bad_match, i, j, k, last_token, len, match, pattern, ref, ref1, str, token;
     if (tokens.every(function(token) {
       var ref;
       return (ref = token.type) === "string" || ref === "number";
@@ -263,25 +263,30 @@ module.exports = Context = (function() {
         return last_token.value;
       }
     } else if (tokens.length) {
-      bad_match = null;
       ref = this.patterns;
       for (j = ref.length - 1; j >= 0; j += -1) {
         pattern = ref[j];
         match = pattern.match(tokens);
         if (match != null) {
-          if (match.bad || match.near) {
-            bad_match = match;
-          } else {
+          break;
+        }
+      }
+      if (match != null) {
+        return pattern.fn(match);
+      } else {
+        ref1 = this.patterns;
+        for (k = ref1.length - 1; k >= 0; k += -1) {
+          pattern = ref1[k];
+          bad_match = pattern.bad_match(tokens);
+          if (bad_match != null) {
             break;
           }
         }
-      }
-      if (match) {
-        return pattern.fn(match);
-      } else if (bad_match) {
-        throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
-      } else {
-        throw new Error("I don't understand `" + (stringify_tokens(tokens)) + "`");
+        if (bad_match != null) {
+          throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
+        } else {
+          throw new Error("I don't understand `" + (stringify_tokens(tokens)) + "`");
+        }
       }
     }
   };
@@ -449,7 +454,7 @@ module.exports = Pattern = (function() {
   };
 
   Pattern.prototype.match = function(tokens) {
-    var j, k, len, len1, match, matcher, ref, ref1;
+    var j, len, match, matcher, ref;
     ref = this.matchers;
     for (j = 0, len = ref.length; j < len; j++) {
       matcher = ref[j];
@@ -458,16 +463,21 @@ module.exports = Pattern = (function() {
         return match;
       }
     }
-    ref1 = this.bad_matchers;
-    for (k = 0, len1 = ref1.length; k < len1; k++) {
-      matcher = ref1[k];
+  };
+
+  Pattern.prototype.bad_match = function(tokens) {
+    var j, len, match, matcher, ref;
+    ref = this.bad_matchers;
+    for (j = 0, len = ref.length; j < len; j++) {
+      matcher = ref[j];
       match = this.match_with(tokens, matcher);
       if (match != null) {
-        match.bad = true;
         return match;
       }
     }
   };
+
+  Pattern.prototype.match_near = function() {};
 
   return Pattern;
 

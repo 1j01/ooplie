@@ -93,12 +93,16 @@ class Pattern
 		for matcher in @matchers
 			match = @match_with(tokens, matcher)
 			return match if match?
-		
+	
+	bad_match: (tokens)->
 		for matcher in @bad_matchers
 			match = @match_with(tokens, matcher)
-			if match?
-				match.bad = true
-				return match
+			return match if match?
+	
+	match_near: ->
+		# for matcher in @matchers
+		# 	match = @match_with(tokens, matcher, near: true)
+		# return best match if any
 		
 		# TODO: find near-matches (i.e. differing case, typos, differing gramatical structure if possible)
 		# differing case is obviously usually not a problem whereas typos would be more likely to be incorrectly detected
