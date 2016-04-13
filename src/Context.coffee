@@ -79,16 +79,34 @@ class Context
 			
 			new Pattern
 				match: [
+					"<a> × <b>"
 					"<a> * <b>"
 					"<a> times <b>"
+				]
+				bad_match: [
+					"<a> ✖ <b>" # heavy multiplication X
+					"<a> ⨉ <b>" # n-ary times operator
+					"<a> ⨯ <b>" # vector or cross-product
+					"<a> ∗ <b>" # asterisk operator
+					"<a> ⋅ <b>" # dot operator
+					"<a> ∙ <b>" # bullet operator
+					"<a> • <b>" # bullet (are you kidding me?)
+					"<a> ✗ <b>" # ballot
+					"<a> ✘ <b>" # heavy ballot
 				]
 				fn: ({a, b})=>
 					@eval_tokens(a) * @eval_tokens(b)
 			
 			new Pattern
 				match: [
-					"<a> / <b>"
+					"<a> ÷ <b>" # obelus
+					"<a> / <b>" # slash
+					"<a> ∕ <b>" # division slash
 					"<a> divided by <b>"
+				]
+				bad_match: [
+					"<a> ／ <b>" # full width solidus
+					"<a> ⁄ <b>" # fraction slash
 				]
 				fn: ({a, b})=>
 					@eval_tokens(a) / @eval_tokens(b)
@@ -103,7 +121,8 @@ class Context
 			
 			new Pattern
 				match: [
-					"<a> - <b>"
+					"<a> − <b>" # minus
+					"<a> - <b>" # hyphen-minus
 					"<a> minus <b>"
 				]
 				fn: ({a, b})=>
@@ -111,7 +130,8 @@ class Context
 			
 			new Pattern
 				match: [
-					"- <b>"
+					"− <b>" # minus
+					"- <b>" # hyphen-minus
 					"negative <b>"
 				]
 				bad_match: [
@@ -156,6 +176,7 @@ class Context
 			
 			new Pattern
 				match: [
+					"<a> ≠ <b>"
 					"<a> != <b>"
 					"<a> does not equal <b>"
 					"<a> is not equal to <b>"
@@ -190,6 +211,7 @@ class Context
 			
 			new Pattern
 				match: [
+					"<a> ≥ <b>"
 					"<a> >= <b>"
 					"<a> is greater than or equal to <b>"
 				]
@@ -201,6 +223,7 @@ class Context
 			
 			new Pattern
 				match: [
+					"<a> ≤ <b>"
 					"<a> <= <b>"
 					"<a> is less than or equal to <b>"
 				]

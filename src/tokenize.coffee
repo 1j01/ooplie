@@ -142,8 +142,6 @@ module.exports = (source)->
 					next_type = "punctuation"
 			else if char is "#"
 				next_type = "comment"
-			else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\/\|\\\-+=~:;]/)
-				next_type = "punctuation"
 			else if char.match(/[a-z]/i)
 				next_type = "word"
 			else if char is "'"
@@ -157,8 +155,12 @@ module.exports = (source)->
 				start_string(char)
 			else if char.match(/\s/)
 				next_type = null
+			# else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\/\|\\\-+=~:;]/)
+			# 	next_type = "punctuation"
+			# else
+			# 	next_type = "unknown"
 			else
-				next_type = "unknown"
+				next_type = "punctuation"
 			
 			if next_type isnt current_type
 				finish_token()

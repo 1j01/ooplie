@@ -141,18 +141,32 @@ suite "mathematics", ->
 		evaluate("1 / 2x").to(1/10)
 		evaluate("(1/2)x").to(5/2)
 		# TODO: also e.g. five x
-	test.skip "unicode operators", ->
+	test "unicode operators", ->
 		evaluate("5 − 6").to(5 - 6)
 		evaluate("5 × 6").to(5 * 6)
-		evaluate("5 ⋅ 6").to(5 * 6) # dot operator (throw style error?)
-		evaluate("5 ∗ 6").to(5 * 6) # asterisk operator (throw style error?)
-		evaluate("5 ∙ 6").to(5 * 6) # bullet operator (throw style error?)
-		evaluate("5 • 6").to(5 * 6) # bullet (throw style error!)
-		evaluate("5⁄6").to(5/6) # fraction slash
-		evaluate("5 ⁄ 6").to(5/6) # fraction slash used wrong (throw style error!)
-		evaluate("5 ∕ 6").to(5 / 6) # division slash
-		evaluate("5 ／ 6").to(5 / 6) # full width solidus
+		expect(->
+			evaluate("5 ⋅ 6").to(5 * 6) # dot operator
+		).to.throw("use <a> × <b> instead")
+		expect(->
+			evaluate("5 ∗ 6").to(5 * 6) # asterisk operator
+		).to.throw("use <a> × <b> instead")
+		expect(->
+			evaluate("5 ∙ 6").to(5 * 6) # bullet operator
+		).to.throw("use <a> × <b> instead")
+		expect(->
+			evaluate("5 • 6").to(5 * 6) # bullet
+		).to.throw("use <a> × <b> instead")
 		evaluate("5 ÷ 6").to(5 / 6) # obelus
+		evaluate("5 ∕ 6").to(5 / 6) # division slash
+		expect(->
+			evaluate("5 ⁄ 6").to(5/6) # fraction slash used wrong
+		).to.throw("use <a> ÷ <b> instead")
+		expect(->
+			evaluate("5⁄6").to(5/6) # fraction slash still used wrong (no subscript/superscript)
+		).to.throw("use <a> ÷ <b> instead")
+		expect(->
+			evaluate("5 ／ 6").to(5 / 6) # full width solidus
+		).to.throw("use <a> ÷ <b> instead")
 	test.skip "unicode inequality comparisons", ->
 		evaluate("5 ≤ 5").to(true)
 		evaluate("5 ≥ 5").to(true)
@@ -237,7 +251,7 @@ suite "mathematics", ->
 		evaluate("one eleventh").to(1/11)
 		evaluate("one twelth").to(1/12)
 		evaluate("one thirteenth").to(1/13)
-	test.skip "basic word operators", ->
+	test "basic word operators", ->
 		evaluate("5 plus 6").to(11)
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
