@@ -11,7 +11,7 @@ There are *expressions*, but the order of operations is wrong.
 There's [a nice little console][console] where you can try it out so far,
 and [a million pending tests][tests].
 
-### Inspiration
+## Inspiration
 
 At the risk of citing an article where the author calls out a programming system citing the author's work as inspiration as terrible as inspiration,
 Brett Victor's [Learnable Programming][] expresses some great ideas about the future of programming.
@@ -21,10 +21,11 @@ then at least check out some of [Brett Victor's work][]
 or maybe [Toward a better programming][],
 and get excited about the future of programming in general.
 
+<!-- 
 There's a project called [EVE][] that looks interesting.
 I'll have to try [it](https://github.com/witheve/Eve) out and see what it's like.
 
-<!-- Could gather some quotes here and relate them to the project:
+Could gather some quotes here and relate them to the project:
 
 #### Quotes
 
@@ -36,18 +37,29 @@ Ooplie will have an expressive and rather comprehensive time module.
 -->
 
 
-### Roadmap
+## Roadmap
+
+Next up: **Order of operations**.
+This might be tough,
+but we're not going to get very far without order.
 
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
-Scripts will be able to use a shebang comment like `#!/bin/english` or `#!/usr/bin/env english`.
+Scripts will be able to use a shebang comment like `#!/bin/english` or `#!/usr/bin/env ooplie`/`english`. (Not too `sh`abby, eh?)
 
-The next step will be more complex control flow and mathematics.
 
-Ooplie should have a good module system.
+Next, Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
 File system support and other things should be implemented this way.
 How the interop should work is not entirely decided.
-Translating modules into other languages should be possible.
+(Translating modules into other languages should be possible.
+Theoretically. In the future.)
+
+After that, more complex control flow and mathematics can be added,
+and various modules can be developed.
+
+Eventually I want to try hooking speech recognition up to Ooplie
+and playing around on a canvas with physics,
+maybe try making a web app with this...
 
 #### Integrated Development Environment
 
@@ -60,6 +72,10 @@ Similar features exist [in other IDEs][Peek Definition], but I can imagine it wo
 
 It should let you write code that isn't understood
 and subsequently implement in detail.
+
+It could automatically search for modules related to code you type that isn't understood.
+When typed, when run, or at the click of a button.
+(A button's probably good.)
 
 It would try to show you what's going on with the program as much as possible.
 I'd add a dynamic underline to "Every N seconds" / "After N seconds" representing the timer, and maybe underlines to any line of code being executed.
@@ -100,8 +116,6 @@ Dragging the line could change the control flow, updating the code to reflect th
 
 
 The IDE could support visual mathematical equation/expression editing, and resources like images could be dragged and dropped and used directly in expressions.
-
-It could automatically search for modules related to code you type that isn't understood.
 
 It could blur the line between entering commands and writing a program (if that's a good thing).
 
