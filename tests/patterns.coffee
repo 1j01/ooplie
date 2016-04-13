@@ -26,11 +26,11 @@ suite "Pattern", ->
 				"hey ho"
 				"woah ho"
 			]
-		expect(pattern.match(tokenize("hey ho"))).not.to.be.undefined
-		expect(pattern.match(tokenize("woah ho"))).not.to.be.undefined
-		expect(pattern.match(tokenize("heave ho"))).to.be.undefined
-		expect(pattern.match(tokenize("woah there"))).to.be.undefined
-		expect(pattern.match(tokenize("hey now"))).to.be.undefined
+		expect(pattern.match(tokenize("hey ho"))).to.be.ok
+		expect(pattern.match(tokenize("woah ho"))).to.be.ok
+		expect(pattern.match(tokenize("heave ho"))).not.to.be.ok
+		expect(pattern.match(tokenize("woah there"))).not.to.be.ok
+		expect(pattern.match(tokenize("hey now"))).not.to.be.ok
 	
 	test "matching variables ", ->
 		pattern = new Pattern
@@ -39,12 +39,12 @@ suite "Pattern", ->
 				"<a> plus <b>"
 			]
 		
-		expect(pattern.match(tokenize("a + b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a plus b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a plus b * c"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a^2 + b^3"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a^2 - b^3"))).to.be.undefined
-		expect(pattern.match(tokenize("a +"))).to.be.undefined
+		expect(pattern.match(tokenize("a + b"))).to.be.ok
+		expect(pattern.match(tokenize("a plus b"))).to.be.ok
+		expect(pattern.match(tokenize("a plus b * c"))).to.be.ok
+		expect(pattern.match(tokenize("a^2 + b^3"))).to.be.ok
+		expect(pattern.match(tokenize("a^2 - b^3"))).not.to.be.ok
+		expect(pattern.match(tokenize("a +"))).not.to.be.ok
 		tokens_eql(pattern.match(tokenize("2a + 4b")).a, tokenize("2a"))
 		tokens_eql(pattern.match(tokenize("2a + 4b")).b, tokenize("4b"))
 	
@@ -56,11 +56,11 @@ suite "Pattern", ->
 				"<a> > <b>"
 				"<a> >= <b>"
 			]
-		expect(pattern.match(tokenize("a < b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a <= b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a > b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a >= b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a = b"))).to.be.undefined
+		expect(pattern.match(tokenize("a < b"))).to.be.ok
+		expect(pattern.match(tokenize("a <= b"))).to.be.ok
+		expect(pattern.match(tokenize("a > b"))).to.be.ok
+		expect(pattern.match(tokenize("a >= b"))).to.be.ok
+		expect(pattern.match(tokenize("a = b"))).not.to.be.ok
 	
 	test "bad matches", ->
 		pattern = new Pattern
@@ -70,10 +70,10 @@ suite "Pattern", ->
 			bad_match: [
 				"<a> is more than <b>"
 			]
-		expect(pattern.match(tokenize("a is greater than b"))).not.to.be.undefined
+		expect(pattern.match(tokenize("a is greater than b"))).to.be.ok
 		expect(pattern.match(tokenize("a is greater than b")).bad).not.to.be.true
-		expect(pattern.match(tokenize("a is more than b"))).not.to.be.undefined
-		expect(pattern.match(tokenize("a is more than b")).bad).to.be.true
+		expect(pattern.match(tokenize("a is more than b"))).to.be.ok # but not really okay
+		expect(pattern.match(tokenize("a is more than b")).bad).to.be.true # because it's bad
 	
 	test "near matches"
 	
