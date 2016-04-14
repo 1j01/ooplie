@@ -121,7 +121,7 @@ suite "mathematics", ->
 		evaluate("1 + 3^3 * 2").to(55) # that's more like it
 		evaluate("-2^2").to(-4)
 	test.skip "percentages", ->
-		# should this be a style error? percentages, like degrees, are kinda arbitrary and I don't like them
+		# should this be a style warning? percentages, like degrees, are kinda arbitrary and I don't like them
 		# but that's probably not a good enough basis for forbidding them
 		evaluate("50%").to(50 / 100)
 		evaluate("50‰").to(50 / 1000) # permille, tho?
@@ -131,6 +131,7 @@ suite "mathematics", ->
 		evaluate("1 bp = 1‱ = 0.01% = 0.1‰ = 10^(−4) = 1⁄10000 = 0.0001").to(true)
 		evaluate("1% = 100 bp = 100‱").to(true)
 	test.skip "implicit multiplication", ->
+		# AKA multiplication by superposition
 		# should this be a style error? explicit is generally better than implicit
 		context.eval("x = 5")
 		evaluate("2x").to(10)
@@ -143,6 +144,9 @@ suite "mathematics", ->
 		# TODO: also e.g. five x
 	test "unicode operators", ->
 		evaluate("5 − 6").to(5 - 6)
+		expect(->
+			evaluate("5 ＋ 6").to(5 + 6)
+		).to.throw("use <a> + <b> instead")
 		evaluate("5 × 6").to(5 * 6)
 		expect(->
 			evaluate("5 ⋅ 6").to(5 * 6) # dot operator
@@ -165,7 +169,7 @@ suite "mathematics", ->
 			evaluate("5⁄6").to(5/6) # fraction slash still used wrong (no subscript/superscript)
 		).to.throw("use <a> ÷ <b> instead")
 		expect(->
-			evaluate("5 ／ 6").to(5 / 6) # full width solidus
+			evaluate("5 ／ 6").to(5 / 6) # fullwidth solidus
 		).to.throw("use <a> ÷ <b> instead")
 	test.skip "unicode inequality comparisons", ->
 		evaluate("5 ≤ 5").to(true)
@@ -299,10 +303,12 @@ suite "mathematics", ->
 		evaluate("between 4 and 6, exclusive").to(new Range(4, 6)) # exclusive
 		evaluate("from 4 to 6, inclusive").to(new Range(4, 6)) # inclusive
 		evaluate("from 4 to 6, exclusive").to(new Range(4, 6)) # exclusive
+		evaluate("the numbers 1 to 10").to(new Range(1, 10)) # inclusive?
+		evaluate("1 to 10").to(new Range(1, 10)) # inclusive?
 		evaluate("9 plus or minus 0.1").to(new Range(8.9, 9.1)) # throw error/warning? can mean plus-minus
 		evaluate("9 give or take 0.1").to(new Range(8.9, 9.1))
-		evaluate("4..6").to(new Range(4, 6)) # should we have these? (inclusive?)
-		evaluate("4...6").to(new Range(4, 6)) # should we have these? (exclusive?)
+		evaluate("4..6").to(new Range(4, 6)) # should we have these? (inclusive?) ([]?)
+		evaluate("4...6").to(new Range(4, 6)) # should we have these? (exclusive?) ([]?)
 		# TODO: mathematical interval notation
 	test.skip "units", ->
 		evaluate("5mm").to("5m")

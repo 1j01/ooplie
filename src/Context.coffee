@@ -105,7 +105,7 @@ class Context
 					"<a> divided by <b>"
 				]
 				bad_match: [
-					"<a> ／ <b>" # full width solidus
+					"<a> ／ <b>" # fullwidth solidus
 					"<a> ⁄ <b>" # fraction slash
 				]
 				fn: ({a, b})=>
@@ -115,6 +115,10 @@ class Context
 				match: [
 					"<a> + <b>"
 					"<a> plus <b>"
+				]
+				bad_match: [
+					"<a> ＋ <b>" # fullwidth plus
+					"<a> ﬩ <b>" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
 				]
 				fn: ({a, b})=>
 					@eval_tokens(a) + @eval_tokens(b)
@@ -184,8 +188,8 @@ class Context
 				]
 				bad_match: [
 					"<a> isnt <b>" # this isn't coffeescript, you can punctuate contractions
-					"<a> isnt equal to <b>"
-					"<a> isn't equal to <b>" # this just sounds silly; be formal or don't
+					"<a> isnt equal to <b>" # ditto
+					"<a> isn't equal to <b>" # this sounds slightly silly to me
 				]
 				fn: ({a, b})=>
 					@eval_tokens(a) != @eval_tokens(b)

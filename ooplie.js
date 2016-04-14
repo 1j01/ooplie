@@ -65,6 +65,7 @@ module.exports = Context = (function() {
         })(this)
       }), new Pattern({
         match: ["<a> + <b>", "<a> plus <b>"],
+        bad_match: ["<a> ＋ <b>", "<a> ﬩ <b>"],
         fn: (function(_this) {
           return function(arg1) {
             var a, b;

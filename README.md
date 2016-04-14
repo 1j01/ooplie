@@ -41,18 +41,21 @@ Ooplie will have an expressive and rather comprehensive time module.
 
 Next up: **Order of operations**.
 This might be tough,
-but we're not going to get very far without order.
+but we're not going to get very far without **order**.
 
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
-Scripts will be able to use a shebang comment like `#!/bin/english` or `#!/usr/bin/env ooplie`/`english`. (Not too `sh`abby, eh?)
+Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)
 
 
 Next, Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
 File system support and other things should be implemented this way.
 How the interop should work is not entirely decided.
-(Translating modules into other languages should be possible.
-Theoretically. In the future.)
+(Translating modules into other spoken languages should be possible, theoretically.
+There are some [opinions][Why are programming languages in English?] about programming in other languages, at least from people who can speak English,
+but that's a significant selection bias and I feel like the attitude may be different when it comes to programming in natural language,
+especially when you just want to tell the computer to do something,
+as opposed to potentially collaborating internationally on a project.)
 
 After that, more complex control flow and mathematics can be added,
 and various modules can be developed.
@@ -67,8 +70,10 @@ There should be an IDE, because an interpreter is not good enough.
 
 It would feature "Did you mean?" style error handling that can update your actual code (especially for disambiguation).
 
-It could let you dig down into statements and expressions, through your code, to libraries, to underlying JavaScript, to see the underlying meaning and implementation.
-Similar features exist [in other IDEs][Peek Definition], but I can imagine it working more like code folding, folding layers of [abstraction][] rather than just blocks of code.
+It could let you dig down into statements and expressions to see the underlying meaning and implementation, through your code, through libraries, and to the underlying JavaScript.
+Similar features exist [in other IDEs][Peek Definition], but I can imagine it working more like a variant of [code folding][] where you fold layers of meaning and [abstraction][] rather than just blocks of code.
+Perhaps like [this][IP levels of detail]?
+(Except you wouldn't have to write that lower layer of code, `print the numbers 1 to 10` would just work :smile:)
 
 It should let you write code that isn't understood
 and subsequently implement in detail.
@@ -78,7 +83,7 @@ When typed, when run, or at the click of a button.
 (A button's probably good.)
 
 It would try to show you what's going on with the program as much as possible.
-I'd add a dynamic underline to "Every N seconds" / "After N seconds" representing the timer, and maybe underlines to any line of code being executed.
+I'd add a dynamic underline to `Every N seconds` / `After N seconds` representing the timer, and maybe underlines to any line of code being executed.
 This might warrant some controls to toggle or dim the underlines as they could be distracting.
 <!-- I've never gotten [Light Table][]'s live connection features to work on a real project, but they look cool. -->
 
@@ -133,7 +138,10 @@ and/or run `npm test`
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
-[abstraction]: https://en.wikipedia.org/wiki/Abstraction_(computer_science)
+[abstraction]: https://en.wikipedia.org/wiki/Abstraction_(computer_science) "Abstraction (computer science) - Wikipedia"
+[code folding]: https://en.wikipedia.org/wiki/Code_folding "Code folding - Wikipedia"
+[IP levels of detail]: https://en.wikipedia.org/wiki/Intentional_programming#Levels_of_detail "\"Levels of detail\" in Intentional programming - Wikipedia"
+[Why are programming languages in English?]: https://www.reddit.com/r/explainlikeimfive/comments/1ugrcl/eli5_why_are_programming_languages_in_english/
 [console]: http://1j01.github.io/ooplie/dooplie/
 [tests]: ./test.html
 [npm]: https://www.npmjs.com/

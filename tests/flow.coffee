@@ -68,6 +68,8 @@ suite "control flow", ->
 	
 	suite "loops", ->
 		
+		test "for a to b"
+		test "for a to b by n"
 		test "for each from a to b"
 		test "for each from a to b by n"
 		test "for each between a and b"
