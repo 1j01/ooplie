@@ -538,3 +538,4 @@ suite "tokenize", ->
 	
 	test "row/column properties"
 		# which btw shouldn't be the end of the token (although that would be good to have additionally)
+		# Token.pos should be {first_line, first_column, last_line, last_column}

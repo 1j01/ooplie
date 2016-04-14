@@ -37,8 +37,8 @@ class Context
 					"log <text> to the terminal"
 					"print <text> to the terminal"
 				]
-				fn: ({text})=>
-					@console.log @eval_tokens(text)
+				fn: (v)=>
+					@console.log v("text")
 					return
 			
 			new Pattern
@@ -62,9 +62,9 @@ class Context
 					"JavaScript <text>" # not sure JavaScript is a verb
 					"JS <text>"
 				]
-				fn: ({text})=>
-					{console} = @
-					eval @eval_tokens(text)
+				fn: (v)=>
+					{console} = @ # bring @console into scope as "console"
+					eval v("text")
 			
 			new Pattern
 				match: [
@@ -74,8 +74,7 @@ class Context
 				bad_match: [
 					"<a> ** <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) ** @eval_tokens(b)
+				fn: (v)=> v("a") ** v("b")
 			
 			new Pattern
 				match: [
@@ -94,8 +93,7 @@ class Context
 					"<a> ✗ <b>" # ballot
 					"<a> ✘ <b>" # heavy ballot
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) * @eval_tokens(b)
+				fn: (v)=> v("a") * v("b")
 			
 			new Pattern
 				match: [
@@ -108,8 +106,7 @@ class Context
 					"<a> ／ <b>" # fullwidth solidus
 					"<a> ⁄ <b>" # fraction slash
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) / @eval_tokens(b)
+				fn: (v)=> v("a") / v("b")
 			
 			new Pattern
 				match: [
@@ -120,8 +117,7 @@ class Context
 					"<a> ＋ <b>" # fullwidth plus
 					"<a> ﬩ <b>" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) + @eval_tokens(b)
+				fn: (v)=> v("a") + v("b")
 			
 			new Pattern
 				match: [
@@ -129,28 +125,29 @@ class Context
 					"<a> - <b>" # hyphen-minus
 					"<a> minus <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) - @eval_tokens(b)
+				fn: (v)=> v("a") - v("b")
 			
 			new Pattern
 				match: [
 					"− <b>" # minus
 					"- <b>" # hyphen-minus
 					"negative <b>"
+					"the opposite of <b>"
 				]
 				bad_match: [
 					"minus <b>"
 				]
-				fn: ({a, b})=>
-					- @eval_tokens(b)
+				fn: (v)=> - v("b")
 			
 			new Pattern
 				match: [
 					"+ <b>"
 					"positive <b>"
 				]
-				fn: ({a, b})=>
-					+ @eval_tokens(b)
+				bad_match: [
+					"plus <b>"
+				]
+				fn: (v)=> + v("b")
 			
 			new Pattern
 				match: [
@@ -163,7 +160,7 @@ class Context
 					"<a> == <b>"
 					"<a> === <b>"
 				]
-				fn: ({a, b})=>
+				fn: (v)=>
 					# if a.every((token)-> token.type is "word")
 					# 	name = a.join(" ")
 					# 	value = @eval_tokens(b)
@@ -176,7 +173,7 @@ class Context
 					# 	else
 					# 		@variables.set(name, value)
 					# else
-					@eval_tokens(a) == @eval_tokens(b)
+					v("a") is v("b")
 			
 			new Pattern
 				match: [
@@ -191,8 +188,7 @@ class Context
 					"<a> isnt equal to <b>" # ditto
 					"<a> isn't equal to <b>" # this sounds slightly silly to me
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) != @eval_tokens(b)
+				fn: (v)=> v("a") isnt v("b")
 			
 			new Pattern
 				match: [
@@ -202,16 +198,14 @@ class Context
 				bad_match: [
 					"<a> is more than <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) > @eval_tokens(b)
+				fn: (v)=> v("a") > v("b")
 			
 			new Pattern
 				match: [
 					"<a> < <b>"
 					"<a> is less than <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) < @eval_tokens(b)
+				fn: (v)=> v("a") < v("b")
 			
 			new Pattern
 				match: [
@@ -222,8 +216,7 @@ class Context
 				bad_match: [
 					"<a> is more than or equal to <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) >= @eval_tokens(b)
+				fn: (v)=> v("a") >= v("b")
 			
 			new Pattern
 				match: [
@@ -231,8 +224,7 @@ class Context
 					"<a> <= <b>"
 					"<a> is less than or equal to <b>"
 				]
-				fn: ({a, b})=>
-					@eval_tokens(a) <= @eval_tokens(b)
+				fn: (v)=> v("a") <= v("b")
 			
 			# TODO: these should just be constants, not "patterns"
 			new Pattern
@@ -241,58 +233,47 @@ class Context
 					"yes"
 					"on"
 				]
-				fn: ({a, b})=>
-					true
+				fn: => true
 			new Pattern
 				match: [
 					"false"
 					"no"
 					"off"
 				]
-				fn: ({a, b})=>
-					false
+				fn: => false
 			
 			new Pattern
 				match: [
-					"If <condition>, <actions>"
-					"If <condition> then <actions>"
-					"<actions> if <condition>"
+					"If <condition>, <body>"
+					"If <condition> then <body>"
+					"<body> if <condition>"
 				]
-				fn: ({condition, actions})=>
-					if @eval_tokens(condition)
-						@eval_tokens(actions)
+				fn: (v)=> v("body") if v("condition")
 			
 			new Pattern
 				match: [
-					"Unless <condition>, <actions>"
-					"Unless <condition> then <actions>" # doesn't sound like good English
-					"<actions> unless <condition>"
+					"Unless <condition>, <body>"
+					"Unless <condition> then <body>" # doesn't sound like good English
+					"<body> unless <condition>"
 				]
-				fn: ({condition, actions})=>
-					unless @eval_tokens(condition)
-						@eval_tokens(actions)
+				fn: (v)=> v("body") unless v("condition")
 			
 			# NOTE: If-else has to be below If, otherwise If will be matched first
 			new Pattern
 				match: [
-					"If <condition>, <actions>, else <alt_actions>"
-					"If <condition> then <actions>, else <alt_actions>"
-					"If <condition> then <actions> else <alt_actions>"
-					"<actions> if <condition> else <alt_actions>" # pythonic ternary
+					"If <condition>, <body>, else <alt_body>"
+					"If <condition> then <body>, else <alt_body>"
+					"If <condition> then <body> else <alt_body>"
+					"<body> if <condition> else <alt_body>" # pythonic ternary
 				]
 				bad_match: [
-					"if <condition>, then <actions>, else <alt_actions>"
-					"if <condition>, then <actions>, else, <alt_actions>"
-					"if <condition>, <actions>, else, <alt_actions>"
+					"if <condition>, then <body>, else <alt_body>"
+					"if <condition>, then <body>, else, <alt_body>"
+					"if <condition>, <body>, else, <alt_body>"
 					# and other things; also this might be sort of arbitrary
 					# comma misplacement should really be handled dynamically by the near-match system
 				]
-				fn: ({condition, actions, alt_actions})=>
-					if @eval_tokens(condition)
-						@eval_tokens(actions)
-					else
-						@eval_tokens(alt_actions)
-			
+				fn: (v)=> if v("condition") then v("body") else v("alt_body")
 		]
 		@classes = []
 		@objects = []
@@ -326,7 +307,7 @@ class Context
 				match = pattern.match(tokens)
 				break if match?
 			if match?
-				return pattern.fn(match)
+				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
 			else
 				for pattern in @patterns by -1
 					bad_match = pattern.bad_match(tokens)

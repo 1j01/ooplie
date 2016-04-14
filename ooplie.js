@@ -16,200 +16,162 @@ module.exports = Context = (function() {
         match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
         bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
         fn: (function(_this) {
-          return function(arg1) {
-            var text;
-            text = arg1.text;
-            _this.console.log(_this.eval_tokens(text));
+          return function(v) {
+            _this.console.log(v("text"));
           };
         })(this)
       }), new Pattern({
         match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
         bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var console, text;
-            text = arg1.text;
+          return function(v) {
+            var console;
             console = _this.console;
-            return eval(_this.eval_tokens(text));
+            return eval(v("text"));
           };
         })(this)
       }), new Pattern({
         match: ["<a> ^ <b>", "<a> to the power of <b>"],
         bad_match: ["<a> ** <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return Math.pow(_this.eval_tokens(a), _this.eval_tokens(b));
+          return function(v) {
+            return Math.pow(v("a"), v("b"));
           };
         })(this)
       }), new Pattern({
         match: ["<a> × <b>", "<a> * <b>", "<a> times <b>"],
         bad_match: ["<a> ✖ <b>", "<a> ⨉ <b>", "<a> ⨯ <b>", "<a> ∗ <b>", "<a> ⋅ <b>", "<a> ∙ <b>", "<a> • <b>", "<a> ✗ <b>", "<a> ✘ <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) * _this.eval_tokens(b);
+          return function(v) {
+            return v("a") * v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> ÷ <b>", "<a> / <b>", "<a> ∕ <b>", "<a> divided by <b>"],
         bad_match: ["<a> ／ <b>", "<a> ⁄ <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) / _this.eval_tokens(b);
+          return function(v) {
+            return v("a") / v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> + <b>", "<a> plus <b>"],
         bad_match: ["<a> ＋ <b>", "<a> ﬩ <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) + _this.eval_tokens(b);
+          return function(v) {
+            return v("a") + v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> − <b>", "<a> - <b>", "<a> minus <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) - _this.eval_tokens(b);
+          return function(v) {
+            return v("a") - v("b");
           };
         })(this)
       }), new Pattern({
-        match: ["− <b>", "- <b>", "negative <b>"],
+        match: ["− <b>", "- <b>", "negative <b>", "the opposite of <b>"],
         bad_match: ["minus <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return -_this.eval_tokens(b);
+          return function(v) {
+            return -v("b");
           };
         })(this)
       }), new Pattern({
         match: ["+ <b>", "positive <b>"],
+        bad_match: ["plus <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return +_this.eval_tokens(b);
+          return function(v) {
+            return +v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> = <b>", "<a> equals <b>", "<a> is equal to <b>", "<a> is <b>"],
         bad_match: ["<a> == <b>", "<a> === <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) === _this.eval_tokens(b);
+          return function(v) {
+            return v("a") === v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> ≠ <b>", "<a> != <b>", "<a> does not equal <b>", "<a> is not equal to <b>", "<a> isn't <b>"],
         bad_match: ["<a> isnt <b>", "<a> isnt equal to <b>", "<a> isn't equal to <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) !== _this.eval_tokens(b);
+          return function(v) {
+            return v("a") !== v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> > <b>", "<a> is greater than <b>"],
         bad_match: ["<a> is more than <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) > _this.eval_tokens(b);
+          return function(v) {
+            return v("a") > v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> < <b>", "<a> is less than <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) < _this.eval_tokens(b);
+          return function(v) {
+            return v("a") < v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> ≥ <b>", "<a> >= <b>", "<a> is greater than or equal to <b>"],
         bad_match: ["<a> is more than or equal to <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) >= _this.eval_tokens(b);
+          return function(v) {
+            return v("a") >= v("b");
           };
         })(this)
       }), new Pattern({
         match: ["<a> ≤ <b>", "<a> <= <b>", "<a> is less than or equal to <b>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
-            return _this.eval_tokens(a) <= _this.eval_tokens(b);
+          return function(v) {
+            return v("a") <= v("b");
           };
         })(this)
       }), new Pattern({
         match: ["true", "yes", "on"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
+          return function() {
             return true;
           };
         })(this)
       }), new Pattern({
         match: ["false", "no", "off"],
         fn: (function(_this) {
-          return function(arg1) {
-            var a, b;
-            a = arg1.a, b = arg1.b;
+          return function() {
             return false;
           };
         })(this)
       }), new Pattern({
-        match: ["If <condition>, <actions>", "If <condition> then <actions>", "<actions> if <condition>"],
+        match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var actions, condition;
-            condition = arg1.condition, actions = arg1.actions;
-            if (_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
+          return function(v) {
+            if (v("condition")) {
+              return v("body");
             }
           };
         })(this)
       }), new Pattern({
-        match: ["Unless <condition>, <actions>", "Unless <condition> then <actions>", "<actions> unless <condition>"],
+        match: ["Unless <condition>, <body>", "Unless <condition> then <body>", "<body> unless <condition>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var actions, condition;
-            condition = arg1.condition, actions = arg1.actions;
-            if (!_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
+          return function(v) {
+            if (!v("condition")) {
+              return v("body");
             }
           };
         })(this)
       }), new Pattern({
-        match: ["If <condition>, <actions>, else <alt_actions>", "If <condition> then <actions>, else <alt_actions>", "If <condition> then <actions> else <alt_actions>", "<actions> if <condition> else <alt_actions>"],
-        bad_match: ["if <condition>, then <actions>, else <alt_actions>", "if <condition>, then <actions>, else, <alt_actions>", "if <condition>, <actions>, else, <alt_actions>"],
+        match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
+        bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
         fn: (function(_this) {
-          return function(arg1) {
-            var actions, alt_actions, condition;
-            condition = arg1.condition, actions = arg1.actions, alt_actions = arg1.alt_actions;
-            if (_this.eval_tokens(condition)) {
-              return _this.eval_tokens(actions);
+          return function(v) {
+            if (v("condition")) {
+              return v("body");
             } else {
-              return _this.eval_tokens(alt_actions);
+              return v("alt_body");
             }
           };
         })(this)
@@ -273,7 +235,11 @@ module.exports = Context = (function() {
         }
       }
       if (match != null) {
-        return pattern.fn(match);
+        return pattern.fn((function(_this) {
+          return function(var_name) {
+            return _this.eval_tokens(match[var_name]);
+          };
+        })(this));
       } else {
         ref1 = this.patterns;
         for (k = ref1.length - 1; k >= 0; k += -1) {

@@ -2,12 +2,14 @@
 module.exports =
 class Token
 	constructor: (@type, @col, @row, @value)->
+		# TODO: @pos = {first_line, first_column, last_line, last_column}
+		# instead of @col and @row
 	
 	toString: ->
 		Token.stringify_tokens(@)
 	
 	@stringify_tokens = (tokens)->
-		# @TODO: outputs token (with whitespace) as they were in the source
+		# @TODO: output token (with whitespace) as they were in the source
 		str = ""
 		for token in tokens
 			if token.type is "punctuation"
