@@ -226,22 +226,6 @@ class Context
 				]
 				fn: (v)=> v("a") <= v("b")
 			
-			# TODO: these should just be constants, not "patterns"
-			new Pattern
-				match: [
-					"true"
-					"yes"
-					"on"
-				]
-				fn: => true
-			new Pattern
-				match: [
-					"false"
-					"no"
-					"off"
-				]
-				fn: => false
-			
 			new Pattern
 				match: [
 					"If <condition>, <body>"
@@ -278,6 +262,27 @@ class Context
 		@classes = []
 		@objects = []
 		@variables = {}
+		@constants = {
+			"true": true
+			"yes": yes
+			"on": on
+			"false": false
+			"no": no
+			"off": off
+			"null": null
+			"infinity": Infinity
+			"∞": Infinity
+			"pi": Math.PI
+			"π": Math.PI
+			"tau": Math.PI * 2
+			"τ": Math.PI * 2
+			"e": Math.E
+			"the golden ratio": (1 + Math.sqrt(5)) / 2
+			"phi": (1 + Math.sqrt(5)) / 2
+			"φ": (1 + Math.sqrt(5)) / 2
+			"Pythagoras's constant": Math.SQRT2
+			# "Archimedes' constant": Math.PI # can't do quotes at ends of words yet
+		}
 	
 	subcontext: ({console}={})->
 		console ?= @console
@@ -303,6 +308,22 @@ class Context
 				last_token = tokens[tokens.length - 1]
 				return last_token.value
 		else if tokens.length
+			tok_str = stringify_tokens(tokens)
+			
+			# for constant_name, constant_value of @constants
+			# 	if tok_str is constant_name
+			# 		return constant_value
+			
+			# for variable_name, variable_value of @variables
+			# 	if tok_str is variable_name
+			# 		return variable_value
+			
+			if tok_str of @constants
+				return @constants[tok_str]
+			
+			if tok_str of @variables
+				return @variables[tok_str]
+			
 			for pattern in @patterns by -1
 				match = pattern.match(tokens)
 				break if match?
@@ -313,9 +334,9 @@ class Context
 					bad_match = pattern.bad_match(tokens)
 					break if bad_match?
 				if bad_match?
-					throw new Error "For `#{stringify_tokens(tokens)}`, use #{bad_match.pattern.prefered} instead"
+					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 				else
-					throw new Error "I don't understand `#{stringify_tokens(tokens)}`"
+					throw new Error "I don't understand `#{tok_str}`"
 	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here

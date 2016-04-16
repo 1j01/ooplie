@@ -132,20 +132,6 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Pattern({
-        match: ["true", "yes", "on"],
-        fn: (function(_this) {
-          return function() {
-            return true;
-          };
-        })(this)
-      }), new Pattern({
-        match: ["false", "no", "off"],
-        fn: (function(_this) {
-          return function() {
-            return false;
-          };
-        })(this)
-      }), new Pattern({
         match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
         fn: (function(_this) {
           return function(v) {
@@ -180,6 +166,26 @@ module.exports = Context = (function() {
     this.classes = [];
     this.objects = [];
     this.variables = {};
+    this.constants = {
+      "true": true,
+      "yes": true,
+      "on": true,
+      "false": false,
+      "no": false,
+      "off": false,
+      "null": null,
+      "infinity": Infinity,
+      "∞": Infinity,
+      "pi": Math.PI,
+      "π": Math.PI,
+      "tau": Math.PI * 2,
+      "τ": Math.PI * 2,
+      "e": Math.E,
+      "the golden ratio": (1 + Math.sqrt(5)) / 2,
+      "phi": (1 + Math.sqrt(5)) / 2,
+      "φ": (1 + Math.sqrt(5)) / 2,
+      "Pythagoras's constant": Math.SQRT2
+    };
   }
 
   Context.prototype.subcontext = function(arg) {
@@ -207,7 +213,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var bad_match, i, j, k, last_token, len, match, pattern, ref, ref1, str, token;
+    var bad_match, i, j, k, last_token, len, match, pattern, ref, ref1, str, tok_str, token;
     if (tokens.every(function(token) {
       var ref;
       return (ref = token.type) === "string" || ref === "number";
@@ -226,6 +232,13 @@ module.exports = Context = (function() {
         return last_token.value;
       }
     } else if (tokens.length) {
+      tok_str = stringify_tokens(tokens);
+      if (tok_str in this.constants) {
+        return this.constants[tok_str];
+      }
+      if (tok_str in this.variables) {
+        return this.variables[tok_str];
+      }
       ref = this.patterns;
       for (j = ref.length - 1; j >= 0; j += -1) {
         pattern = ref[j];
@@ -250,9 +263,9 @@ module.exports = Context = (function() {
           }
         }
         if (bad_match != null) {
-          throw new Error("For `" + (stringify_tokens(tokens)) + "`, use " + bad_match.pattern.prefered + " instead");
+          throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
         } else {
-          throw new Error("I don't understand `" + (stringify_tokens(tokens)) + "`");
+          throw new Error("I don't understand `" + tok_str + "`");
         }
       }
     }

@@ -50,9 +50,26 @@ suite "mathematics", ->
 	test "boolean values", ->
 		evaluate("true").to(true)
 		evaluate("false").to(false)
-	test.skip "infinity", ->
+	test "infinity", ->
 		evaluate("∞").to(Infinity)
 		evaluate("-∞").to(-Infinity)
+	test "constants", ->
+		evaluate("pi").to(Math.PI)
+		evaluate("tau").to(Math.PI * 2)
+		evaluate("π").to(Math.PI)
+		evaluate("τ").to(Math.PI * 2)
+		evaluate("Pythagoras's constant").to(Math.SQRT2)
+		# evaluate("Archimedes' constant").to(Math.PI) # can't do quotes at ends of words yet
+		# evaluate("Theodorus' constant").to(Math.sqrt(3)) # can't do quotes at ends of words yet
+		evaluate("the golden ratio").to((1 + Math.sqrt(5)) / 2)
+		evaluate("phi").to((1 + Math.sqrt(5)) / 2)
+		evaluate("φ").to((1 + Math.sqrt(5)) / 2)
+		# https://en.wikipedia.org/wiki/Mathematical_constant
+		# TODO: The Feigenbaum constants α and δ
+		# TODO: The Euler–Mascheroni constant γ
+		# TODO: Conway's constant λ
+		# TODO: Khinchin's constant K
+		# TODO: The Glaisher–Kinkelin constant A
 	test "addition", ->
 		evaluate("1 + 2").to(3)
 		evaluate("992+345").to(1337)
@@ -115,7 +132,7 @@ suite "mathematics", ->
 		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
 		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
 		evaluate("0.0 + -.25 - -.75 + 0.0").to(0.5)
-		evaluate("2, 2^1^3").to(0.5)
+		evaluate("2^1^3").to(2)
 		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace
 		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
 		evaluate("1 + 3^3 * 2").to(55) # that's more like it
@@ -274,6 +291,8 @@ suite "mathematics", ->
 		evaluate("2 to the power of 8").to(256)
 		evaluate("2 to the 8th power").to(256)
 		evaluate("the square root of 2").to(Math.sqrt(2))
+		evaluate("root 2").to(Math.sqrt(2))
+		evaluate("radical 2").to(Math.sqrt(2))
 		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
 		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
 		# TODO: nth roots
@@ -465,6 +484,11 @@ suite "mathematics", ->
 		evaluate("¬true").to(false)
 		evaluate("¬false").to(true)
 		# TODO: superscript/subscript fractions and stuff
+	
+	test "variables"
+	test "overwriting variable values? e.g. incrementing/decrementing"
+	# hopefully not? except for with interop?
+	
 	test.skip "defining functions", ->
 		context.eval("f(x) = x * 2")
 		evaluate("f(5)").to(10)
@@ -479,11 +503,10 @@ suite "mathematics", ->
 		evaluate("signat(5)").to(+1)
 		evaluate("signat(-5)").to(-1)
 		evaluate("signat(0)").to(0)
-	test.skip "recursive functions"
-	test.skip "built-in math functions"
+	test "recursive functions"
+	test "built-in math functions"
 	
-	test.skip "overwriting variable values? e.g. incrementing/decrementing"
-	# hopefully not? except for with interop?
+	test "logarithms"
 	
 	suite "sets", ->
 		test.skip "use native Set objects", ->
