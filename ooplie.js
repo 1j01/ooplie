@@ -1,60 +1,13 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Operator, Pattern, Token, stringify_tokens, tokenize,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+var Context, Operator, Pattern, Token, stringify_tokens, tokenize;
 
 tokenize = require("./tokenize");
 
 Pattern = require("./Pattern");
 
+Operator = require("./Operator");
+
 stringify_tokens = (Token = require("./Token")).stringify_tokens;
-
-Operator = (function(superClass) {
-  extend(Operator, superClass);
-
-  function Operator(arg) {
-    var binary, right_associative, unary;
-    this.precedence = arg.precedence, right_associative = arg.right_associative, binary = arg.binary, unary = arg.unary;
-    Operator.__super__.constructor.apply(this, arguments);
-    if (this.precedence == null) {
-      throw new Error("Operator constructor requires {precedence}");
-    }
-    this.right_associative = right_associative != null ? right_associative : false;
-    if (binary != null) {
-      this.unary = !binary;
-      this.binary = !this.unary;
-    } else {
-      this.binary = !unary;
-      this.unary = !this.binary;
-    }
-    if (this.unary && !this.right_associative) {
-      throw new Error("Non-right-associative unary operators are probably not supported");
-    }
-  }
-
-  Operator.prototype.match = function(tokens, index) {
-    var j, k, len, len1, matcher, matching, ref, segment, segment_index, token;
-    ref = this.matchers;
-    for (j = 0, len = ref.length; j < len; j++) {
-      matcher = ref[j];
-      matching = true;
-      for (segment_index = k = 0, len1 = matcher.length; k < len1; segment_index = ++k) {
-        segment = matcher[segment_index];
-        token = tokens[index + segment_index];
-        matching = (token != null ? token.type : void 0) === segment.type && (token != null ? token.value : void 0) === segment.value;
-        if (!matching) {
-          break;
-        }
-      }
-      if (matching) {
-        return matcher;
-      }
-    }
-  };
-
-  return Operator;
-
-})(Pattern);
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -509,7 +462,66 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Pattern":2,"./Token":3,"./tokenize":5}],2:[function(require,module,exports){
+},{"./Operator":2,"./Pattern":3,"./Token":4,"./tokenize":6}],2:[function(require,module,exports){
+var Operator, Pattern,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Pattern = require("./Pattern");
+
+module.exports = Operator = (function(superClass) {
+  extend(Operator, superClass);
+
+  function Operator(arg) {
+    var binary, right_associative, unary;
+    this.precedence = arg.precedence, right_associative = arg.right_associative, binary = arg.binary, unary = arg.unary;
+    Operator.__super__.constructor.apply(this, arguments);
+    if (this.precedence == null) {
+      throw new Error("Operator constructor requires {precedence}");
+    }
+    this.right_associative = right_associative != null ? right_associative : false;
+    if (binary != null) {
+      this.unary = !binary;
+      this.binary = !this.unary;
+    } else {
+      this.binary = !unary;
+      this.unary = !this.binary;
+    }
+    if (this.unary && !this.right_associative) {
+      throw new Error("Non-right-associative unary operators are probably not supported");
+    }
+  }
+
+  Operator.prototype.match = function(tokens, index) {
+    var i, j, len, len1, matcher, matching, ref, segment, segment_index, token;
+    ref = this.matchers;
+    for (i = 0, len = ref.length; i < len; i++) {
+      matcher = ref[i];
+      matching = true;
+      for (segment_index = j = 0, len1 = matcher.length; j < len1; segment_index = ++j) {
+        segment = matcher[segment_index];
+        token = tokens[index + segment_index];
+        matching = (token != null ? token.type : void 0) === segment.type && (token != null ? token.value : void 0) === segment.value;
+        if (!matching) {
+          break;
+        }
+      }
+      if (matching) {
+        return matcher;
+      }
+    }
+  };
+
+  Operator.prototype.bad_match = function() {
+    throw new Error("Not implemented!");
+  };
+
+  return Operator;
+
+})(Pattern);
+
+
+},{"./Pattern":3}],3:[function(require,module,exports){
 var Pattern, stringify_matcher, stringify_tokens,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -647,7 +659,7 @@ module.exports = Pattern = (function() {
 })();
 
 
-},{"./Token":3}],3:[function(require,module,exports){
+},{"./Token":4}],4:[function(require,module,exports){
 var Token;
 
 module.exports = Token = (function() {
@@ -689,7 +701,7 @@ module.exports = Token = (function() {
 })();
 
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
@@ -708,7 +720,7 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./Pattern":2,"./Token":3,"./tokenize":5}],5:[function(require,module,exports){
+},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":6}],6:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -942,5 +954,5 @@ module.exports = function(source) {
 };
 
 
-},{"./Token":3}]},{},[4])(4)
+},{"./Token":4}]},{},[5])(5)
 });
