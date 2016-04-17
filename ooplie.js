@@ -1,17 +1,17 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Operator, Pattern, Token, stringify_tokens, tokenize;
+var Context, Pattern, Token, default_operators, stringify_tokens, tokenize;
 
 tokenize = require("./tokenize");
 
 Pattern = require("./Pattern");
 
-Operator = require("./Operator");
-
 stringify_tokens = (Token = require("./Token")).stringify_tokens;
+
+default_operators = require("./default-operators");
 
 module.exports = Context = (function() {
   function Context(arg) {
-    var ref;
+    var operator, ref;
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
     this.patterns = [
       new Pattern({
@@ -87,128 +87,15 @@ module.exports = Context = (function() {
       "φ": (1 + Math.sqrt(5)) / 2,
       "Pythagoras's constant": Math.SQRT2
     };
-    this.operators = [
-      new Operator({
-        match: ["^", "to the power of"],
-        bad_match: ["**"],
-        precedence: 3,
-        right_associative: true,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return Math.pow(lhs, rhs);
-          };
-        })(this)
-      }), new Operator({
-        match: ["×", "*", "times"],
-        bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
-        precedence: 2,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs * rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["÷", "/", "∕", "divided by"],
-        bad_match: ["／", "⁄"],
-        precedence: 2,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs / rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["+", "plus"],
-        bad_match: ["＋", "﬩"],
-        precedence: 1,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs + rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["−", "-", "minus"],
-        precedence: 1,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs - rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["−", "-", "negative", "the opposite of"],
-        bad_match: ["minus"],
-        precedence: 1,
-        right_associative: true,
-        unary: true,
-        fn: (function(_this) {
-          return function(rhs) {
-            return -rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["+", "positive"],
-        bad_match: ["plus"],
-        precedence: 1,
-        right_associative: true,
-        unary: true,
-        fn: (function(_this) {
-          return function(rhs) {
-            return +rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["=", "equals", "is equal to", "is"],
-        bad_match: ["==", "==="],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs === rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["≠", "!=", "does not equal", "is not equal to", "isn't"],
-        bad_match: ["isnt", "isnt equal to", "isn't equal to"],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs !== rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: [">", "is greater than"],
-        bad_match: ["is more than"],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs > rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["<", "is less than"],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs < rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["≥", ">=", "is greater than or equal to"],
-        bad_match: ["is more than or equal to"],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs >= rhs;
-          };
-        })(this)
-      }), new Operator({
-        match: ["≤", "<=", "is less than or equal to"],
-        precedence: 0,
-        fn: (function(_this) {
-          return function(lhs, rhs) {
-            return lhs <= rhs;
-          };
-        })(this)
-      })
-    ];
+    this.operators = (function() {
+      var j, len, results;
+      results = [];
+      for (j = 0, len = default_operators.length; j < len; j++) {
+        operator = default_operators[j];
+        results.push(operator);
+      }
+      return results;
+    })();
   }
 
   Context.prototype.subcontext = function(arg) {
@@ -448,7 +335,7 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Operator":2,"./Pattern":3,"./Token":4,"./tokenize":6}],2:[function(require,module,exports){
+},{"./Pattern":3,"./Token":4,"./default-operators":5,"./tokenize":7}],2:[function(require,module,exports){
 var Operator, Pattern,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -688,6 +575,109 @@ module.exports = Token = (function() {
 
 
 },{}],5:[function(require,module,exports){
+var Operator;
+
+Operator = require("./Operator");
+
+module.exports = [
+  new Operator({
+    match: ["^", "to the power of"],
+    bad_match: ["**"],
+    precedence: 3,
+    right_associative: true,
+    fn: function(lhs, rhs) {
+      return Math.pow(lhs, rhs);
+    }
+  }), new Operator({
+    match: ["×", "*", "times"],
+    bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
+    precedence: 2,
+    fn: function(lhs, rhs) {
+      return lhs * rhs;
+    }
+  }), new Operator({
+    match: ["÷", "/", "∕", "divided by"],
+    bad_match: ["／", "⁄"],
+    precedence: 2,
+    fn: function(lhs, rhs) {
+      return lhs / rhs;
+    }
+  }), new Operator({
+    match: ["+", "plus"],
+    bad_match: ["＋", "﬩"],
+    precedence: 1,
+    fn: function(lhs, rhs) {
+      return lhs + rhs;
+    }
+  }), new Operator({
+    match: ["−", "-", "minus"],
+    precedence: 1,
+    fn: function(lhs, rhs) {
+      return lhs - rhs;
+    }
+  }), new Operator({
+    match: ["−", "-", "negative", "the opposite of"],
+    bad_match: ["minus"],
+    precedence: 1,
+    right_associative: true,
+    unary: true,
+    fn: function(rhs) {
+      return -rhs;
+    }
+  }), new Operator({
+    match: ["+", "positive"],
+    bad_match: ["plus"],
+    precedence: 1,
+    right_associative: true,
+    unary: true,
+    fn: function(rhs) {
+      return +rhs;
+    }
+  }), new Operator({
+    match: ["=", "equals", "is equal to", "is"],
+    bad_match: ["==", "==="],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs === rhs;
+    }
+  }), new Operator({
+    match: ["≠", "!=", "does not equal", "is not equal to", "isn't"],
+    bad_match: ["isnt", "isnt equal to", "isn't equal to"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs !== rhs;
+    }
+  }), new Operator({
+    match: [">", "is greater than"],
+    bad_match: ["is more than"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs > rhs;
+    }
+  }), new Operator({
+    match: ["<", "is less than"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs < rhs;
+    }
+  }), new Operator({
+    match: ["≥", ">=", "is greater than or equal to"],
+    bad_match: ["is more than or equal to"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs >= rhs;
+    }
+  }), new Operator({
+    match: ["≤", "<=", "is less than or equal to"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs <= rhs;
+    }
+  })
+];
+
+
+},{"./Operator":2}],6:[function(require,module,exports){
 var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
@@ -706,7 +696,7 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":6}],6:[function(require,module,exports){
+},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":7}],7:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -940,5 +930,5 @@ module.exports = function(source) {
 };
 
 
-},{"./Token":4}]},{},[5])(5)
+},{"./Token":4}]},{},[6])(6)
 });
