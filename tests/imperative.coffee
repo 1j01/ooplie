@@ -15,7 +15,9 @@ expect_output = (output, fn)->
 		gotten_outputs.push text
 	fn()
 	mock_console.log = log_to_actual_console
-	if typeof output is "string"
+	if Array.isArray(output)
+		throw new Error "TODO: expect an exact array of outputs"
+	else
 		unless output in gotten_outputs
 			if gotten_outputs.length > 1
 				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got outputs #{JSON.stringify(gotten_outputs)})"
@@ -23,8 +25,6 @@ expect_output = (output, fn)->
 				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got output #{JSON.stringify(gotten_outputs[0])})"
 			else
 				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} but got no output"
-	else
-		throw new Error "TODO: expect an exact array of outputs"
 
 evaluate = (expression)->
 	result = context.eval(expression)
@@ -39,6 +39,17 @@ suite "imperative", ->
 			context.eval("""
 				output "Hello world"
 			""")
+	test "interpret text as English", ->
+		expect_output 8, ->
+			context.eval("""
+				run Ooplie code "output 5 + 3"
+			""")
+		evaluate("""
+			execute Ooplie code "interpret '5 + 4' as English"
+		""").to(9)
+		evaluate("""
+			interpret code "eval '5 + 5' as Ooplie code" with Ooplie
+		""").to(10)
 	test "run JS", ->
 		expect_output "Hello world thru JavaScript from Ooplie", ->
 			# To run JavaScript code, to execute JS, to eval JS, call the global JS function 'eval' with the code as the parameter
