@@ -3,6 +3,18 @@ tokenize = require "./tokenize"
 Pattern = require "./Pattern"
 {stringify_tokens} = Token = require "./Token"
 
+class Operator extends Pattern
+	constructor: ({@precedence, right_associative, binary, unary})->
+		super
+		throw new Error "Operator constructor requires {precedence}" unless @precedence?
+		@right_associative = right_associative ? false
+		if binary?
+			@binary = binary
+			@unary = not binary
+		else
+			@unary = unary
+			@binary = not unary
+
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
@@ -68,166 +80,6 @@ class Context
 			
 			new Pattern
 				match: [
-					"<a> ^ <b>"
-					"<a> to the power of <b>"
-				]
-				bad_match: [
-					"<a> ** <b>"
-				]
-				fn: (v)=> v("a") ** v("b")
-			
-			new Pattern
-				match: [
-					"<a> × <b>"
-					"<a> * <b>"
-					"<a> times <b>"
-				]
-				bad_match: [
-					"<a> ✖ <b>" # heavy multiplication X
-					"<a> ⨉ <b>" # n-ary times operator
-					"<a> ⨯ <b>" # vector or cross-product
-					"<a> ∗ <b>" # asterisk operator
-					"<a> ⋅ <b>" # dot operator
-					"<a> ∙ <b>" # bullet operator
-					"<a> • <b>" # bullet (are you kidding me?)
-					"<a> ✗ <b>" # ballot
-					"<a> ✘ <b>" # heavy ballot
-				]
-				fn: (v)=> v("a") * v("b")
-			
-			new Pattern
-				match: [
-					"<a> ÷ <b>" # obelus
-					"<a> / <b>" # slash
-					"<a> ∕ <b>" # division slash
-					"<a> divided by <b>"
-				]
-				bad_match: [
-					"<a> ／ <b>" # fullwidth solidus
-					"<a> ⁄ <b>" # fraction slash
-				]
-				fn: (v)=> v("a") / v("b")
-			
-			new Pattern
-				match: [
-					"<a> + <b>"
-					"<a> plus <b>"
-				]
-				bad_match: [
-					"<a> ＋ <b>" # fullwidth plus
-					"<a> ﬩ <b>" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
-				]
-				fn: (v)=> v("a") + v("b")
-			
-			new Pattern
-				match: [
-					"<a> − <b>" # minus
-					"<a> - <b>" # hyphen-minus
-					"<a> minus <b>"
-				]
-				fn: (v)=> v("a") - v("b")
-			
-			new Pattern
-				match: [
-					"− <b>" # minus
-					"- <b>" # hyphen-minus
-					"negative <b>"
-					"the opposite of <b>"
-				]
-				bad_match: [
-					"minus <b>"
-				]
-				fn: (v)=> - v("b")
-			
-			new Pattern
-				match: [
-					"+ <b>"
-					"positive <b>"
-				]
-				bad_match: [
-					"plus <b>"
-				]
-				fn: (v)=> + v("b")
-			
-			new Pattern
-				match: [
-					"<a> = <b>"
-					"<a> equals <b>"
-					"<a> is equal to <b>"
-					"<a> is <b>"
-				]
-				bad_match: [
-					"<a> == <b>"
-					"<a> === <b>"
-				]
-				fn: (v)=>
-					# if a.every((token)-> token.type is "word")
-					# 	name = a.join(" ")
-					# 	value = @eval_tokens(b)
-					# 	if @constants.has(name)
-					# 		unless @constants.get(name) is value
-					# 			throw new Error "#{name} is already defined as #{@constants.get(name)} (which does not equal #{value})"
-					# 	else if @constants.has(name)
-					# 		unless @constants.get(name) is value
-					# 			throw new Error "#{name} is already defined as #{@variables.get(name)} (which does not equal #{value})"
-					# 	else
-					# 		@variables.set(name, value)
-					# else
-					v("a") is v("b")
-			
-			new Pattern
-				match: [
-					"<a> ≠ <b>"
-					"<a> != <b>"
-					"<a> does not equal <b>"
-					"<a> is not equal to <b>"
-					"<a> isn't <b>"
-				]
-				bad_match: [
-					"<a> isnt <b>" # this isn't coffeescript, you can punctuate contractions
-					"<a> isnt equal to <b>" # ditto
-					"<a> isn't equal to <b>" # this sounds slightly silly to me
-				]
-				fn: (v)=> v("a") isnt v("b")
-			
-			new Pattern
-				match: [
-					"<a> > <b>"
-					"<a> is greater than <b>"
-				]
-				bad_match: [
-					"<a> is more than <b>"
-				]
-				fn: (v)=> v("a") > v("b")
-			
-			new Pattern
-				match: [
-					"<a> < <b>"
-					"<a> is less than <b>"
-				]
-				fn: (v)=> v("a") < v("b")
-			
-			new Pattern
-				match: [
-					"<a> ≥ <b>"
-					"<a> >= <b>"
-					"<a> is greater than or equal to <b>"
-				]
-				bad_match: [
-					"<a> is more than or equal to <b>"
-				]
-				fn: (v)=> v("a") >= v("b")
-			
-			new Pattern
-				match: [
-					"<a> ≤ <b>"
-					"<a> <= <b>"
-					"<a> is less than or equal to <b>"
-				]
-				fn: (v)=> v("a") <= v("b")
-			
-			new Pattern
-				match: [
 					"If <condition>, <body>"
 					"If <condition> then <body>"
 					"<body> if <condition>"
@@ -261,6 +113,7 @@ class Context
 		]
 		@classes = []
 		@objects = []
+		# TODO: block-level scopes
 		@variables = {}
 		@constants = {
 			"true": true
@@ -283,6 +136,185 @@ class Context
 			"Pythagoras's constant": Math.SQRT2
 			# "Archimedes' constant": Math.PI # can't do quotes at ends of words yet
 		}
+		@operators = [
+			new Operator
+				match: [
+					"<a> ^ <b>"
+					"<a> to the power of <b>"
+				]
+				bad_match: [
+					"<a> ** <b>"
+				]
+				precedence: 3
+				right_associative: yes
+				fn: (v)=> v("a") ** v("b")
+			
+			new Operator
+				match: [
+					"<a> × <b>"
+					"<a> * <b>"
+					"<a> times <b>"
+				]
+				bad_match: [
+					"<a> ✖ <b>" # heavy multiplication X
+					"<a> ⨉ <b>" # n-ary times operator
+					"<a> ⨯ <b>" # vector or cross-product
+					"<a> ∗ <b>" # asterisk operator
+					"<a> ⋅ <b>" # dot operator
+					"<a> ∙ <b>" # bullet operator
+					"<a> • <b>" # bullet (are you kidding me?)
+					"<a> ✗ <b>" # ballot
+					"<a> ✘ <b>" # heavy ballot
+				]
+				precedence: 2
+				fn: (v)=> v("a") * v("b")
+			
+			new Operator
+				match: [
+					"<a> ÷ <b>" # obelus
+					"<a> / <b>" # slash
+					"<a> ∕ <b>" # division slash
+					"<a> divided by <b>"
+				]
+				bad_match: [
+					"<a> ／ <b>" # fullwidth solidus
+					"<a> ⁄ <b>" # fraction slash
+				]
+				precedence: 2
+				fn: (v)=> v("a") / v("b")
+			
+			new Operator
+				match: [
+					"<a> + <b>"
+					"<a> plus <b>"
+				]
+				bad_match: [
+					"<a> ＋ <b>" # fullwidth plus
+					"<a> ﬩ <b>" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
+				]
+				precedence: 1
+				fn: (v)=> v("a") + v("b")
+			
+			new Operator
+				match: [
+					"<a> − <b>" # minus
+					"<a> - <b>" # hyphen-minus
+					"<a> minus <b>"
+				]
+				precedence: 1
+				fn: (v)=> v("a") - v("b")
+			
+			# new Operator
+			# 	match: [
+			# 		"− <b>" # minus
+			# 		"- <b>" # hyphen-minus
+			# 		"negative <b>"
+			# 		"the opposite of <b>"
+			# 	]
+			# 	bad_match: [
+			# 		"minus <b>"
+			# 	]
+			# 	precedence: 1 # ?
+			# 	right_associative: yes
+			# 	unary: yes
+			# 	fn: (v)=> - v("b")
+			
+			# new Operator
+			# 	match: [
+			# 		"+ <b>"
+			# 		"positive <b>"
+			# 	]
+			# 	bad_match: [
+			# 		"plus <b>"
+			# 	]
+			# 	precedence: 1 # ?
+			# 	right_associative: yes
+			# 	unary: yes
+			# 	fn: (v)=> + v("b")
+			
+			new Operator
+				match: [
+					"<a> = <b>"
+					"<a> equals <b>"
+					"<a> is equal to <b>"
+					"<a> is <b>"
+				]
+				bad_match: [
+					"<a> == <b>"
+					"<a> === <b>"
+				]
+				precedence: 0
+				fn: (v)=>
+					# if a.every((token)-> token.type is "word")
+					# 	name = a.join(" ")
+					# 	value = @eval_tokens(b)
+					# 	if @constants.has(name)
+					# 		unless @constants.get(name) is value
+					# 			throw new Error "#{name} is already defined as #{@constants.get(name)} (which does not equal #{value})"
+					# 	else if @constants.has(name)
+					# 		unless @constants.get(name) is value
+					# 			throw new Error "#{name} is already defined as #{@variables.get(name)} (which does not equal #{value})"
+					# 	else
+					# 		@variables.set(name, value)
+					# else
+					v("a") is v("b")
+			
+			new Operator
+				match: [
+					"<a> ≠ <b>"
+					"<a> != <b>"
+					"<a> does not equal <b>"
+					"<a> is not equal to <b>"
+					"<a> isn't <b>"
+				]
+				bad_match: [
+					"<a> isnt <b>" # this isn't coffeescript, you can punctuate contractions
+					"<a> isnt equal to <b>" # ditto
+					"<a> isn't equal to <b>" # this sounds slightly silly to me
+				]
+				precedence: 0
+				fn: (v)=> v("a") isnt v("b")
+			
+			new Operator
+				match: [
+					"<a> > <b>"
+					"<a> is greater than <b>"
+				]
+				bad_match: [
+					"<a> is more than <b>"
+				]
+				precedence: 0
+				fn: (v)=> v("a") > v("b")
+			
+			new Operator
+				match: [
+					"<a> < <b>"
+					"<a> is less than <b>"
+				]
+				precedence: 0
+				fn: (v)=> v("a") < v("b")
+			
+			new Operator
+				match: [
+					"<a> ≥ <b>"
+					"<a> >= <b>"
+					"<a> is greater than or equal to <b>"
+				]
+				bad_match: [
+					"<a> is more than or equal to <b>"
+				]
+				precedence: 0
+				fn: (v)=> v("a") >= v("b")
+			
+			new Operator
+				match: [
+					"<a> ≤ <b>"
+					"<a> <= <b>"
+					"<a> is less than or equal to <b>"
+				]
+				precedence: 0
+				fn: (v)=> v("a") <= v("b")
+		]
 	
 	subcontext: ({console}={})->
 		console ?= @console
@@ -297,6 +329,7 @@ class Context
 		result
 	
 	eval_tokens: (tokens)->
+		# console.log "eval_tokens", stringify_tokens(tokens)
 		index = 0
 		peek = ->
 			tokens[index + 1]
@@ -362,6 +395,7 @@ class Context
 				for pattern in @patterns by -1
 					match = pattern.match(next_tokens)
 					break if match?
+				# console.log "match", match, "for", stringify_tokens(tokens)
 				if match?
 					return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
 				else
@@ -373,66 +407,73 @@ class Context
 					else
 						throw new Error "I don't understand `#{tok_str}`"
 		
-		is_unary_operator = (token)->
-			return false unless token?
-			token.type is "punctuation" and token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		is_binary_operator = (token)->
-			return false unless token?
-			token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^", "=", "!=", "<=", ">=", "<", ">"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		is_right_associative_operator = (token)->
-			return false unless token?
-			token.type is "punctuation" and ((token.value is "^") or is_unary_operator(token))
+		# is_unary_operator = (token)->
+		# 	return false unless token?
+		# 	token.type is "punctuation" and token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		# 	# TODO: 5 is equal to +5
+		# is_binary_operator = (token)->
+		# 	return false unless token?
+		# 	token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^", "=", "!=", "<=", ">=", "<", ">"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		# is_right_associative_operator = (token)->
+		# 	return false unless token?
+		# 	token.type is "punctuation" and ((token.value is "^") or is_unary_operator(token))
+		
+		get_operator = (token)=>
+			return undefined unless token?
+			# index = tokens.indexOf(token)
+			for operator in @operators
+				match = operator.match([{type: "number"}, token, {type: "number"}])
+				# console.log token, operator, match
+				return operator if match?
 		
 		precedence_of = (token)->
-			if is_unary_operator(token)
-				1
-			else
-				switch token.value
-					when "^" then 3
-					when "*", "/" then 2
-					when "+", "-" then 1
-					when "=", "!=", "<=", ">=", "<", ">" then 0
-					else 0
+			get_operator(token).precedence
 		
-		apply_operator = (op_token, lhs, rhs)->
-			console.log "apply_operator", lhs, op_token.value, rhs, tokens
-			throw new Error "Non-number #{lhs} as left-hand-side of #{op_token.value}" if isNaN(lhs)
-			throw new Error "Non-number #{rhs} as right-hand-side of #{op_token.value}" if isNaN(rhs)
-			if is_unary_operator(op_token)
-				switch op_token.value
-					when "+" then + rhs
-					when "-" then - rhs
-					else throw new Error "Unknown unary operator (for now at least): #{op_token.value}"
-			else
-				switch op_token.value
-					when "^" then lhs ** rhs
-					when "*" then lhs * rhs
-					when "/" then lhs / rhs
-					when "+" then lhs + rhs
-					when "-" then lhs - rhs
-					when "=" then lhs is rhs
-					when "!=" then lhs isnt rhs
-					when "<=" then lhs <= rhs
-					when ">=" then lhs >= rhs
-					when "<" then lhs < rhs
-					when ">" then lhs > rhs
-					else throw new Error "Unknown binary operator (for now at least): #{op_token.value}"
+		apply_operator = (op_token, a, b)->
+			# console.log "apply_operator", a, op_token.value, b, tokens
+			throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
+			throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
+			get_operator(op_token).fn((var_name)-> {a, b}[var_name])
+			# if is_unary_operator(op_token)
+			# 	switch op_token.value
+			# 		when "+" then + rhs
+			# 		when "-" then - rhs
+			# 		else throw new Error "Unknown unary operator (for now at least): #{op_token.value}"
+			# else
+			# 	switch op_token.value
+			# 		when "^" then lhs ** rhs
+			# 		when "*" then lhs * rhs
+			# 		when "/" then lhs / rhs
+			# 		when "+" then lhs + rhs
+			# 		when "-" then lhs - rhs
+			# 		when "=" then lhs is rhs
+			# 		when "!=" then lhs isnt rhs
+			# 		when "<=" then lhs <= rhs
+			# 		when ">=" then lhs >= rhs
+			# 		when "<" then lhs < rhs
+			# 		when ">" then lhs > rhs
+			# 		else throw new Error "Unknown binary operator (for now at least): #{op_token.value}"
 		
 		parse_expression = (lhs, min_precedence)->
 			lookahead = peek()
-			while is_binary_operator(lookahead) and precedence_of(lookahead) >= min_precedence
+			lookahead_operator = get_operator(lookahead)
+			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
 				op = lookahead
 				advance()
 				advance()
 				rhs = parse_primary()
 				lookahead = peek()
+				lookahead_operator = get_operator(lookahead)
 				while (
-					(is_binary_operator(lookahead) and precedence_of(lookahead) > precedence_of(op)) or
-					(is_right_associative_operator(lookahead) and precedence_of(lookahead) is precedence_of(op))
+					(lookahead_operator?.binary and lookahead_operator.precedence > precedence_of(op)) or
+					(lookahead_operator?.right_associative and lookahead_operator.precedence is precedence_of(op))
 				)
-					rhs = parse_expression(rhs, precedence_of(lookahead))
+					rhs = parse_expression(rhs, lookahead_operator.precedence)
 					lookahead = peek()
+					lookahead_operator = get_operator(lookahead)
 				lhs = apply_operator(op, lhs, rhs)
+			# if lookahead and not is_binary_operator(lookahead)
+			# 	throw new Error "end of thing"
 			return lhs
 		
 		parse_expression(parse_primary(), 0)

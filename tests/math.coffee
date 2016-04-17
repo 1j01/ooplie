@@ -163,10 +163,13 @@ suite "mathematics", ->
 		# TODO: also e.g. five x
 	test "unicode operators", ->
 		evaluate("5 − 6").to(5 - 6)
+		evaluate("5 × 6").to(5 * 6)
+		evaluate("5 ÷ 6").to(5 / 6) # obelus
+		evaluate("5 ∕ 6").to(5 / 6) # division slash
+	test.skip "bad unicode operators", ->
 		expect(->
 			evaluate("5 ＋ 6").to(5 + 6)
 		).to.throw("use <a> + <b> instead")
-		evaluate("5 × 6").to(5 * 6)
 		expect(->
 			evaluate("5 ⋅ 6").to(5 * 6) # dot operator
 		).to.throw("use <a> × <b> instead")
@@ -179,8 +182,6 @@ suite "mathematics", ->
 		expect(->
 			evaluate("5 • 6").to(5 * 6) # bullet
 		).to.throw("use <a> × <b> instead")
-		evaluate("5 ÷ 6").to(5 / 6) # obelus
-		evaluate("5 ∕ 6").to(5 / 6) # division slash
 		expect(->
 			evaluate("5 ⁄ 6").to(5/6) # fraction slash used wrong
 		).to.throw("use <a> ÷ <b> instead")
