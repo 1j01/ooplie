@@ -32,6 +32,26 @@ Operator = (function(superClass) {
     }
   }
 
+  Operator.prototype.match = function(tokens, index) {
+    var j, k, len, len1, matcher, matching, ref, segment, segment_index, token;
+    ref = this.matchers;
+    for (j = 0, len = ref.length; j < len; j++) {
+      matcher = ref[j];
+      matching = true;
+      for (segment_index = k = 0, len1 = matcher.length; k < len1; segment_index = ++k) {
+        segment = matcher[segment_index];
+        token = tokens[index + segment_index];
+        matching = (token != null ? token.type : void 0) === segment.type && (token != null ? token.value : void 0) === segment.value;
+        if (!matching) {
+          break;
+        }
+      }
+      if (matching) {
+        return matcher;
+      }
+    }
+  };
+
   return Operator;
 
 })(Pattern);
@@ -263,7 +283,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var advance, apply_operator, get_operator, index, parse_expression, parse_primary, peek, precedence_of;
+    var advance, apply_operator, index, parse_expression, parse_primary, peek;
     index = 0;
     peek = (function(_this) {
       return function() {
@@ -365,7 +385,7 @@ module.exports = Context = (function() {
             for (o = 0, len3 = ref3.length; o < len3; o++) {
               operator = ref3[o];
               if (operator.unary) {
-                if (operator.match([token])) {
+                if (operator.match(tokens, index)) {
                   advance();
                   following_value = parse_primary();
                   return operator.fn(function(var_name) {
@@ -385,65 +405,28 @@ module.exports = Context = (function() {
         }
       };
     })(this);
-    get_operator = (function(_this) {
-      return function(token) {
-        var j, len, match, operator, ref;
-        if (token == null) {
-          return void 0;
-        }
-        ref = _this.operators;
-        for (j = 0, len = ref.length; j < len; j++) {
-          operator = ref[j];
-          match = operator.match([token]);
-          if (match != null) {
-            return operator;
-          }
-        }
-      };
-    })(this);
-    precedence_of = (function(_this) {
-      return function(token) {
-        return get_operator(token).precedence;
-      };
-    })(this);
     apply_operator = (function(_this) {
-      return function(operator, a, b, op_token) {
-        var res;
-        res = operator.fn(function(var_name) {
+      return function(operator, a, b) {
+        return operator.fn(function(var_name) {
           return {
             a: a,
             b: b
           }[var_name];
         });
-        console.log("apply_operator", a, operator.prefered, b, operator, res);
-        return res;
       };
     })(this);
     parse_expression = (function(_this) {
       return function(lhs, min_precedence) {
         var lookahead_operator, match_operator, operator, rhs;
         match_operator = function() {
-          var j, k, l, len, len1, len2, matcher, matching, operator, ref, ref1, segment, segment_index, token;
+          var j, len, matcher, operator, ref;
           ref = _this.operators;
           for (j = 0, len = ref.length; j < len; j++) {
             operator = ref[j];
-            ref1 = operator.matchers;
-            for (k = 0, len1 = ref1.length; k < len1; k++) {
-              matcher = ref1[k];
-              matching = false;
-              for (segment_index = l = 0, len2 = matcher.length; l < len2; segment_index = ++l) {
-                segment = matcher[segment_index];
-                token = tokens[index + segment_index];
-                if ((token != null ? token.type : void 0) === segment.type && (token != null ? token.value : void 0) === segment.value) {
-                  matching = true;
-                } else {
-                  break;
-                }
-              }
-              if (matching) {
-                advance(matcher.length);
-                return operator;
-              }
+            matcher = operator.match(tokens, index);
+            if (matcher != null) {
+              advance(matcher.length);
+              return operator;
             }
           }
         };

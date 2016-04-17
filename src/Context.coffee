@@ -17,6 +17,16 @@ class Operator extends Pattern
 			@unary = not @binary
 		if @unary and not @right_associative
 			throw new Error "Non-right-associative unary operators are probably not supported"
+	
+	match: (tokens, index)->
+		for matcher in @matchers
+			matching = yes
+			for segment, segment_index in matcher
+				token = tokens[index + segment_index]
+				matching = (token?.type is segment.type and token?.value is segment.value)
+				break unless matching
+			if matching
+				return matcher
 
 module.exports =
 class Context
@@ -410,9 +420,11 @@ class Context
 				token = tokens[index]
 				if token.type is "punctuation"
 					for operator in @operators when operator.unary
-						if operator.match([token])
+						if operator.match(tokens, index)
 							advance()
 							following_value = parse_primary()
+							# following_value = parse_expression(parse_primary(), 1)
+							# following_value = parse_expression(parse_primary(), 0)
 							return operator.fn((var_name)=> {b: following_value}[var_name])
 				
 				if bad_match?
@@ -420,69 +432,34 @@ class Context
 				else
 					throw new Error "I don't understand `#{tok_str}`"
 		
-		get_operator = (token)=>
-			return undefined unless token?
-			for operator in @operators
-				match = operator.match([token])
-				# console.log token, operator, match
-				return operator if match?
-		
-		precedence_of = (token)=>
-			get_operator(token).precedence
-		
-		apply_operator = (operator, a, b, op_token)=>
-			# throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
-			# throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
-			# operator = get_operator(op_token)
-			res = operator.fn((var_name)=> {a, b}[var_name])
-			# console.log(op_token, a, b, operator, res)
-			console.log("apply_operator", a, operator.prefered, b, operator, res)
-			res
+		apply_operator = (operator, a, b)=>
+			operator.fn((var_name)=> {a, b}[var_name])
 		
 		parse_expression = (lhs, min_precedence)=>
 			match_operator = =>
 				for operator in @operators
-					for matcher in operator.matchers
-						matching = no
-						for segment, segment_index in matcher
-							token = tokens[index + segment_index]
-							if token?.type is segment.type and token?.value is segment.value
-								matching = yes
-							else
-								break
-						if matching
-							advance(matcher.length)
-							return operator
+					matcher = operator.match(tokens, index)
+					if matcher?
+						advance(matcher.length)
+						return operator
 			
 			advance()
 			lookahead_operator = match_operator()
-			# advance(-1)
-			# console.log "OP", lookahead, lookahead_operator
 			
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
-				# op_token = lookahead
 				operator = lookahead_operator
 				rhs = parse_primary()
 				advance()
-				# console.log "match_operator at", index, "in", tokens
 				lookahead_operator = match_operator()
-				# console.log "lookahead_operator", lookahead_operator
 				while (
 					(lookahead_operator?.binary and lookahead_operator.precedence > operator.precedence) or
 					(lookahead_operator?.right_associative and lookahead_operator.precedence is operator.precedence)
 				)
-					# debugger
 					advance(-2)
-					# console.log "parse_expression(#{rhs}, #{lookahead_operator.precedence}) at", index
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
-					# console.log "parse_expression returned", rhs, "(now at #{index})"
 					advance(2)
 					lookahead_operator = match_operator()
-				# console.log operator, lhs, rhs
-				# lhs = apply_operator(operator, lhs, rhs, op_token)
 				lhs = apply_operator(operator, lhs, rhs)
-				# advance()
-				# console.log lhs
 			if lookahead_operator?.unary
 				throw new Error "unary operator at end of expression?" # TODO/FIXME: terrible error message
 			# if peek() and not lookahead_operator?

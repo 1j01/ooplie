@@ -39,9 +39,10 @@ Ooplie will have an expressive and rather comprehensive time module.
 
 ## Roadmap
 
+Next up: **parenthesis and indented blocks** (or maybe variables)
+
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
 Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)
-
 
 Next, Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
