@@ -130,23 +130,7 @@ class Context
 				fn: (v)=>
 					@eval v("text")
 			
-			new Pattern
-				match: [
-					"If <condition>, <body>"
-					"If <condition> then <body>"
-					"<body> if <condition>"
-				]
-				fn: (v)=> v("body") if v("condition")
-			
-			new Pattern
-				match: [
-					"Unless <condition>, <body>"
-					"Unless <condition> then <body>" # doesn't sound like good English
-					"<body> unless <condition>"
-				]
-				fn: (v)=> v("body") unless v("condition")
-			
-			# NOTE: If-else has to be below If, otherwise If will be matched first
+			# NOTE: If-else has to be above If, otherwise If will be matched first
 			new Pattern
 				# TODO: should be able to use <alt body> but spaces are converted to underscores
 				match: [
@@ -163,6 +147,23 @@ class Context
 					# comma misplacement should really be handled dynamically by the near-match system
 				]
 				fn: (v)=> if v("condition") then v("body") else v("alt_body")
+			
+			new Pattern
+				match: [
+					"If <condition>, <body>"
+					"If <condition> then <body>"
+					"<body> if <condition>"
+				]
+				fn: (v)=> v("body") if v("condition")
+			
+			new Pattern
+				match: [
+					"Unless <condition>, <body>"
+					"Unless <condition> then <body>" # doesn't sound like good English
+					"<body> unless <condition>"
+				]
+				fn: (v)=> v("body") unless v("condition")
+			
 		]
 		@classes = []
 		@instances = []
@@ -237,16 +238,14 @@ class Context
 			tok_str = stringify_tokens(next_tokens)
 			next_word_tok_str = stringify_tokens(next_word_tokens)
 			
-			# TODO: don't need to have this in reverse
-			for pattern in @patterns by -1
+			for pattern in @patterns
 				match = pattern.match(next_tokens)
 				break if match?
 			
 			if match?
 				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
 			else
-				# TODO: don't need to have this in reverse
-				for pattern in @patterns by -1
+				for pattern in @patterns
 					bad_match = pattern.bad_match(next_tokens)
 					break if bad_match?
 			

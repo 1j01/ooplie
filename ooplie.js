@@ -41,6 +41,18 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Pattern({
+        match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
+        bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
+        fn: (function(_this) {
+          return function(v) {
+            if (v("condition")) {
+              return v("body");
+            } else {
+              return v("alt_body");
+            }
+          };
+        })(this)
+      }), new Pattern({
         match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
         fn: (function(_this) {
           return function(v) {
@@ -55,18 +67,6 @@ module.exports = Context = (function() {
           return function(v) {
             if (!v("condition")) {
               return v("body");
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
-        bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
-        fn: (function(_this) {
-          return function(v) {
-            if (v("condition")) {
-              return v("body");
-            } else {
-              return v("alt_body");
             }
           };
         })(this)
@@ -148,7 +148,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, following_value, i, j, k, l, len, len1, len2, len3, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
+        var bad_match, following_value, i, j, k, l, len, len1, len2, len3, len4, len5, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -174,7 +174,7 @@ module.exports = Context = (function() {
         tok_str = stringify_tokens(next_tokens);
         next_word_tok_str = stringify_tokens(next_word_tokens);
         ref1 = _this.patterns;
-        for (l = ref1.length - 1; l >= 0; l += -1) {
+        for (l = 0, len2 = ref1.length; l < len2; l++) {
           pattern = ref1[l];
           match = pattern.match(next_tokens);
           if (match != null) {
@@ -187,7 +187,7 @@ module.exports = Context = (function() {
           });
         } else {
           ref2 = _this.patterns;
-          for (m = ref2.length - 1; m >= 0; m += -1) {
+          for (m = 0, len3 = ref2.length; m < len3; m++) {
             pattern = ref2[m];
             bad_match = pattern.bad_match(next_tokens);
             if (bad_match != null) {
@@ -200,7 +200,7 @@ module.exports = Context = (function() {
             return token.type === "string";
           })) {
             str = "";
-            for (n = 0, len2 = next_tokens.length; n < len2; n++) {
+            for (n = 0, len4 = next_tokens.length; n < len4; n++) {
               token = next_tokens[n];
               str += token.value;
             }
@@ -230,7 +230,7 @@ module.exports = Context = (function() {
           token = tokens[index];
           if (token.type === "punctuation") {
             ref3 = _this.operators;
-            for (o = 0, len3 = ref3.length; o < len3; o++) {
+            for (o = 0, len5 = ref3.length; o < len5; o++) {
               operator = ref3[o];
               if (operator.unary) {
                 if (operator.match(tokens, index)) {
