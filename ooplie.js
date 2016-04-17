@@ -158,6 +158,28 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
+        match: ["− <b>", "- <b>", "negative <b>", "the opposite of <b>"],
+        bad_match: ["minus <b>"],
+        precedence: 1,
+        right_associative: true,
+        unary: true,
+        fn: (function(_this) {
+          return function(v) {
+            return -v("b");
+          };
+        })(this)
+      }), new Operator({
+        match: ["+ <b>", "positive <b>"],
+        bad_match: ["plus <b>"],
+        precedence: 1,
+        right_associative: true,
+        unary: true,
+        fn: (function(_this) {
+          return function(v) {
+            return +v("b");
+          };
+        })(this)
+      }), new Operator({
         match: ["<a> = <b>", "<a> equals <b>", "<a> is equal to <b>", "<a> is <b>"],
         bad_match: ["<a> == <b>", "<a> === <b>"],
         precedence: 0,
@@ -251,7 +273,7 @@ module.exports = Context = (function() {
     };
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, i, j, k, l, len, len1, len2, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
+        var bad_match, following_value, i, j, k, l, len, len1, len2, len3, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -331,12 +353,25 @@ module.exports = Context = (function() {
             }
           }
           token = tokens[index];
-          if (token.type === "punctuation" && ((ref3 = token.value) === "+" || ref3 === "-")) {
-            advance();
-            if (token.value === "-") {
-              return -parse_primary();
-            } else {
-              return +parse_primary();
+          if (token.type === "punctuation") {
+            ref3 = _this.operators;
+            for (o = 0, len3 = ref3.length; o < len3; o++) {
+              operator = ref3[o];
+              if (operator.unary) {
+                if (operator.match([
+                  token, {
+                    type: "number"
+                  }
+                ])) {
+                  advance();
+                  following_value = parse_primary();
+                  return operator.fn(function(var_name) {
+                    return {
+                      b: following_value
+                    }[var_name];
+                  });
+                }
+              }
             }
           }
           if (bad_match != null) {

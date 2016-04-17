@@ -205,33 +205,33 @@ class Context
 				precedence: 1
 				fn: (v)=> v("a") - v("b")
 			
-			# new Operator
-			# 	match: [
-			# 		"− <b>" # minus
-			# 		"- <b>" # hyphen-minus
-			# 		"negative <b>"
-			# 		"the opposite of <b>"
-			# 	]
-			# 	bad_match: [
-			# 		"minus <b>"
-			# 	]
-			# 	precedence: 1 # ?
-			# 	right_associative: yes
-			# 	unary: yes
-			# 	fn: (v)=> - v("b")
+			new Operator
+				match: [
+					"− <b>" # minus
+					"- <b>" # hyphen-minus
+					"negative <b>"
+					"the opposite of <b>"
+				]
+				bad_match: [
+					"minus <b>"
+				]
+				precedence: 1 # ?
+				right_associative: yes
+				unary: yes
+				fn: (v)=> - v("b")
 			
-			# new Operator
-			# 	match: [
-			# 		"+ <b>"
-			# 		"positive <b>"
-			# 	]
-			# 	bad_match: [
-			# 		"plus <b>"
-			# 	]
-			# 	precedence: 1 # ?
-			# 	right_associative: yes
-			# 	unary: yes
-			# 	fn: (v)=> + v("b")
+			new Operator
+				match: [
+					"+ <b>"
+					"positive <b>"
+				]
+				bad_match: [
+					"plus <b>"
+				]
+				precedence: 1 # ?
+				right_associative: yes
+				unary: yes
+				fn: (v)=> + v("b")
 			
 			new Operator
 				match: [
@@ -395,12 +395,12 @@ class Context
 						return @variables[tok_str]
 				
 				token = tokens[index]
-				if token.type is "punctuation" and token.value in ["+", "-"]
-					advance()
-					if token.value is "-"
-						return -parse_primary()
-					else
-						return +parse_primary()
+				if token.type is "punctuation"
+					for operator in @operators when operator.unary
+						if operator.match([token, {type: "number"}])
+							advance()
+							following_value = parse_primary()
+							return operator.fn((var_name)-> {b: following_value}[var_name])
 				
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
