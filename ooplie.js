@@ -42,14 +42,35 @@ module.exports = Context = (function() {
   };
 
   Context.prototype["eval"] = function(text) {
-    var result;
-    result = null;
-    this.interpret(text, function(err, res) {
-      if (err) {
-        throw err;
+    var handle_line, j, len, line_tokens, ref, result, token;
+    result = void 0;
+    line_tokens = [];
+    handle_line = (function(_this) {
+      return function() {
+        var e, error;
+        if (line_tokens.length) {
+          try {
+            result = _this.eval_tokens(line_tokens);
+          } catch (error) {
+            e = error;
+            callback(e);
+          }
+        }
+        return line_tokens = [];
+      };
+    })(this);
+    ref = tokenize(text);
+    for (j = 0, len = ref.length; j < len; j++) {
+      token = ref[j];
+      if (token.type !== "comment") {
+        if (token.type === "newline") {
+          handle_line();
+        } else {
+          line_tokens.push(token);
+        }
       }
-      return result = res;
-    });
+    }
+    handle_line();
     return result;
   };
 
@@ -210,39 +231,6 @@ module.exports = Context = (function() {
       };
     })(this);
     return parse_expression(parse_primary(), 0);
-  };
-
-  Context.prototype.interpret = function(text, callback) {
-    var handle_line, j, len, line_tokens, ref, result, token;
-    result = void 0;
-    line_tokens = [];
-    handle_line = (function(_this) {
-      return function() {
-        var e, error;
-        if (line_tokens.length) {
-          try {
-            result = _this.eval_tokens(line_tokens);
-          } catch (error) {
-            e = error;
-            callback(e);
-          }
-        }
-        return line_tokens = [];
-      };
-    })(this);
-    ref = tokenize(text);
-    for (j = 0, len = ref.length; j < len; j++) {
-      token = ref[j];
-      if (token.type !== "comment") {
-        if (token.type === "newline") {
-          handle_line();
-        } else {
-          line_tokens.push(token);
-        }
-      }
-    }
-    handle_line();
-    return callback(null, result);
   };
 
   return Context;

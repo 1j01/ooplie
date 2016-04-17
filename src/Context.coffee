@@ -36,15 +36,29 @@ class Context
 		new Context {console, supercontext: @}
 	
 	eval: (text)->
-		# interpret is actually syncronous for now, so we can do this:
-		result = null
-		@interpret text, (err, res)->
-			throw err if err
-			result = res
+		result = undefined
+		
+		line_tokens = []
+		
+		handle_line = =>
+			if line_tokens.length
+				try
+					result = @eval_tokens(line_tokens)
+				catch e
+					callback e
+			line_tokens = []
+		
+		for token in tokenize(text) when token.type isnt "comment"
+			if token.type is "newline"
+				handle_line()
+			else
+				line_tokens.push token
+		
+		handle_line()
+		
 		result
-		# we should probably actually ditch interpret,
-		# only have syncronous eval,
-		# and return Promises for asyncronous operations
+		
+		# eval is syncronous, but could return Promises for asyncronous operations
 		# a block of async statements should probably return a single Promise that wraps all the Promises of its statements
 	
 	eval_tokens: (tokens)->
@@ -162,27 +176,3 @@ class Context
 			return lhs
 		
 		parse_expression(parse_primary(), 0)
-
-	
-	interpret: (text, callback)->
-		result = undefined
-		
-		line_tokens = []
-		
-		handle_line = =>
-			if line_tokens.length
-				try
-					result = @eval_tokens(line_tokens)
-				catch e
-					callback e
-			line_tokens = []
-		
-		for token in tokenize(text) when token.type isnt "comment"
-			if token.type is "newline"
-				handle_line()
-			else
-				line_tokens.push token
-		
-		handle_line()
-		
-		callback null, result
