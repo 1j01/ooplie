@@ -1,11 +1,11 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Pattern, stringify_tokens, tokenize;
+var Context, Pattern, Token, stringify_tokens, tokenize;
 
 tokenize = require("./tokenize");
 
 Pattern = require("./Pattern");
 
-stringify_tokens = require("./Token").stringify_tokens;
+stringify_tokens = (Token = require("./Token")).stringify_tokens;
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -213,66 +213,175 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var bad_match, i, j, k, last_token, len, match, pattern, ref, ref1, str, tok_str, token;
-    if (tokens.every(function(token) {
-      var ref;
-      return (ref = token.type) === "string" || ref === "number";
-    })) {
-      if (tokens.some(function(token) {
-        return token.type === "string";
-      })) {
-        str = "";
-        for (i = 0, len = tokens.length; i < len; i++) {
-          token = tokens[i];
-          str += token.value;
-        }
-        return str;
-      } else if (tokens.length) {
-        last_token = tokens[tokens.length - 1];
-        return last_token.value;
-      }
-    } else if (tokens.length) {
-      tok_str = stringify_tokens(tokens);
-      if (tok_str in this.constants) {
-        return this.constants[tok_str];
-      }
-      if (tok_str in this.variables) {
-        return this.variables[tok_str];
-      }
-      ref = this.patterns;
-      for (j = ref.length - 1; j >= 0; j += -1) {
-        pattern = ref[j];
-        match = pattern.match(tokens);
-        if (match != null) {
-          break;
-        }
-      }
-      if (match != null) {
-        return pattern.fn((function(_this) {
-          return function(var_name) {
-            return _this.eval_tokens(match[var_name]);
-          };
-        })(this));
-      } else {
-        ref1 = this.patterns;
-        for (k = ref1.length - 1; k >= 0; k += -1) {
-          pattern = ref1[k];
-          bad_match = pattern.bad_match(tokens);
-          if (bad_match != null) {
+    var advance, apply_operator, index, is_binary_operator, is_right_associative_operator, is_unary_operator, parse_expression, parse_primary, peek, precedence_of;
+    index = 0;
+    peek = function() {
+      return tokens[index + 1];
+    };
+    advance = function() {
+      return index += 1;
+    };
+    parse_primary = (function(_this) {
+      return function() {
+        var i, j, k, l, len, len1, len2, next_literal_tokens, next_tokens, next_word_tokens, ref, ref1, str, tok_str, token;
+        next_tokens = tokens.slice(index);
+        next_literal_tokens = [];
+        for (i = j = 0, len = next_tokens.length; j < len; i = ++j) {
+          token = next_tokens[i];
+          if ((ref = token.type) === "string" || ref === "number") {
+            next_literal_tokens.push(token);
+          } else {
             break;
           }
         }
-        if (bad_match != null) {
-          throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
-        } else {
-          throw new Error("I don't understand `" + tok_str + "`");
+        next_word_tokens = [];
+        for (i = k = 0, len1 = next_tokens.length; k < len1; i = ++k) {
+          token = next_tokens[i];
+          if (token.type === "word") {
+            next_word_tokens.push(token);
+          } else {
+            break;
+          }
+        }
+        if (next_literal_tokens.length) {
+          if (next_literal_tokens.some(function(token) {
+            return token.type === "string";
+          })) {
+            str = "";
+            for (l = 0, len2 = next_tokens.length; l < len2; l++) {
+              token = next_tokens[l];
+              str += token.value;
+            }
+            index += next_literal_tokens.length;
+            return str;
+          } else if (next_literal_tokens.length > 1) {
+            throw new Error("Consecutive numbers, " + next_literal_tokens[0].value + " and " + next_literal_tokens[1].value);
+          } else {
+            return next_literal_tokens[0].value;
+          }
+        } else if (next_word_tokens.length) {
+          tok_str = stringify_tokens(tokens);
+          if (tok_str in _this.constants) {
+            return _this.constants[tok_str];
+          }
+          if (tok_str in _this.variables) {
+            return _this.variables[tok_str];
+          }
+          throw new Error("Unknown expression `" + tok_str + "`");
+        } else if (next_tokens.length) {
+          token = tokens[index];
+          if (token.type === "punctuation" && ((ref1 = token.value) === "+" || ref1 === "-")) {
+            advance();
+            if (token.value === "-") {
+              return -parse_primary();
+            } else {
+              return +parse_primary();
+            }
+          }
+        }
+      };
+    })(this);
+    is_unary_operator = function(token) {
+      var ref;
+      if (token == null) {
+        return false;
+      }
+      return token.type === "punctuation" && ((ref = token.value) === "+" || ref === "-") && is_binary_operator(tokens[tokens.indexOf(token) - 1]);
+    };
+    is_binary_operator = function(token) {
+      var ref;
+      if (token == null) {
+        return false;
+      }
+      return token.type === "punctuation" && ((ref = token.value) === "*" || ref === "/" || ref === "+" || ref === "-" || ref === "^") && !is_binary_operator(tokens[tokens.indexOf(token) - 1]);
+    };
+    is_right_associative_operator = function(token) {
+      if (token == null) {
+        return false;
+      }
+      return token.type === "punctuation" && ((token.value === "^") || is_unary_operator(token));
+    };
+    precedence_of = function(token) {
+      if (is_unary_operator(token)) {
+        return 1;
+      } else {
+        switch (token.value) {
+          case "^":
+            return 3;
+          case "*":
+          case "/":
+            return 2;
+          case "+":
+          case "-":
+            return 1;
+          case "=":
+          case "<=":
+          case ">=":
+          case "<":
+          case ">":
+            return 0;
+          default:
+            return 0;
         }
       }
-    }
+    };
+    apply_operator = function(op_token, lhs, rhs) {
+      if (isNaN(lhs)) {
+        throw new Error("Non-number " + lhs + " as left-hand-side of " + op_token.value);
+      }
+      if (isNaN(rhs)) {
+        throw new Error("Non-number " + rhs + " as right-hand-side of " + op_token.value);
+      }
+      if (is_unary_operator(op_token)) {
+        switch (op_token.value) {
+          case "+":
+            return +rhs;
+          case "-":
+            return -rhs;
+          default:
+            throw new Error("Unknown unary operator (for now at least): " + op_token.value);
+        }
+      } else {
+        switch (op_token.value) {
+          case "^":
+            return Math.pow(lhs, rhs);
+          case "*":
+            return lhs * rhs;
+          case "/":
+            return lhs / rhs;
+          case "+":
+            return lhs + rhs;
+          case "-":
+            return lhs - rhs;
+          case "=":
+            return lhs === rhs;
+          default:
+            throw new Error("Unknown binary operator (for now at least): " + op_token.value);
+        }
+      }
+    };
+    parse_expression = function(lhs, min_precedence) {
+      var lookahead, op, rhs;
+      lookahead = peek();
+      while (is_binary_operator(lookahead) && precedence_of(lookahead) >= min_precedence) {
+        op = lookahead;
+        advance();
+        advance();
+        rhs = parse_primary();
+        lookahead = peek();
+        while ((is_binary_operator(lookahead) && precedence_of(lookahead) > precedence_of(op)) || (is_right_associative_operator(lookahead) && precedence_of(lookahead) === precedence_of(op))) {
+          rhs = parse_expression(rhs, precedence_of(lookahead));
+          lookahead = peek();
+        }
+        lhs = apply_operator(op, lhs, rhs);
+      }
+      return lhs;
+    };
+    return parse_expression(parse_primary(), 0);
   };
 
   Context.prototype.interpret = function(text, callback) {
-    var handle_line, i, len, line_tokens, ref, result, token;
+    var handle_line, j, len, line_tokens, ref, result, token;
     if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
       return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
     } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
@@ -306,8 +415,8 @@ module.exports = Context = (function() {
         };
       })(this);
       ref = tokenize(text);
-      for (i = 0, len = ref.length; i < len; i++) {
-        token = ref[i];
+      for (j = 0, len = ref.length; j < len; j++) {
+        token = ref[j];
         if (token.type !== "comment") {
           if (token.type === "newline") {
             handle_line();

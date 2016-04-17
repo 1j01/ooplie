@@ -5,8 +5,9 @@ Ooplie is a [multi-paradigm][] programming system where you write in English.
 
 <!-- An NLP system? https://en.wikipedia.org/wiki/Natural_language_programming seems to have a somewhat narrow definition, and https://en.wikipedia.org/wiki/Natural_language_processing is rather broad -->
 
-Currently you can output text, eval JS, and write trivial (read: useless because there are no variables yet) conditionals.
-There are *expressions*, but the order of operations is wrong.
+So far you ~~can~~ **have been able to** output text, eval JS, and write trivial (read: useless because there are no variables yet) conditionals.
+
+In progress: **Order of operations**!
 
 There's [a nice little console][console] where you can try it out so far,
 and [a million pending tests][tests].
@@ -38,10 +39,6 @@ Ooplie will have an expressive and rather comprehensive time module.
 
 
 ## Roadmap
-
-Next up: **Order of operations**.
-This might be tough,
-but we're not going to get very far without **order**.
 
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
 Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)

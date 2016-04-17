@@ -1,7 +1,7 @@
 
 tokenize = require "./tokenize"
 Pattern = require "./Pattern"
-{stringify_tokens} = require "./Token"
+{stringify_tokens} = Token = require "./Token"
 
 module.exports =
 class Context
@@ -297,46 +297,201 @@ class Context
 		result
 	
 	eval_tokens: (tokens)->
-		# console.log "eval_tokens", tokens
-		if tokens.every((token)-> token.type in ["string", "number"])
-			# TODO: throw an error if there are two consecutive numbers
-			if tokens.some((token)-> token.type is "string")
-				str = ""
-				str += token.value for token in tokens
-				return str
-			else if tokens.length
-				last_token = tokens[tokens.length - 1]
-				return last_token.value
-		else if tokens.length
-			tok_str = stringify_tokens(tokens)
+		# # console.log "eval_tokens", tokens
+		# if tokens.every((token)-> token.type in ["string", "number"])
+		# 	# TODO: throw an error if there are two consecutive numbers
+		# 	if tokens.some((token)-> token.type is "string")
+		# 		str = ""
+		# 		str += token.value for token in tokens
+		# 		return str
+		# 	else if tokens.length
+		# 		last_token = tokens[tokens.length - 1]
+		# 		return last_token.value
+		# else if tokens.length
+		# 	tok_str = stringify_tokens(tokens)
 			
-			# for constant_name, constant_value of @constants
-			# 	if tok_str is constant_name
-			# 		return constant_value
+		# 	# for constant_name, constant_value of @constants
+		# 	# 	if tok_str is constant_name
+		# 	# 		return constant_value
 			
-			# for variable_name, variable_value of @variables
-			# 	if tok_str is variable_name
-			# 		return variable_value
+		# 	# for variable_name, variable_value of @variables
+		# 	# 	if tok_str is variable_name
+		# 	# 		return variable_value
 			
-			if tok_str of @constants
-				return @constants[tok_str]
+		# 	if tok_str of @constants
+		# 		return @constants[tok_str]
 			
-			if tok_str of @variables
-				return @variables[tok_str]
+		# 	if tok_str of @variables
+		# 		return @variables[tok_str]
 			
-			for pattern in @patterns by -1
-				match = pattern.match(tokens)
-				break if match?
-			if match?
-				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
-			else
-				for pattern in @patterns by -1
-					bad_match = pattern.bad_match(tokens)
-					break if bad_match?
-				if bad_match?
-					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
+		# 	for pattern in @patterns by -1
+		# 		match = pattern.match(tokens)
+		# 		break if match?
+		# 	if match?
+		# 		return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
+		# 	else
+		# 		for pattern in @patterns by -1
+		# 			bad_match = pattern.bad_match(tokens)
+		# 			break if bad_match?
+		# 		if bad_match?
+		# 			throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
+		# 		else
+		# 			throw new Error "I don't understand `#{tok_str}`"
+		
+		index = 0
+		peek = ->
+			tokens[index + 1]
+		# TODO: peek, peek_all
+		advance = ->
+			index += 1
+			# TODO: arg default to 1
+		
+		parse_primary = =>
+			# if tokens[0].type in ["number", "string"]
+			# 	tokens[0].value
+			next_tokens = tokens.slice(index)
+			next_literal_tokens = []
+			for token, i in next_tokens
+				if token.type in ["string", "number"]
+					next_literal_tokens.push(token)
 				else
-					throw new Error "I don't understand `#{tok_str}`"
+					break
+			next_word_tokens = []
+			for token, i in next_tokens
+				if token.type is "word"
+					next_word_tokens.push(token)
+				else
+					break
+			
+			if next_literal_tokens.length
+				if next_literal_tokens.some((token)-> token.type is "string")
+					str = ""
+					str += token.value for token in next_tokens
+					index += next_literal_tokens.length
+					return str
+				else if next_literal_tokens.length > 1
+					# TODO: row/column numbers in errors
+					throw new Error "Consecutive numbers, #{next_literal_tokens[0].value} and #{next_literal_tokens[1].value}"
+				else
+					# advance()
+					return next_literal_tokens[0].value
+			else if next_word_tokens.length
+				tok_str = stringify_tokens(tokens)
+				
+				if tok_str of @constants
+					# console.log "constant", tok_str, @constants[tok_str]
+					return @constants[tok_str]
+				
+				if tok_str of @variables
+					return @variables[tok_str]
+				
+				throw new Error "Unknown expression `#{tok_str}`"
+			else if next_tokens.length
+				# # # advance()
+				# # console.log "parse_primary dumping #{next_tokens[0].value}"
+				# # return next_tokens[0].value
+				# # return parse_expression(undefined, 0)
+				# next_token = next_tokens[0]
+				# if next_token.type is "punctuation" and next_token.value in ["+", "-"]
+				# 	# # next_token
+				# 	# # tokens.push new Token("number", -1, -1, 0)
+				# 	# tokens.splice index+1, 0, new Token("number", -1, -1, 0)
+				# 	# return parse_expression(undefined, 0)
+				# 	# index -= 1
+				# 	# return parse_expression(undefined, 0)
+				# 	advance()
+				# 	if next_token.value is "-"
+				# 		return -parse_primary()
+				# 	else
+				# 		return +parse_primary()
+				token = tokens[index]
+				# next_token = peek()
+				if token.type is "punctuation" and token.value in ["+", "-"]
+					advance()
+					if token.value is "-"
+						return -parse_primary()
+					else
+						return +parse_primary()
+		
+		# is_binary_operator = (token)->
+		# 	return false unless token?
+		# 	token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		# is_right_associative_operator = (token)->
+		# 	return false unless token?
+		# 	# token.type is "punctuation" and token.value in []
+		# 	# token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		# 	# token.type is "punctuation" and token.value is "^" #and is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		# 	token.type is "punctuation" and (
+		# 		(token.value is "^") or
+		# 		(token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1]))
+		# 	)
+		# precedence_of = (token)->
+		# 	switch token.value
+		# 		when "^" then 3
+		# 		when "*", "/" then 0
+		# 		when "+", "-" then 0
+		# 		when "=" then 0
+		# 		else 0
+		is_unary_operator = (token)->
+			return false unless token?
+			token.type is "punctuation" and token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		is_binary_operator = (token)->
+			return false unless token?
+			token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
+		is_right_associative_operator = (token)->
+			return false unless token?
+			token.type is "punctuation" and ((token.value is "^") or is_unary_operator(token))
+		
+		precedence_of = (token)->
+			if is_unary_operator(token)
+				1
+			else
+				switch token.value
+					when "^" then 3
+					when "*", "/" then 2
+					when "+", "-" then 1
+					when "=", "<=", ">=", "<", ">" then 0
+					else 0
+		
+		apply_operator = (op_token, lhs, rhs)->
+			# console.log "apply_operator", lhs, op_token.value, rhs
+			throw new Error "Non-number #{lhs} as left-hand-side of #{op_token.value}" if isNaN(lhs)
+			throw new Error "Non-number #{rhs} as right-hand-side of #{op_token.value}" if isNaN(rhs)
+			if is_unary_operator(op_token)
+				switch op_token.value
+					when "+" then + rhs
+					when "-" then - rhs
+					else throw new Error "Unknown unary operator (for now at least): #{op_token.value}"
+			else
+				switch op_token.value
+					when "^" then lhs ** rhs
+					when "*" then lhs * rhs
+					when "/" then lhs / rhs
+					when "+" then lhs + rhs
+					when "-" then lhs - rhs
+					when "=" then lhs is rhs
+					else throw new Error "Unknown binary operator (for now at least): #{op_token.value}"
+		
+		parse_expression = (lhs, min_precedence)->
+			# debugger
+			lookahead = peek()
+			while is_binary_operator(lookahead) and precedence_of(lookahead) >= min_precedence
+				op = lookahead
+				advance()
+				advance()
+				rhs = parse_primary()
+				lookahead = peek()
+				while (
+					(is_binary_operator(lookahead) and precedence_of(lookahead) > precedence_of(op)) or
+					(is_right_associative_operator(lookahead) and precedence_of(lookahead) is precedence_of(op))
+				)
+					rhs = parse_expression(rhs, precedence_of(lookahead))
+					lookahead = peek()
+				lhs = apply_operator(op, lhs, rhs)
+			return lhs
+		
+		parse_expression(parse_primary(), 0)
+
 	
 	interpret: (text, callback)->
 		# TODO: get this stuff out of here
