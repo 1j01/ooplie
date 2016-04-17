@@ -27,6 +27,9 @@ Operator = (function(superClass) {
       this.unary = unary;
       this.binary = !unary;
     }
+    if (this.unary && !this.right_associative) {
+      throw new Error("Non-right-associative unary operators are probably not supported");
+    }
   }
 
   return Operator;
@@ -113,8 +116,8 @@ module.exports = Context = (function() {
     };
     this.operators = [
       new Operator({
-        match: ["<a> ^ <b>", "<a> to the power of <b>"],
-        bad_match: ["<a> ** <b>"],
+        match: ["^", "to the power of"],
+        bad_match: ["**"],
         precedence: 3,
         right_associative: true,
         fn: (function(_this) {
@@ -123,8 +126,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> × <b>", "<a> * <b>", "<a> times <b>"],
-        bad_match: ["<a> ✖ <b>", "<a> ⨉ <b>", "<a> ⨯ <b>", "<a> ∗ <b>", "<a> ⋅ <b>", "<a> ∙ <b>", "<a> • <b>", "<a> ✗ <b>", "<a> ✘ <b>"],
+        match: ["×", "*", "times"],
+        bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
         precedence: 2,
         fn: (function(_this) {
           return function(v) {
@@ -132,8 +135,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> ÷ <b>", "<a> / <b>", "<a> ∕ <b>", "<a> divided by <b>"],
-        bad_match: ["<a> ／ <b>", "<a> ⁄ <b>"],
+        match: ["÷", "/", "∕", "divided by"],
+        bad_match: ["／", "⁄"],
         precedence: 2,
         fn: (function(_this) {
           return function(v) {
@@ -141,8 +144,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> + <b>", "<a> plus <b>"],
-        bad_match: ["<a> ＋ <b>", "<a> ﬩ <b>"],
+        match: ["+", "plus"],
+        bad_match: ["＋", "﬩"],
         precedence: 1,
         fn: (function(_this) {
           return function(v) {
@@ -150,7 +153,7 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> − <b>", "<a> - <b>", "<a> minus <b>"],
+        match: ["−", "-", "minus"],
         precedence: 1,
         fn: (function(_this) {
           return function(v) {
@@ -158,8 +161,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["− <b>", "- <b>", "negative <b>", "the opposite of <b>"],
-        bad_match: ["minus <b>"],
+        match: ["−", "-", "negative", "the opposite of"],
+        bad_match: ["minus"],
         precedence: 1,
         right_associative: true,
         unary: true,
@@ -169,8 +172,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["+ <b>", "positive <b>"],
-        bad_match: ["plus <b>"],
+        match: ["+", "positive"],
+        bad_match: ["plus"],
         precedence: 1,
         right_associative: true,
         unary: true,
@@ -180,8 +183,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> = <b>", "<a> equals <b>", "<a> is equal to <b>", "<a> is <b>"],
-        bad_match: ["<a> == <b>", "<a> === <b>"],
+        match: ["=", "equals", "is equal to", "is"],
+        bad_match: ["==", "==="],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -189,8 +192,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> ≠ <b>", "<a> != <b>", "<a> does not equal <b>", "<a> is not equal to <b>", "<a> isn't <b>"],
-        bad_match: ["<a> isnt <b>", "<a> isnt equal to <b>", "<a> isn't equal to <b>"],
+        match: ["≠", "!=", "does not equal", "is not equal to", "isn't"],
+        bad_match: ["isnt", "isnt equal to", "isn't equal to"],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -198,8 +201,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> > <b>", "<a> is greater than <b>"],
-        bad_match: ["<a> is more than <b>"],
+        match: [">", "is greater than"],
+        bad_match: ["is more than"],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -207,7 +210,7 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> < <b>", "<a> is less than <b>"],
+        match: ["<", "is less than"],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -215,8 +218,8 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> ≥ <b>", "<a> >= <b>", "<a> is greater than or equal to <b>"],
-        bad_match: ["<a> is more than or equal to <b>"],
+        match: ["≥", ">=", "is greater than or equal to"],
+        bad_match: ["is more than or equal to"],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -224,7 +227,7 @@ module.exports = Context = (function() {
           };
         })(this)
       }), new Operator({
-        match: ["<a> ≤ <b>", "<a> <= <b>", "<a> is less than or equal to <b>"],
+        match: ["≤", "<=", "is less than or equal to"],
         precedence: 0,
         fn: (function(_this) {
           return function(v) {
@@ -262,15 +265,19 @@ module.exports = Context = (function() {
   Context.prototype.eval_tokens = function(tokens) {
     var advance, apply_operator, get_operator, index, parse_expression, parse_primary, peek, precedence_of;
     index = 0;
-    peek = function() {
-      return tokens[index + 1];
-    };
-    advance = function(advance_by) {
-      if (advance_by == null) {
-        advance_by = 1;
-      }
-      return index += advance_by;
-    };
+    peek = (function(_this) {
+      return function() {
+        return tokens[index + 1];
+      };
+    })(this);
+    advance = (function(_this) {
+      return function(advance_by) {
+        if (advance_by == null) {
+          advance_by = 1;
+        }
+        return index += advance_by;
+      };
+    })(this);
     parse_primary = (function(_this) {
       return function() {
         var bad_match, following_value, i, j, k, l, len, len1, len2, len3, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
@@ -358,11 +365,7 @@ module.exports = Context = (function() {
             for (o = 0, len3 = ref3.length; o < len3; o++) {
               operator = ref3[o];
               if (operator.unary) {
-                if (operator.match([
-                  token, {
-                    type: "number"
-                  }
-                ])) {
+                if (operator.match([token])) {
                   advance();
                   following_value = parse_primary();
                   return operator.fn(function(var_name) {
@@ -391,58 +394,61 @@ module.exports = Context = (function() {
         ref = _this.operators;
         for (j = 0, len = ref.length; j < len; j++) {
           operator = ref[j];
-          match = operator.match([
-            {
-              type: "number"
-            }, token, {
-              type: "number"
-            }
-          ]);
+          match = operator.match([token]);
           if (match != null) {
             return operator;
           }
         }
       };
     })(this);
-    precedence_of = function(token) {
-      return get_operator(token).precedence;
-    };
-    apply_operator = function(op_token, a, b) {
-      if (isNaN(a)) {
-        throw new Error("Non-number " + a + " as left-hand-side of " + op_token.value);
-      }
-      if (isNaN(b)) {
-        throw new Error("Non-number " + b + " as right-hand-side of " + op_token.value);
-      }
-      return get_operator(op_token).fn(function(var_name) {
-        return {
-          a: a,
-          b: b
-        }[var_name];
-      });
-    };
-    parse_expression = function(lhs, min_precedence) {
-      var lookahead, lookahead_operator, op, rhs;
-      lookahead = peek();
-      lookahead_operator = get_operator(lookahead);
-      while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
-        op = lookahead;
-        advance(2);
-        rhs = parse_primary();
+    precedence_of = (function(_this) {
+      return function(token) {
+        return get_operator(token).precedence;
+      };
+    })(this);
+    apply_operator = (function(_this) {
+      return function(operator, a, b, op_token) {
+        var res;
+        if (isNaN(a)) {
+          throw new Error("Non-number " + a + " as left-hand-side of " + op_token.value);
+        }
+        if (isNaN(b)) {
+          throw new Error("Non-number " + b + " as right-hand-side of " + op_token.value);
+        }
+        res = operator.fn(function(var_name) {
+          return {
+            a: a,
+            b: b
+          }[var_name];
+        });
+        return res;
+      };
+    })(this);
+    parse_expression = (function(_this) {
+      return function(lhs, min_precedence) {
+        var lookahead, lookahead_operator, op_token, operator, rhs;
         lookahead = peek();
         lookahead_operator = get_operator(lookahead);
-        while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > precedence_of(op)) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === precedence_of(op))) {
-          rhs = parse_expression(rhs, lookahead_operator.precedence);
+        while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
+          op_token = lookahead;
+          operator = lookahead_operator;
+          advance(2);
+          rhs = parse_primary();
           lookahead = peek();
           lookahead_operator = get_operator(lookahead);
+          while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
+            rhs = parse_expression(rhs, lookahead_operator.precedence);
+            lookahead = peek();
+            lookahead_operator = get_operator(lookahead);
+          }
+          lhs = apply_operator(operator, lhs, rhs, op_token);
         }
-        lhs = apply_operator(op, lhs, rhs);
-      }
-      if ((lookahead_operator != null) && !lookahead_operator.binary) {
-        throw new Error("end of thing but there's more");
-      }
-      return lhs;
-    };
+        if ((lookahead_operator != null) && !lookahead_operator.binary) {
+          throw new Error("end of thing but there's more");
+        }
+        return lhs;
+      };
+    })(this);
     return parse_expression(parse_primary(), 0);
   };
 
@@ -520,7 +526,7 @@ module.exports = Pattern = (function() {
       results = [];
       for (j = 0, len = matcher_defs.length; j < len; j++) {
         def = matcher_defs[j];
-        segments = def.replace(/\ <\ /g, " &lt; ").replace(/\ >\ /g, " &gt; ").replace(/\ <=\ /g, " &lt;= ").replace(/\ >=\ /g, " &gt;= ").replace(/<([^>]*)(\ )/g, function(m, words, space) {
+        segments = def.replace(/(^|\ )<(\ |$)/g, " &lt; ").replace(/(^|\ )>(\ |$)/g, " &gt; ").replace(/(^|\ )<=(\ |$)/g, " &lt;= ").replace(/(^|\ )>=(\ |$)/g, " &gt;= ").replace(/<([^>]*)(\ )/g, function(m, words, space) {
           return words + "_**";
         }).replace(/>\ /g, ">").replace(/>/g, "> ").trim().split(" ");
         variable_names_used = [];

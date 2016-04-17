@@ -10,14 +10,15 @@ class Pattern
 		# TODO: also allow [optional phrase segments]
 		# and maybe (either|or|groups)
 		# TODO: try longer matchers first
+		# TODO: use tokenizer to avoid manipulating regexps
 		
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs
 				segments = def
-					.replace(/\ <\ /g, " &lt; ")
-					.replace(/\ >\ /g, " &gt; ")
-					.replace(/\ <=\ /g, " &lt;= ")
-					.replace(/\ >=\ /g, " &gt;= ")
+					.replace(/(^|\ )<(\ |$)/g, " &lt; ")
+					.replace(/(^|\ )>(\ |$)/g, " &gt; ")
+					.replace(/(^|\ )<=(\ |$)/g, " &lt;= ")
+					.replace(/(^|\ )>=(\ |$)/g, " &gt;= ")
 					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_**")
 					.replace(/>\ /g, ">")
 					.replace(/>/g, "> ")

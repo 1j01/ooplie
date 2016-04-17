@@ -3,6 +3,7 @@ tokenize = require "./tokenize"
 Pattern = require "./Pattern"
 {stringify_tokens} = Token = require "./Token"
 
+# TODO: move class to file
 class Operator extends Pattern
 	constructor: ({@precedence, right_associative, binary, unary})->
 		super
@@ -14,11 +15,14 @@ class Operator extends Pattern
 		else
 			@unary = unary
 			@binary = not unary
+		if @unary and not @right_associative
+			throw new Error "Non-right-associative unary operators are probably not supported"
 
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
 		# TODO: decouple from console
+		# TODO: externalize all patterns and operators
 		
 		# semantics are quite tied to context in the case of natural language
 		# so maybe this stuff should be handled a Lexer class
@@ -115,6 +119,8 @@ class Context
 		@classes = []
 		@instances = []
 		# TODO: block-level scopes
+		# should @supercontext be @superscope?
+		# should contexts be scopes? should scopes be contexts?
 		@variables = {}
 		@constants = {
 			"true": true
@@ -140,11 +146,11 @@ class Context
 		@operators = [
 			new Operator
 				match: [
-					"<a> ^ <b>"
-					"<a> to the power of <b>"
+					"^"
+					"to the power of"
 				]
 				bad_match: [
-					"<a> ** <b>"
+					"**"
 				]
 				precedence: 3
 				right_associative: yes
@@ -152,97 +158,97 @@ class Context
 			
 			new Operator
 				match: [
-					"<a> × <b>"
-					"<a> * <b>"
-					"<a> times <b>"
+					"×"
+					"*"
+					"times"
 				]
 				bad_match: [
-					"<a> ✖ <b>" # heavy multiplication X
-					"<a> ⨉ <b>" # n-ary times operator
-					"<a> ⨯ <b>" # vector or cross-product
-					"<a> ∗ <b>" # asterisk operator
-					"<a> ⋅ <b>" # dot operator
-					"<a> ∙ <b>" # bullet operator
-					"<a> • <b>" # bullet (are you kidding me?)
-					"<a> ✗ <b>" # ballot
-					"<a> ✘ <b>" # heavy ballot
+					"✖" # heavy multiplication X
+					"⨉" # n-ary times operator
+					"⨯" # vector or cross-product
+					"∗" # asterisk operator
+					"⋅" # dot operator
+					"∙" # bullet operator
+					"•" # bullet (are you kidding me?)
+					"✗" # ballot
+					"✘" # heavy ballot
 				]
 				precedence: 2
 				fn: (v)=> v("a") * v("b")
 			
 			new Operator
 				match: [
-					"<a> ÷ <b>" # obelus
-					"<a> / <b>" # slash
-					"<a> ∕ <b>" # division slash
-					"<a> divided by <b>"
+					"÷" # obelus
+					"/" # slash
+					"∕" # division slash
+					"divided by"
 				]
 				bad_match: [
-					"<a> ／ <b>" # fullwidth solidus
-					"<a> ⁄ <b>" # fraction slash
+					"／" # fullwidth solidus
+					"⁄" # fraction slash
 				]
 				precedence: 2
 				fn: (v)=> v("a") / v("b")
 			
 			new Operator
 				match: [
-					"<a> + <b>"
-					"<a> plus <b>"
+					"+"
+					"plus"
 				]
 				bad_match: [
-					"<a> ＋ <b>" # fullwidth plus
-					"<a> ﬩ <b>" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
+					"＋" # fullwidth plus
+					"﬩" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
 				]
 				precedence: 1
 				fn: (v)=> v("a") + v("b")
 			
 			new Operator
 				match: [
-					"<a> − <b>" # minus
-					"<a> - <b>" # hyphen-minus
-					"<a> minus <b>"
+					"−" # minus
+					"-" # hyphen-minus
+					"minus"
 				]
 				precedence: 1
 				fn: (v)=> v("a") - v("b")
 			
 			new Operator
 				match: [
-					"− <b>" # minus
-					"- <b>" # hyphen-minus
-					"negative <b>"
-					"the opposite of <b>"
+					"−" # minus
+					"-" # hyphen-minus
+					"negative"
+					"the opposite of"
 				]
 				bad_match: [
-					"minus <b>"
+					"minus"
 				]
-				precedence: 1 # ?
+				precedence: 1
 				right_associative: yes
 				unary: yes
 				fn: (v)=> - v("b")
 			
 			new Operator
 				match: [
-					"+ <b>"
-					"positive <b>"
+					"+"
+					"positive"
 				]
 				bad_match: [
-					"plus <b>"
+					"plus"
 				]
-				precedence: 1 # ?
+				precedence: 1
 				right_associative: yes
 				unary: yes
 				fn: (v)=> + v("b")
 			
 			new Operator
 				match: [
-					"<a> = <b>"
-					"<a> equals <b>"
-					"<a> is equal to <b>"
-					"<a> is <b>"
+					"="
+					"equals"
+					"is equal to"
+					"is"
 				]
 				bad_match: [
-					"<a> == <b>"
-					"<a> === <b>"
+					"=="
+					"==="
 				]
 				precedence: 0
 				fn: (v)=>
@@ -262,56 +268,56 @@ class Context
 			
 			new Operator
 				match: [
-					"<a> ≠ <b>"
-					"<a> != <b>"
-					"<a> does not equal <b>"
-					"<a> is not equal to <b>"
-					"<a> isn't <b>"
+					"≠"
+					"!="
+					"does not equal"
+					"is not equal to"
+					"isn't"
 				]
 				bad_match: [
-					"<a> isnt <b>" # this isn't coffeescript, you can punctuate contractions
-					"<a> isnt equal to <b>" # ditto
-					"<a> isn't equal to <b>" # this sounds slightly silly to me
+					"isnt" # this isn't CoffeeScript, you can actually punctuate contractions
+					"isnt equal to" # ditto
+					"isn't equal to" # this sounds slightly silly to me
 				]
 				precedence: 0
 				fn: (v)=> v("a") isnt v("b")
 			
 			new Operator
 				match: [
-					"<a> > <b>"
-					"<a> is greater than <b>"
+					">"
+					"is greater than"
 				]
 				bad_match: [
-					"<a> is more than <b>"
+					"is more than"
 				]
 				precedence: 0
 				fn: (v)=> v("a") > v("b")
 			
 			new Operator
 				match: [
-					"<a> < <b>"
-					"<a> is less than <b>"
+					"<"
+					"is less than"
 				]
 				precedence: 0
 				fn: (v)=> v("a") < v("b")
 			
 			new Operator
 				match: [
-					"<a> ≥ <b>"
-					"<a> >= <b>"
-					"<a> is greater than or equal to <b>"
+					"≥"
+					">="
+					"is greater than or equal to"
 				]
 				bad_match: [
-					"<a> is more than or equal to <b>"
+					"is more than or equal to"
 				]
 				precedence: 0
 				fn: (v)=> v("a") >= v("b")
 			
 			new Operator
 				match: [
-					"<a> ≤ <b>"
-					"<a> <= <b>"
-					"<a> is less than or equal to <b>"
+					"≤"
+					"<="
+					"is less than or equal to"
 				]
 				precedence: 0
 				fn: (v)=> v("a") <= v("b")
@@ -328,12 +334,16 @@ class Context
 			throw err if err
 			result = res
 		result
+		# we should probably actually ditch interpret,
+		# only have syncronous eval,
+		# and return Promises for asyncronous operations
+		# a block of async statements should probably return a single Promise that wraps all the Promises of its statements
 	
 	eval_tokens: (tokens)->
 		index = 0
-		peek = ->
+		peek = =>
 			tokens[index + 1]
-		advance = (advance_by=1)->
+		advance = (advance_by=1)=>
 			index += advance_by
 		
 		parse_primary = =>
@@ -357,6 +367,7 @@ class Context
 			tok_str = stringify_tokens(next_tokens)
 			next_word_tok_str = stringify_tokens(next_word_tokens)
 			
+			# TODO: don't need to have this in reverse
 			for pattern in @patterns by -1
 				match = pattern.match(next_tokens)
 				break if match?
@@ -364,6 +375,7 @@ class Context
 			if match?
 				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
 			else
+				# TODO: don't need to have this in reverse
 				for pattern in @patterns by -1
 					bad_match = pattern.bad_match(next_tokens)
 					break if bad_match?
@@ -397,10 +409,10 @@ class Context
 				token = tokens[index]
 				if token.type is "punctuation"
 					for operator in @operators when operator.unary
-						if operator.match([token, {type: "number"}])
+						if operator.match([token])
 							advance()
 							following_value = parse_primary()
-							return operator.fn((var_name)-> {b: following_value}[var_name])
+							return operator.fn((var_name)=> {b: following_value}[var_name])
 				
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
@@ -410,34 +422,47 @@ class Context
 		get_operator = (token)=>
 			return undefined unless token?
 			for operator in @operators
-				match = operator.match([{type: "number"}, token, {type: "number"}])
+				match = operator.match([token])
+				# console.log token, operator, match
 				return operator if match?
 		
-		precedence_of = (token)->
+		precedence_of = (token)=>
 			get_operator(token).precedence
 		
-		apply_operator = (op_token, a, b)->
+		apply_operator = (operator, a, b, op_token)=>
 			throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
 			throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
-			get_operator(op_token).fn((var_name)-> {a, b}[var_name])
+			# get_operator(op_token).fn((var_name)=> {a, b}[var_name])
+			# operator = get_operator(op_token)
+			res = operator.fn((var_name)=> {a, b}[var_name])
+			# console.log(op_token, a, b, operator, res)
+			res
 		
-		parse_expression = (lhs, min_precedence)->
+		parse_expression = (lhs, min_precedence)=>
+			# peek_operator = =>
+			# 	for operator in @operators
+			# 		
+			
 			lookahead = peek()
 			lookahead_operator = get_operator(lookahead)
+			# console.log "OP", lookahead, lookahead_operator
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
-				op = lookahead
+				op_token = lookahead
+				operator = lookahead_operator
 				advance(2)
 				rhs = parse_primary()
 				lookahead = peek()
 				lookahead_operator = get_operator(lookahead)
 				while (
-					(lookahead_operator?.binary and lookahead_operator.precedence > precedence_of(op)) or
-					(lookahead_operator?.right_associative and lookahead_operator.precedence is precedence_of(op))
+					(lookahead_operator?.binary and lookahead_operator.precedence > operator.precedence) or
+					(lookahead_operator?.right_associative and lookahead_operator.precedence is operator.precedence)
 				)
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
 					lookahead = peek()
 					lookahead_operator = get_operator(lookahead)
-				lhs = apply_operator(op, lhs, rhs)
+				# console.log operator, lhs, rhs
+				lhs = apply_operator(operator, lhs, rhs, op_token)
+				# console.log lhs
 			if lookahead_operator? and not lookahead_operator.binary
 				throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			return lhs

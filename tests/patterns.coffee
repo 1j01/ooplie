@@ -62,6 +62,20 @@ suite "Pattern", ->
 		expect(pattern.match(tokenize("a >= b"))).to.exist
 		expect(pattern.match(tokenize("a = b"))).not.to.exist
 	
+	test "greater than / less than alone", ->
+		pattern = new Pattern
+			match: [
+				"<"
+				"<="
+				">"
+				">="
+			]
+		expect(pattern.match(tokenize("<"))).to.exist
+		expect(pattern.match(tokenize("<="))).to.exist
+		expect(pattern.match(tokenize(">"))).to.exist
+		expect(pattern.match(tokenize(">="))).to.exist
+		expect(pattern.match(tokenize("="))).not.to.exist
+	
 	test "bad matches", ->
 		pattern = new Pattern
 			match: [

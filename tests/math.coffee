@@ -137,7 +137,7 @@ suite "mathematics", ->
 		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace
 		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
 		evaluate("1 + 3^3 * 2").to(55) # that's more like it
-		# TODO/FIXME: tokenized as -2 so this doesn't work (supposed to be right-associative)
+		# TODO/FIXME: supposed to be right-associative
 		# evaluate("-2^2").to(-4)
 	test.skip "percentages", ->
 		# should this be a style warning? percentages, like degrees, are kinda arbitrary and I don't like them
