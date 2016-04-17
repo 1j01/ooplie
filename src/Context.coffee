@@ -333,6 +333,7 @@ class Context
 		index = 0
 		peek = ->
 			tokens[index + 1]
+			
 		# TODO: peek, peek_all
 		advance = ->
 			index += 1
@@ -355,6 +356,20 @@ class Context
 				else
 					break
 			
+			tok_str = stringify_tokens(next_tokens)
+			next_word_tok_str = stringify_tokens(next_word_tokens)
+			
+			for pattern in @patterns by -1
+				match = pattern.match(next_tokens)
+				break if match?
+			
+			if match?
+				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
+			else
+				for pattern in @patterns by -1
+					bad_match = pattern.bad_match(next_tokens)
+					break if bad_match?
+			
 			if next_literal_tokens.length
 				if next_literal_tokens.some((token)-> token.type is "string")
 					str = ""
@@ -368,8 +383,6 @@ class Context
 					# advance()
 					return next_literal_tokens[0].value
 			else
-				tok_str = stringify_tokens(next_tokens)
-				next_word_tok_str = stringify_tokens(next_word_tokens)
 				
 				if next_word_tokens.length
 					if next_word_tok_str of @constants
@@ -392,31 +405,12 @@ class Context
 					else
 						return +parse_primary()
 				
-				for pattern in @patterns by -1
-					match = pattern.match(next_tokens)
-					break if match?
 				# console.log "match", match, "for", stringify_tokens(tokens)
-				if match?
-					return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
+				
+				if bad_match?
+					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 				else
-					for pattern in @patterns by -1
-						bad_match = pattern.bad_match(next_tokens)
-						break if bad_match?
-					if bad_match?
-						throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
-					else
-						throw new Error "I don't understand `#{tok_str}`"
-		
-		# is_unary_operator = (token)->
-		# 	return false unless token?
-		# 	token.type is "punctuation" and token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		# 	# TODO: 5 is equal to +5
-		# is_binary_operator = (token)->
-		# 	return false unless token?
-		# 	token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^", "=", "!=", "<=", ">=", "<", ">"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		# is_right_associative_operator = (token)->
-		# 	return false unless token?
-		# 	token.type is "punctuation" and ((token.value is "^") or is_unary_operator(token))
+					throw new Error "I don't understand `#{tok_str}`"
 		
 		get_operator = (token)=>
 			return undefined unless token?

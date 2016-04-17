@@ -14,7 +14,7 @@ suite "control flow", ->
 	
 	suite "conditionals", ->
 		
-		test "if", ->
+		test "if-then", ->
 			# TODO: test multiline and actual actions
 			evaluate("If true, 5").to(5)
 			evaluate("If false, 5").to(undefined)

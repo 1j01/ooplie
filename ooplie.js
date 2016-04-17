@@ -271,13 +271,37 @@ module.exports = Context = (function() {
             break;
           }
         }
+        tok_str = stringify_tokens(next_tokens);
+        next_word_tok_str = stringify_tokens(next_word_tokens);
+        ref1 = _this.patterns;
+        for (l = ref1.length - 1; l >= 0; l += -1) {
+          pattern = ref1[l];
+          match = pattern.match(next_tokens);
+          if (match != null) {
+            break;
+          }
+        }
+        if (match != null) {
+          return pattern.fn(function(var_name) {
+            return _this.eval_tokens(match[var_name]);
+          });
+        } else {
+          ref2 = _this.patterns;
+          for (m = ref2.length - 1; m >= 0; m += -1) {
+            pattern = ref2[m];
+            bad_match = pattern.bad_match(next_tokens);
+            if (bad_match != null) {
+              break;
+            }
+          }
+        }
         if (next_literal_tokens.length) {
           if (next_literal_tokens.some(function(token) {
             return token.type === "string";
           })) {
             str = "";
-            for (l = 0, len2 = next_tokens.length; l < len2; l++) {
-              token = next_tokens[l];
+            for (n = 0, len2 = next_tokens.length; n < len2; n++) {
+              token = next_tokens[n];
               str += token.value;
             }
             index += next_literal_tokens.length;
@@ -288,8 +312,6 @@ module.exports = Context = (function() {
             return next_literal_tokens[0].value;
           }
         } else {
-          tok_str = stringify_tokens(next_tokens);
-          next_word_tok_str = stringify_tokens(next_word_tokens);
           if (next_word_tokens.length) {
             if (next_word_tok_str in _this.constants) {
               return _this.constants[next_word_tok_str];
@@ -306,7 +328,7 @@ module.exports = Context = (function() {
             }
           }
           token = tokens[index];
-          if (token.type === "punctuation" && ((ref1 = token.value) === "+" || ref1 === "-")) {
+          if (token.type === "punctuation" && ((ref3 = token.value) === "+" || ref3 === "-")) {
             advance();
             if (token.value === "-") {
               return -parse_primary();
@@ -314,32 +336,10 @@ module.exports = Context = (function() {
               return +parse_primary();
             }
           }
-          ref2 = _this.patterns;
-          for (m = ref2.length - 1; m >= 0; m += -1) {
-            pattern = ref2[m];
-            match = pattern.match(next_tokens);
-            if (match != null) {
-              break;
-            }
-          }
-          if (match != null) {
-            return pattern.fn(function(var_name) {
-              return _this.eval_tokens(match[var_name]);
-            });
+          if (bad_match != null) {
+            throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
           } else {
-            ref3 = _this.patterns;
-            for (n = ref3.length - 1; n >= 0; n += -1) {
-              pattern = ref3[n];
-              bad_match = pattern.bad_match(next_tokens);
-              if (bad_match != null) {
-                break;
-              }
-            }
-            if (bad_match != null) {
-              throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
-            } else {
-              throw new Error("I don't understand `" + tok_str + "`");
-            }
+            throw new Error("I don't understand `" + tok_str + "`");
           }
         }
       };
