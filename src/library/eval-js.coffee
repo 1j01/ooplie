@@ -19,6 +19,9 @@ module.exports = [
 			"eval <text> as JavaScript"
 		]
 		bad_match: [
+			# TODO: these two should be maybe_matches
+			# and eval-ooplie should have them defined as well
+			# and it should ask you to disambiguate between them
 			"eval <text>" # as what? (should the error message say something like "as what?"?)
 			"execute <text>"
 			"JavaScript <text>" # not sure JavaScript is a verb

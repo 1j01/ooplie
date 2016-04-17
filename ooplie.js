@@ -214,52 +214,35 @@ module.exports = Context = (function() {
 
   Context.prototype.interpret = function(text, callback) {
     var handle_line, j, len, line_tokens, ref, result, token;
-    if (text.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)) {
-      return callback(null, (text.match(/^[A-Z]/) ? "Hello" : "hello") + (text.match(/\.|!/) ? "." : ""));
-    } else if (text.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)) {
-      return callback(null, (text.match(/^[A-Z]/) ? "Not much" : "not much") + (text.match(/\?|!/) ? "." : ""));
-    } else if (text.match(/^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i)) {
-      return callback(null, text);
-    } else if (text.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)) {
-      return callback(null, "Sorry, I can't help.");
-    } else if (text.match(/^(clr|clear)( console)?( output)?|cls$/i)) {
-      if (this.console != null) {
-        this.console.clear();
-        return callback(null, "Console cleared.");
-      } else {
-        return callback(new Error("No console to clear."));
-      }
-    } else {
-      result = void 0;
-      line_tokens = [];
-      handle_line = (function(_this) {
-        return function() {
-          var e, error;
-          if (line_tokens.length) {
-            try {
-              result = _this.eval_tokens(line_tokens);
-            } catch (error) {
-              e = error;
-              callback(e);
-            }
-          }
-          return line_tokens = [];
-        };
-      })(this);
-      ref = tokenize(text);
-      for (j = 0, len = ref.length; j < len; j++) {
-        token = ref[j];
-        if (token.type !== "comment") {
-          if (token.type === "newline") {
-            handle_line();
-          } else {
-            line_tokens.push(token);
+    result = void 0;
+    line_tokens = [];
+    handle_line = (function(_this) {
+      return function() {
+        var e, error;
+        if (line_tokens.length) {
+          try {
+            result = _this.eval_tokens(line_tokens);
+          } catch (error) {
+            e = error;
+            callback(e);
           }
         }
+        return line_tokens = [];
+      };
+    })(this);
+    ref = tokenize(text);
+    for (j = 0, len = ref.length; j < len; j++) {
+      token = ref[j];
+      if (token.type !== "comment") {
+        if (token.type === "newline") {
+          handle_line();
+        } else {
+          line_tokens.push(token);
+        }
       }
-      handle_line();
-      return callback(null, result);
     }
+    handle_line();
+    return callback(null, result);
   };
 
   return Context;

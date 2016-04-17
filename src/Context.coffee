@@ -165,43 +165,24 @@ class Context
 
 	
 	interpret: (text, callback)->
-		# TODO: get this stuff out of here
-		# Conversational trivialities
-		if text.match /^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i
-			callback null, (if text.match /^[A-Z]/ then "Hello" else "hello") + (if text.match /\.|!/ then "." else "")
-		else if text.match /^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i
-			callback null, (if text.match /^[A-Z]/ then "Not much" else "not much") + (if text.match /\?|!/ then "." else "")
-		else if text.match /^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i
-			callback null, text # top notch emotional mirroring
-		# Unhelp
-		else if text.match /^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i # overly comprehensive, much?
-			callback null, "Sorry, I can't help." # TODO
-		# Console
-		else if text.match /^(clr|clear)( console)?( output)?|cls$/i
-			if @console?
-				@console.clear()
-				callback null, "Console cleared."
-			else
-				callback new Error "No console to clear."
-		else
-			result = undefined
-			
+		result = undefined
+		
+		line_tokens = []
+		
+		handle_line = =>
+			if line_tokens.length
+				try
+					result = @eval_tokens(line_tokens)
+				catch e
+					callback e
 			line_tokens = []
-			
-			handle_line = =>
-				if line_tokens.length
-					try
-						result = @eval_tokens(line_tokens)
-					catch e
-						callback e
-				line_tokens = []
-			
-			for token in tokenize(text) when token.type isnt "comment"
-				if token.type is "newline"
-					handle_line()
-				else
-					line_tokens.push token
-			
-			handle_line()
-			
-			callback null, result
+		
+		for token in tokenize(text) when token.type isnt "comment"
+			if token.type is "newline"
+				handle_line()
+			else
+				line_tokens.push token
+		
+		handle_line()
+		
+		callback null, result

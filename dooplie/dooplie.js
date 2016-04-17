@@ -73,15 +73,27 @@ input.addEventListener("keydown", function(e){
 		
 		output.scroll_to_bottom();
 		
-		context.interpret(command, function(err, result){
-			if(err){
-				var error_entry = log(err);
-				error_entry.classList.add("error");
-			}else{
-				var result_entry = log(result);
-				result_entry.classList.add("result");
-			}
-		});
+		// Conversational trivialities
+		if(command.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)){
+			log((command.match(/^[A-Z]/) ? "Hello" : "hello") + (command.match(/\.|!/) ? "." : ""));
+		}else if(command.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)){
+			log((command.match(/^[A-Z]/) ? "Not much" : "not much") + (command.match(/\?|!/) ? "." : ""));
+		}else if(command.match(/^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i)){
+			log(command); // top notch emotional mirroring
+		// Unhelp
+		}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
+			log("Sorry, I can't help."); // TODO
+		}else{
+			context.interpret(command, function(err, result){
+				if(err){
+					var error_entry = log(err);
+					error_entry.classList.add("error");
+				}else{
+					var result_entry = log(result);
+					result_entry.classList.add("result");
+				}
+			});
+		}
 		
 	}else if(e.keyCode === 38){ // Up
 		input.value = (--cmdi < 0) ? (cmdi = -1, "") : command_history[cmdi];
