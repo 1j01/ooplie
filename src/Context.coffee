@@ -8,8 +8,7 @@ default_operators = require "./default-operators"
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
-		# TODO: decouple from console
-		# TODO: externalize all patterns and operators
+		# TODO: decouple from console somehow?
 		
 		# semantics are quite tied to context in the case of natural language
 		# so maybe this stuff should be handled a Lexer class
@@ -29,27 +28,7 @@ class Context
 		# should @supercontext be @superscope?
 		# should contexts be scopes? should scopes be contexts?
 		@variables = {}
-		@constants = {
-			"true": true
-			"yes": yes
-			"on": on
-			"false": false
-			"no": no
-			"off": off
-			"null": null
-			"infinity": Infinity
-			"∞": Infinity
-			"pi": Math.PI
-			"π": Math.PI
-			"tau": Math.PI * 2
-			"τ": Math.PI * 2
-			"e": Math.E
-			"the golden ratio": (1 + Math.sqrt(5)) / 2
-			"phi": (1 + Math.sqrt(5)) / 2
-			"φ": (1 + Math.sqrt(5)) / 2
-			"Pythagoras's constant": Math.SQRT2
-			# "Archimedes' constant": Math.PI # can't do quotes at ends of words yet
-		}
+		@constants = require "./constants"
 		@operators = (operator for operator in default_operators)
 	
 	subcontext: ({console}={})->

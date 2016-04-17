@@ -17,26 +17,7 @@ module.exports = Context = (function() {
     this.classes = [];
     this.instances = [];
     this.variables = {};
-    this.constants = {
-      "true": true,
-      "yes": true,
-      "on": true,
-      "false": false,
-      "no": false,
-      "off": false,
-      "null": null,
-      "infinity": Infinity,
-      "∞": Infinity,
-      "pi": Math.PI,
-      "π": Math.PI,
-      "tau": Math.PI * 2,
-      "τ": Math.PI * 2,
-      "e": Math.E,
-      "the golden ratio": (1 + Math.sqrt(5)) / 2,
-      "phi": (1 + Math.sqrt(5)) / 2,
-      "φ": (1 + Math.sqrt(5)) / 2,
-      "Pythagoras's constant": Math.SQRT2
-    };
+    this.constants = require("./constants");
     this.operators = (function() {
       var j, len, results;
       results = [];
@@ -286,7 +267,7 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Pattern":3,"./Token":4,"./default-operators":5,"./library/conditionals":6,"./library/console":7,"./library/eval-js":8,"./library/eval-ooplie":9,"./tokenize":11}],2:[function(require,module,exports){
+},{"./Pattern":3,"./Token":4,"./constants":5,"./default-operators":6,"./library/conditionals":7,"./library/console":8,"./library/eval-js":9,"./library/eval-ooplie":10,"./tokenize":12}],2:[function(require,module,exports){
 var Operator, Pattern,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -526,6 +507,30 @@ module.exports = Token = (function() {
 
 
 },{}],5:[function(require,module,exports){
+module.exports = {
+  "true": true,
+  "yes": true,
+  "on": true,
+  "false": false,
+  "no": false,
+  "off": false,
+  "null": null,
+  "infinity": Infinity,
+  "∞": Infinity,
+  "pi": Math.PI,
+  "π": Math.PI,
+  "tau": Math.PI * 2,
+  "τ": Math.PI * 2,
+  "e": Math.E,
+  "the golden ratio": (1 + Math.sqrt(5)) / 2,
+  "phi": (1 + Math.sqrt(5)) / 2,
+  "φ": (1 + Math.sqrt(5)) / 2,
+  "Pythagoras's constant": Math.SQRT2,
+  "Archimedes' constant": Math.PI
+};
+
+
+},{}],6:[function(require,module,exports){
 var Operator;
 
 Operator = require("./Operator");
@@ -628,7 +633,7 @@ module.exports = [
 ];
 
 
-},{"./Operator":2}],6:[function(require,module,exports){
+},{"./Operator":2}],7:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -668,7 +673,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],7:[function(require,module,exports){
+},{"../Pattern":3}],8:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -694,7 +699,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],8:[function(require,module,exports){
+},{"../Pattern":3}],9:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -714,7 +719,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],9:[function(require,module,exports){
+},{"../Pattern":3}],10:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -732,7 +737,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],10:[function(require,module,exports){
+},{"../Pattern":3}],11:[function(require,module,exports){
 var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
@@ -751,7 +756,7 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":11}],11:[function(require,module,exports){
+},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":12}],12:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -985,5 +990,5 @@ module.exports = function(source) {
 };
 
 
-},{"./Token":4}]},{},[10])(10)
+},{"./Token":4}]},{},[11])(11)
 });
