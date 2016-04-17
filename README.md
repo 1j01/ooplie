@@ -9,7 +9,7 @@ So far you can output text, eval JS, and
 write trivial (read: useless because there are no variables yet) conditionals.
 
 There's [a nice little console][console] where you can try it out so far,
-and [a million pending tests][tests] (as well as some passing and failing ones).
+and [a million pending tests][tests] (as well as some passing ones and a *single failing test*).
 
 ## Inspiration
 

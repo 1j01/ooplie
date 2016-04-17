@@ -14,10 +14,15 @@ suite "control flow", ->
 	
 	suite "conditionals", ->
 		
+		# TODO: test multiline and actual actions
+		# TODO: things should be case-insensitive
+		
 		test "if-then", ->
-			# TODO: test multiline and actual actions
 			evaluate("If true, 5").to(5)
 			evaluate("If false, 5").to(undefined)
+			# if-then:
+			evaluate("If true then 5").to(5)
+			evaluate("If false then 5").to(undefined)
 			# post-if:
 			evaluate("5 if true").to(5)
 			evaluate("5 if false").to(undefined)

@@ -96,6 +96,7 @@ class Context
 			
 			# NOTE: If-else has to be below If, otherwise If will be matched first
 			new Pattern
+				# TODO: should be able to use <alt body> but spaces are converted to underscores
 				match: [
 					"If <condition>, <body>, else <alt_body>"
 					"If <condition> then <body>, else <alt_body>"
@@ -112,7 +113,7 @@ class Context
 				fn: (v)=> if v("condition") then v("body") else v("alt_body")
 		]
 		@classes = []
-		@objects = []
+		@instances = []
 		# TODO: block-level scopes
 		@variables = {}
 		@constants = {
@@ -329,20 +330,17 @@ class Context
 		result
 	
 	eval_tokens: (tokens)->
-		# console.log "eval_tokens", stringify_tokens(tokens)
 		index = 0
 		peek = ->
 			tokens[index + 1]
-			
-		# TODO: peek, peek_all
-		advance = ->
-			index += 1
-			# TODO: arg default to 1
+		advance = (advance_by=1)->
+			index += advance_by
 		
 		parse_primary = =>
 			next_tokens = tokens.slice(index)
 			return if next_tokens.length is 0
 			
+			# NOTE: in the future there will be other kinds of literals
 			next_literal_tokens = []
 			for token, i in next_tokens
 				if token.type in ["string", "number"]
@@ -374,13 +372,12 @@ class Context
 				if next_literal_tokens.some((token)-> token.type is "string")
 					str = ""
 					str += token.value for token in next_tokens
-					index += next_literal_tokens.length
+					advance(next_literal_tokens.length)
 					return str
 				else if next_literal_tokens.length > 1
 					# TODO: row/column numbers in errors
 					throw new Error "Consecutive numbers, #{next_literal_tokens[0].value} and #{next_literal_tokens[1].value}"
 				else
-					# advance()
 					return next_literal_tokens[0].value
 			else
 				
@@ -405,8 +402,6 @@ class Context
 					else
 						return +parse_primary()
 				
-				# console.log "match", match, "for", stringify_tokens(tokens)
-				
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 				else
@@ -414,47 +409,24 @@ class Context
 		
 		get_operator = (token)=>
 			return undefined unless token?
-			# index = tokens.indexOf(token)
 			for operator in @operators
 				match = operator.match([{type: "number"}, token, {type: "number"}])
-				# console.log token, operator, match
 				return operator if match?
 		
 		precedence_of = (token)->
 			get_operator(token).precedence
 		
 		apply_operator = (op_token, a, b)->
-			# console.log "apply_operator", a, op_token.value, b, tokens
 			throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
 			throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
 			get_operator(op_token).fn((var_name)-> {a, b}[var_name])
-			# if is_unary_operator(op_token)
-			# 	switch op_token.value
-			# 		when "+" then + rhs
-			# 		when "-" then - rhs
-			# 		else throw new Error "Unknown unary operator (for now at least): #{op_token.value}"
-			# else
-			# 	switch op_token.value
-			# 		when "^" then lhs ** rhs
-			# 		when "*" then lhs * rhs
-			# 		when "/" then lhs / rhs
-			# 		when "+" then lhs + rhs
-			# 		when "-" then lhs - rhs
-			# 		when "=" then lhs is rhs
-			# 		when "!=" then lhs isnt rhs
-			# 		when "<=" then lhs <= rhs
-			# 		when ">=" then lhs >= rhs
-			# 		when "<" then lhs < rhs
-			# 		when ">" then lhs > rhs
-			# 		else throw new Error "Unknown binary operator (for now at least): #{op_token.value}"
 		
 		parse_expression = (lhs, min_precedence)->
 			lookahead = peek()
 			lookahead_operator = get_operator(lookahead)
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
 				op = lookahead
-				advance()
-				advance()
+				advance(2)
 				rhs = parse_primary()
 				lookahead = peek()
 				lookahead_operator = get_operator(lookahead)
@@ -466,8 +438,8 @@ class Context
 					lookahead = peek()
 					lookahead_operator = get_operator(lookahead)
 				lhs = apply_operator(op, lhs, rhs)
-			# if lookahead and not is_binary_operator(lookahead)
-			# 	throw new Error "end of thing"
+			if lookahead_operator? and not lookahead_operator.binary
+				throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			return lhs
 		
 		parse_expression(parse_primary(), 0)

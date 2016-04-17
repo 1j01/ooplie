@@ -89,7 +89,7 @@ module.exports = Context = (function() {
       })
     ];
     this.classes = [];
-    this.objects = [];
+    this.instances = [];
     this.variables = {};
     this.constants = {
       "true": true,
@@ -243,8 +243,11 @@ module.exports = Context = (function() {
     peek = function() {
       return tokens[index + 1];
     };
-    advance = function() {
-      return index += 1;
+    advance = function(advance_by) {
+      if (advance_by == null) {
+        advance_by = 1;
+      }
+      return index += advance_by;
     };
     parse_primary = (function(_this) {
       return function() {
@@ -304,7 +307,7 @@ module.exports = Context = (function() {
               token = next_tokens[n];
               str += token.value;
             }
-            index += next_literal_tokens.length;
+            advance(next_literal_tokens.length);
             return str;
           } else if (next_literal_tokens.length > 1) {
             throw new Error("Consecutive numbers, " + next_literal_tokens[0].value + " and " + next_literal_tokens[1].value);
@@ -389,8 +392,7 @@ module.exports = Context = (function() {
       lookahead_operator = get_operator(lookahead);
       while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
         op = lookahead;
-        advance();
-        advance();
+        advance(2);
         rhs = parse_primary();
         lookahead = peek();
         lookahead_operator = get_operator(lookahead);
@@ -400,6 +402,9 @@ module.exports = Context = (function() {
           lookahead_operator = get_operator(lookahead);
         }
         lhs = apply_operator(op, lhs, rhs);
+      }
+      if ((lookahead_operator != null) && !lookahead_operator.binary) {
+        throw new Error("end of thing but there's more");
       }
       return lhs;
     };
