@@ -141,7 +141,7 @@ class Context
 				precedence: 3
 				right_associative: yes
 				# TODO: refactor fn definitions
-				fn: (v)=> v("a") ** v("b")
+				fn: (lhs, rhs)=> lhs ** rhs
 			
 			new Operator
 				match: [
@@ -161,7 +161,7 @@ class Context
 					"✘" # heavy ballot
 				]
 				precedence: 2
-				fn: (v)=> v("a") * v("b")
+				fn: (lhs, rhs)=> lhs * rhs
 			
 			new Operator
 				match: [
@@ -175,7 +175,7 @@ class Context
 					"⁄" # fraction slash
 				]
 				precedence: 2
-				fn: (v)=> v("a") / v("b")
+				fn: (lhs, rhs)=> lhs / rhs
 			
 			new Operator
 				match: [
@@ -187,7 +187,7 @@ class Context
 					"﬩" # Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
 				]
 				precedence: 1
-				fn: (v)=> v("a") + v("b")
+				fn: (lhs, rhs)=> lhs + rhs
 			
 			new Operator
 				match: [
@@ -196,7 +196,7 @@ class Context
 					"minus"
 				]
 				precedence: 1
-				fn: (v)=> v("a") - v("b")
+				fn: (lhs, rhs)=> lhs - rhs
 			
 			new Operator
 				match: [
@@ -211,7 +211,7 @@ class Context
 				precedence: 1
 				right_associative: yes
 				unary: yes
-				fn: (v)=> - v("b")
+				fn: (rhs)=> -rhs
 			
 			new Operator
 				match: [
@@ -224,7 +224,7 @@ class Context
 				precedence: 1
 				right_associative: yes
 				unary: yes
-				fn: (v)=> + v("b")
+				fn: (rhs)=> +rhs
 			
 			new Operator
 				match: [
@@ -238,7 +238,7 @@ class Context
 					"==="
 				]
 				precedence: 0
-				fn: (v)=>
+				fn: (lhs, rhs)=>
 					# if a.every((token)-> token.type is "word")
 					# 	name = a.join(" ")
 					# 	value = @eval_tokens(b)
@@ -251,7 +251,7 @@ class Context
 					# 	else
 					# 		@variables.set(name, value)
 					# else
-					v("a") is v("b")
+					lhs is rhs
 			
 			new Operator
 				match: [
@@ -267,7 +267,7 @@ class Context
 					"isn't equal to" # this sounds slightly silly to me
 				]
 				precedence: 0
-				fn: (v)=> v("a") isnt v("b")
+				fn: (lhs, rhs)=> lhs isnt rhs
 			
 			new Operator
 				match: [
@@ -278,7 +278,7 @@ class Context
 					"is more than"
 				]
 				precedence: 0
-				fn: (v)=> v("a") > v("b")
+				fn: (lhs, rhs)=> lhs > rhs
 			
 			new Operator
 				match: [
@@ -286,7 +286,7 @@ class Context
 					"is less than"
 				]
 				precedence: 0
-				fn: (v)=> v("a") < v("b")
+				fn: (lhs, rhs)=> lhs < rhs
 			
 			new Operator
 				match: [
@@ -298,7 +298,7 @@ class Context
 					"is more than or equal to"
 				]
 				precedence: 0
-				fn: (v)=> v("a") >= v("b")
+				fn: (lhs, rhs)=> lhs >= rhs
 			
 			new Operator
 				match: [
@@ -307,7 +307,7 @@ class Context
 					"is less than or equal to"
 				]
 				precedence: 0
-				fn: (v)=> v("a") <= v("b")
+				fn: (lhs, rhs)=> lhs <= rhs
 		]
 	
 	subcontext: ({console}={})->
@@ -401,15 +401,12 @@ class Context
 							following_value = parse_primary()
 							# following_value = parse_expression(parse_primary(), 1)
 							# following_value = parse_expression(parse_primary(), 0)
-							return operator.fn((var_name)=> {b: following_value}[var_name])
+							return operator.fn(following_value)
 				
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 				else
 					throw new Error "I don't understand `#{tok_str}`"
-		
-		apply_operator = (operator, a, b)=>
-			operator.fn((var_name)=> {a, b}[var_name])
 		
 		parse_expression = (lhs, min_precedence)=>
 			match_operator = =>
@@ -435,7 +432,7 @@ class Context
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
 					advance(2)
 					lookahead_operator = match_operator()
-				lhs = apply_operator(operator, lhs, rhs)
+				lhs = operator.fn(lhs, rhs)
 			if lookahead_operator?.unary
 				throw new Error "unary operator at end of expression?" # TODO/FIXME: terrible error message
 			# if peek() and not lookahead_operator?

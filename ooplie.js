@@ -94,8 +94,8 @@ module.exports = Context = (function() {
         precedence: 3,
         right_associative: true,
         fn: (function(_this) {
-          return function(v) {
-            return Math.pow(v("a"), v("b"));
+          return function(lhs, rhs) {
+            return Math.pow(lhs, rhs);
           };
         })(this)
       }), new Operator({
@@ -103,8 +103,8 @@ module.exports = Context = (function() {
         bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
         precedence: 2,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") * v("b");
+          return function(lhs, rhs) {
+            return lhs * rhs;
           };
         })(this)
       }), new Operator({
@@ -112,8 +112,8 @@ module.exports = Context = (function() {
         bad_match: ["／", "⁄"],
         precedence: 2,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") / v("b");
+          return function(lhs, rhs) {
+            return lhs / rhs;
           };
         })(this)
       }), new Operator({
@@ -121,16 +121,16 @@ module.exports = Context = (function() {
         bad_match: ["＋", "﬩"],
         precedence: 1,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") + v("b");
+          return function(lhs, rhs) {
+            return lhs + rhs;
           };
         })(this)
       }), new Operator({
         match: ["−", "-", "minus"],
         precedence: 1,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") - v("b");
+          return function(lhs, rhs) {
+            return lhs - rhs;
           };
         })(this)
       }), new Operator({
@@ -140,8 +140,8 @@ module.exports = Context = (function() {
         right_associative: true,
         unary: true,
         fn: (function(_this) {
-          return function(v) {
-            return -v("b");
+          return function(rhs) {
+            return -rhs;
           };
         })(this)
       }), new Operator({
@@ -151,8 +151,8 @@ module.exports = Context = (function() {
         right_associative: true,
         unary: true,
         fn: (function(_this) {
-          return function(v) {
-            return +v("b");
+          return function(rhs) {
+            return +rhs;
           };
         })(this)
       }), new Operator({
@@ -160,8 +160,8 @@ module.exports = Context = (function() {
         bad_match: ["==", "==="],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") === v("b");
+          return function(lhs, rhs) {
+            return lhs === rhs;
           };
         })(this)
       }), new Operator({
@@ -169,8 +169,8 @@ module.exports = Context = (function() {
         bad_match: ["isnt", "isnt equal to", "isn't equal to"],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") !== v("b");
+          return function(lhs, rhs) {
+            return lhs !== rhs;
           };
         })(this)
       }), new Operator({
@@ -178,16 +178,16 @@ module.exports = Context = (function() {
         bad_match: ["is more than"],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") > v("b");
+          return function(lhs, rhs) {
+            return lhs > rhs;
           };
         })(this)
       }), new Operator({
         match: ["<", "is less than"],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") < v("b");
+          return function(lhs, rhs) {
+            return lhs < rhs;
           };
         })(this)
       }), new Operator({
@@ -195,16 +195,16 @@ module.exports = Context = (function() {
         bad_match: ["is more than or equal to"],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") >= v("b");
+          return function(lhs, rhs) {
+            return lhs >= rhs;
           };
         })(this)
       }), new Operator({
         match: ["≤", "<=", "is less than or equal to"],
         precedence: 0,
         fn: (function(_this) {
-          return function(v) {
-            return v("a") <= v("b");
+          return function(lhs, rhs) {
+            return lhs <= rhs;
           };
         })(this)
       })
@@ -236,7 +236,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var advance, apply_operator, index, parse_expression, parse_primary, peek;
+    var advance, index, parse_expression, parse_primary, peek;
     index = 0;
     peek = (function(_this) {
       return function() {
@@ -341,11 +341,7 @@ module.exports = Context = (function() {
                 if (operator.match(tokens, index)) {
                   advance();
                   following_value = parse_primary();
-                  return operator.fn(function(var_name) {
-                    return {
-                      b: following_value
-                    }[var_name];
-                  });
+                  return operator.fn(following_value);
                 }
               }
             }
@@ -356,16 +352,6 @@ module.exports = Context = (function() {
             throw new Error("I don't understand `" + tok_str + "`");
           }
         }
-      };
-    })(this);
-    apply_operator = (function(_this) {
-      return function(operator, a, b) {
-        return operator.fn(function(var_name) {
-          return {
-            a: a,
-            b: b
-          }[var_name];
-        });
       };
     })(this);
     parse_expression = (function(_this) {
@@ -396,7 +382,7 @@ module.exports = Context = (function() {
             advance(2);
             lookahead_operator = match_operator();
           }
-          lhs = apply_operator(operator, lhs, rhs);
+          lhs = operator.fn(lhs, rhs);
         }
         if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
           throw new Error("unary operator at end of expression?");
