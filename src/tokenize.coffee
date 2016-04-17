@@ -135,11 +135,6 @@ module.exports = (source)->
 					next_type = "number"
 				else
 					next_type = "punctuation"
-			else if char is "-"
-				if next_char.match(/\d/) and not prev_char.match(/\d/)
-					next_type = "number"
-				else
-					next_type = "punctuation"
 			else if char is "#"
 				next_type = "comment"
 			else if char.match(/[a-z]/i)

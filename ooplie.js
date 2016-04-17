@@ -223,8 +223,11 @@ module.exports = Context = (function() {
     };
     parse_primary = (function(_this) {
       return function() {
-        var i, j, k, l, len, len1, len2, next_literal_tokens, next_tokens, next_word_tokens, ref, ref1, str, tok_str, token;
+        var bad_match, i, j, k, l, len, len1, len2, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
         next_tokens = tokens.slice(index);
+        if (next_tokens.length === 0) {
+          return;
+        }
         next_literal_tokens = [];
         for (i = j = 0, len = next_tokens.length; j < len; i = ++j) {
           token = next_tokens[i];
@@ -259,16 +262,24 @@ module.exports = Context = (function() {
           } else {
             return next_literal_tokens[0].value;
           }
-        } else if (next_word_tokens.length) {
-          tok_str = stringify_tokens(tokens);
-          if (tok_str in _this.constants) {
-            return _this.constants[tok_str];
+        } else {
+          tok_str = stringify_tokens(next_tokens);
+          next_word_tok_str = stringify_tokens(next_word_tokens);
+          if (next_word_tokens.length) {
+            if (next_word_tok_str in _this.constants) {
+              return _this.constants[next_word_tok_str];
+            }
+            if (next_word_tok_str in _this.variables) {
+              return _this.variables[next_word_tok_str];
+            }
+          } else {
+            if (tok_str in _this.constants) {
+              return _this.constants[tok_str];
+            }
+            if (tok_str in _this.variables) {
+              return _this.variables[tok_str];
+            }
           }
-          if (tok_str in _this.variables) {
-            return _this.variables[tok_str];
-          }
-          throw new Error("Unknown expression `" + tok_str + "`");
-        } else if (next_tokens.length) {
           token = tokens[index];
           if (token.type === "punctuation" && ((ref1 = token.value) === "+" || ref1 === "-")) {
             advance();
@@ -276,6 +287,33 @@ module.exports = Context = (function() {
               return -parse_primary();
             } else {
               return +parse_primary();
+            }
+          }
+          ref2 = _this.patterns;
+          for (m = ref2.length - 1; m >= 0; m += -1) {
+            pattern = ref2[m];
+            match = pattern.match(next_tokens);
+            if (match != null) {
+              break;
+            }
+          }
+          if (match != null) {
+            return pattern.fn(function(var_name) {
+              return _this.eval_tokens(match[var_name]);
+            });
+          } else {
+            ref3 = _this.patterns;
+            for (n = ref3.length - 1; n >= 0; n += -1) {
+              pattern = ref3[n];
+              bad_match = pattern.bad_match(next_tokens);
+              if (bad_match != null) {
+                break;
+              }
+            }
+            if (bad_match != null) {
+              throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
+            } else {
+              throw new Error("I don't understand `" + tok_str + "`");
             }
           }
         }
@@ -293,7 +331,7 @@ module.exports = Context = (function() {
       if (token == null) {
         return false;
       }
-      return token.type === "punctuation" && ((ref = token.value) === "*" || ref === "/" || ref === "+" || ref === "-" || ref === "^") && !is_binary_operator(tokens[tokens.indexOf(token) - 1]);
+      return token.type === "punctuation" && ((ref = token.value) === "*" || ref === "/" || ref === "+" || ref === "-" || ref === "^" || ref === "=" || ref === "!=" || ref === "<=" || ref === ">=" || ref === "<" || ref === ">") && !is_binary_operator(tokens[tokens.indexOf(token) - 1]);
     };
     is_right_associative_operator = function(token) {
       if (token == null) {
@@ -315,6 +353,7 @@ module.exports = Context = (function() {
           case "-":
             return 1;
           case "=":
+          case "!=":
           case "<=":
           case ">=":
           case "<":
@@ -326,6 +365,7 @@ module.exports = Context = (function() {
       }
     };
     apply_operator = function(op_token, lhs, rhs) {
+      console.log("apply_operator", lhs, op_token.value, rhs, tokens);
       if (isNaN(lhs)) {
         throw new Error("Non-number " + lhs + " as left-hand-side of " + op_token.value);
       }
@@ -355,6 +395,16 @@ module.exports = Context = (function() {
             return lhs - rhs;
           case "=":
             return lhs === rhs;
+          case "!=":
+            return lhs !== rhs;
+          case "<=":
+            return lhs <= rhs;
+          case ">=":
+            return lhs >= rhs;
+          case "<":
+            return lhs < rhs;
+          case ">":
+            return lhs > rhs;
           default:
             throw new Error("Unknown binary operator (for now at least): " + op_token.value);
         }
@@ -819,12 +869,6 @@ module.exports = function(source) {
         next_type = "number";
       } else if (char === ".") {
         if (next_char.match(/\d/)) {
-          next_type = "number";
-        } else {
-          next_type = "punctuation";
-        }
-      } else if (char === "-") {
-        if (next_char.match(/\d/) && !prev_char.match(/\d/)) {
           next_type = "number";
         } else {
           next_type = "punctuation";

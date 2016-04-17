@@ -297,47 +297,6 @@ class Context
 		result
 	
 	eval_tokens: (tokens)->
-		# # console.log "eval_tokens", tokens
-		# if tokens.every((token)-> token.type in ["string", "number"])
-		# 	# TODO: throw an error if there are two consecutive numbers
-		# 	if tokens.some((token)-> token.type is "string")
-		# 		str = ""
-		# 		str += token.value for token in tokens
-		# 		return str
-		# 	else if tokens.length
-		# 		last_token = tokens[tokens.length - 1]
-		# 		return last_token.value
-		# else if tokens.length
-		# 	tok_str = stringify_tokens(tokens)
-			
-		# 	# for constant_name, constant_value of @constants
-		# 	# 	if tok_str is constant_name
-		# 	# 		return constant_value
-			
-		# 	# for variable_name, variable_value of @variables
-		# 	# 	if tok_str is variable_name
-		# 	# 		return variable_value
-			
-		# 	if tok_str of @constants
-		# 		return @constants[tok_str]
-			
-		# 	if tok_str of @variables
-		# 		return @variables[tok_str]
-			
-		# 	for pattern in @patterns by -1
-		# 		match = pattern.match(tokens)
-		# 		break if match?
-		# 	if match?
-		# 		return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
-		# 	else
-		# 		for pattern in @patterns by -1
-		# 			bad_match = pattern.bad_match(tokens)
-		# 			break if bad_match?
-		# 		if bad_match?
-		# 			throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
-		# 		else
-		# 			throw new Error "I don't understand `#{tok_str}`"
-		
 		index = 0
 		peek = ->
 			tokens[index + 1]
@@ -347,9 +306,9 @@ class Context
 			# TODO: arg default to 1
 		
 		parse_primary = =>
-			# if tokens[0].type in ["number", "string"]
-			# 	tokens[0].value
 			next_tokens = tokens.slice(index)
+			return if next_tokens.length is 0
+			
 			next_literal_tokens = []
 			for token, i in next_tokens
 				if token.type in ["string", "number"]
@@ -375,69 +334,51 @@ class Context
 				else
 					# advance()
 					return next_literal_tokens[0].value
-			else if next_word_tokens.length
-				tok_str = stringify_tokens(tokens)
+			else
+				tok_str = stringify_tokens(next_tokens)
+				next_word_tok_str = stringify_tokens(next_word_tokens)
 				
-				if tok_str of @constants
-					# console.log "constant", tok_str, @constants[tok_str]
-					return @constants[tok_str]
+				if next_word_tokens.length
+					if next_word_tok_str of @constants
+						return @constants[next_word_tok_str]
+					
+					if next_word_tok_str of @variables
+						return @variables[next_word_tok_str]
+				else
+					if tok_str of @constants
+						return @constants[tok_str]
+					
+					if tok_str of @variables
+						return @variables[tok_str]
 				
-				if tok_str of @variables
-					return @variables[tok_str]
-				
-				throw new Error "Unknown expression `#{tok_str}`"
-			else if next_tokens.length
-				# # # advance()
-				# # console.log "parse_primary dumping #{next_tokens[0].value}"
-				# # return next_tokens[0].value
-				# # return parse_expression(undefined, 0)
-				# next_token = next_tokens[0]
-				# if next_token.type is "punctuation" and next_token.value in ["+", "-"]
-				# 	# # next_token
-				# 	# # tokens.push new Token("number", -1, -1, 0)
-				# 	# tokens.splice index+1, 0, new Token("number", -1, -1, 0)
-				# 	# return parse_expression(undefined, 0)
-				# 	# index -= 1
-				# 	# return parse_expression(undefined, 0)
-				# 	advance()
-				# 	if next_token.value is "-"
-				# 		return -parse_primary()
-				# 	else
-				# 		return +parse_primary()
 				token = tokens[index]
-				# next_token = peek()
 				if token.type is "punctuation" and token.value in ["+", "-"]
 					advance()
 					if token.value is "-"
 						return -parse_primary()
 					else
 						return +parse_primary()
+				
+				for pattern in @patterns by -1
+					match = pattern.match(next_tokens)
+					break if match?
+				if match?
+					return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
+				else
+					for pattern in @patterns by -1
+						bad_match = pattern.bad_match(next_tokens)
+						break if bad_match?
+					if bad_match?
+						throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
+					else
+						throw new Error "I don't understand `#{tok_str}`"
 		
-		# is_binary_operator = (token)->
-		# 	return false unless token?
-		# 	token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		# is_right_associative_operator = (token)->
-		# 	return false unless token?
-		# 	# token.type is "punctuation" and token.value in []
-		# 	# token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		# 	# token.type is "punctuation" and token.value is "^" #and is_binary_operator(tokens[tokens.indexOf(token) - 1])
-		# 	token.type is "punctuation" and (
-		# 		(token.value is "^") or
-		# 		(token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1]))
-		# 	)
-		# precedence_of = (token)->
-		# 	switch token.value
-		# 		when "^" then 3
-		# 		when "*", "/" then 0
-		# 		when "+", "-" then 0
-		# 		when "=" then 0
-		# 		else 0
 		is_unary_operator = (token)->
 			return false unless token?
 			token.type is "punctuation" and token.value in ["+", "-"] and is_binary_operator(tokens[tokens.indexOf(token) - 1])
 		is_binary_operator = (token)->
 			return false unless token?
-			token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
+			token.type is "punctuation" and token.value in ["*", "/", "+", "-", "^", "=", "!=", "<=", ">=", "<", ">"] and not is_binary_operator(tokens[tokens.indexOf(token) - 1])
 		is_right_associative_operator = (token)->
 			return false unless token?
 			token.type is "punctuation" and ((token.value is "^") or is_unary_operator(token))
@@ -450,11 +391,11 @@ class Context
 					when "^" then 3
 					when "*", "/" then 2
 					when "+", "-" then 1
-					when "=", "<=", ">=", "<", ">" then 0
+					when "=", "!=", "<=", ">=", "<", ">" then 0
 					else 0
 		
 		apply_operator = (op_token, lhs, rhs)->
-			# console.log "apply_operator", lhs, op_token.value, rhs
+			console.log "apply_operator", lhs, op_token.value, rhs, tokens
 			throw new Error "Non-number #{lhs} as left-hand-side of #{op_token.value}" if isNaN(lhs)
 			throw new Error "Non-number #{rhs} as right-hand-side of #{op_token.value}" if isNaN(rhs)
 			if is_unary_operator(op_token)
@@ -470,10 +411,14 @@ class Context
 					when "+" then lhs + rhs
 					when "-" then lhs - rhs
 					when "=" then lhs is rhs
+					when "!=" then lhs isnt rhs
+					when "<=" then lhs <= rhs
+					when ">=" then lhs >= rhs
+					when "<" then lhs < rhs
+					when ">" then lhs > rhs
 					else throw new Error "Unknown binary operator (for now at least): #{op_token.value}"
 		
 		parse_expression = (lhs, min_precedence)->
-			# debugger
 			lookahead = peek()
 			while is_binary_operator(lookahead) and precedence_of(lookahead) >= min_precedence
 				op = lookahead
