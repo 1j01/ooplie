@@ -130,15 +130,17 @@ suite "mathematics", ->
 	test "order of operations", ->
 		evaluate("1 + 2 * 4").to(1 + (2 * 4))
 		evaluate("3 * 6 - 1").to((3 * 6) - 1)
-		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
-		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
 		evaluate("0.0 + -.25 - -.75 + 0.0").to(0.5)
 		evaluate("2^1^3").to(2)
-		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace
-		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
-		evaluate("1 + 3^3 * 2").to(55) # that's more like it
 		# TODO/FIXME: supposed to be right-associative
 		# evaluate("-2^2").to(-4)
+	test.skip "order of operations obfuscation", ->
+		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
+		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
+		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace?
+		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
+		evaluate("1 + 3^3 * 2").to(55) # that's more like it
+		
 	test.skip "percentages", ->
 		# should this be a style warning? percentages, like degrees, are kinda arbitrary and I don't like them
 		# but that's probably not a good enough basis for forbidding them
@@ -275,11 +277,15 @@ suite "mathematics", ->
 		evaluate("one eleventh").to(1/11)
 		evaluate("one twelth").to(1/12)
 		evaluate("one thirteenth").to(1/13)
-	test "basic word operators", ->
+	test "basic binary word operators", ->
 		evaluate("5 plus 6").to(11)
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
+	test.skip "basic unary word operators", ->
+		evaluate("negative 5").to(-5)
+		evaluate("positive 5").to(+5)
+		evaluate("the opposite of 2").to(-2)
 	test.skip "word operators", ->
 		evaluate("5 over 6").to(5 / 6) # throw style warning / error
 		evaluate("half of 6").to(3)

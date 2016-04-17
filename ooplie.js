@@ -21,11 +21,11 @@ Operator = (function(superClass) {
     }
     this.right_associative = right_associative != null ? right_associative : false;
     if (binary != null) {
-      this.binary = binary;
       this.unary = !binary;
+      this.binary = !this.unary;
     } else {
-      this.unary = unary;
       this.binary = !unary;
+      this.unary = !this.binary;
     }
     if (this.unary && !this.right_associative) {
       throw new Error("Non-right-associative unary operators are probably not supported");
@@ -409,42 +409,61 @@ module.exports = Context = (function() {
     apply_operator = (function(_this) {
       return function(operator, a, b, op_token) {
         var res;
-        if (isNaN(a)) {
-          throw new Error("Non-number " + a + " as left-hand-side of " + op_token.value);
-        }
-        if (isNaN(b)) {
-          throw new Error("Non-number " + b + " as right-hand-side of " + op_token.value);
-        }
         res = operator.fn(function(var_name) {
           return {
             a: a,
             b: b
           }[var_name];
         });
+        console.log("apply_operator", a, operator.prefered, b, operator, res);
         return res;
       };
     })(this);
     parse_expression = (function(_this) {
       return function(lhs, min_precedence) {
-        var lookahead, lookahead_operator, op_token, operator, rhs;
-        lookahead = peek();
-        lookahead_operator = get_operator(lookahead);
-        while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
-          op_token = lookahead;
-          operator = lookahead_operator;
-          advance(2);
-          rhs = parse_primary();
-          lookahead = peek();
-          lookahead_operator = get_operator(lookahead);
-          while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
-            rhs = parse_expression(rhs, lookahead_operator.precedence);
-            lookahead = peek();
-            lookahead_operator = get_operator(lookahead);
+        var lookahead_operator, match_operator, operator, rhs;
+        match_operator = function() {
+          var j, k, l, len, len1, len2, matcher, matching, operator, ref, ref1, segment, segment_index, token;
+          ref = _this.operators;
+          for (j = 0, len = ref.length; j < len; j++) {
+            operator = ref[j];
+            ref1 = operator.matchers;
+            for (k = 0, len1 = ref1.length; k < len1; k++) {
+              matcher = ref1[k];
+              matching = false;
+              for (segment_index = l = 0, len2 = matcher.length; l < len2; segment_index = ++l) {
+                segment = matcher[segment_index];
+                token = tokens[index + segment_index];
+                if ((token != null ? token.type : void 0) === segment.type && (token != null ? token.value : void 0) === segment.value) {
+                  matching = true;
+                } else {
+                  break;
+                }
+              }
+              if (matching) {
+                advance(matcher.length);
+                return operator;
+              }
+            }
           }
-          lhs = apply_operator(operator, lhs, rhs, op_token);
+        };
+        advance();
+        lookahead_operator = match_operator();
+        while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
+          operator = lookahead_operator;
+          rhs = parse_primary();
+          advance();
+          lookahead_operator = match_operator();
+          while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
+            advance(-2);
+            rhs = parse_expression(rhs, lookahead_operator.precedence);
+            advance(2);
+            lookahead_operator = match_operator();
+          }
+          lhs = apply_operator(operator, lhs, rhs);
         }
-        if ((lookahead_operator != null) && !lookahead_operator.binary) {
-          throw new Error("end of thing but there's more");
+        if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
+          throw new Error("unary operator at end of expression?");
         }
         return lhs;
       };

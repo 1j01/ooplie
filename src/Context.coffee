@@ -10,11 +10,11 @@ class Operator extends Pattern
 		throw new Error "Operator constructor requires {precedence}" unless @precedence?
 		@right_associative = right_associative ? false
 		if binary?
-			@binary = binary
 			@unary = not binary
+			@binary = not @unary
 		else
-			@unary = unary
 			@binary = not unary
+			@unary = not @binary
 		if @unary and not @right_associative
 			throw new Error "Non-right-associative unary operators are probably not supported"
 
@@ -154,6 +154,7 @@ class Context
 				]
 				precedence: 3
 				right_associative: yes
+				# TODO: refactor fn definitions
 				fn: (v)=> v("a") ** v("b")
 			
 			new Operator
@@ -430,41 +431,64 @@ class Context
 			get_operator(token).precedence
 		
 		apply_operator = (operator, a, b, op_token)=>
-			throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
-			throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
-			# get_operator(op_token).fn((var_name)=> {a, b}[var_name])
+			# throw new Error "Non-number #{a} as left-hand-side of #{op_token.value}" if isNaN(a)
+			# throw new Error "Non-number #{b} as right-hand-side of #{op_token.value}" if isNaN(b)
 			# operator = get_operator(op_token)
 			res = operator.fn((var_name)=> {a, b}[var_name])
 			# console.log(op_token, a, b, operator, res)
+			console.log("apply_operator", a, operator.prefered, b, operator, res)
 			res
 		
 		parse_expression = (lhs, min_precedence)=>
-			# peek_operator = =>
-			# 	for operator in @operators
-			# 		
+			match_operator = =>
+				for operator in @operators
+					for matcher in operator.matchers
+						matching = no
+						for segment, segment_index in matcher
+							token = tokens[index + segment_index]
+							if token?.type is segment.type and token?.value is segment.value
+								matching = yes
+							else
+								break
+						if matching
+							advance(matcher.length)
+							return operator
 			
-			lookahead = peek()
-			lookahead_operator = get_operator(lookahead)
+			advance()
+			lookahead_operator = match_operator()
+			# advance(-1)
 			# console.log "OP", lookahead, lookahead_operator
+			
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
-				op_token = lookahead
+				# op_token = lookahead
 				operator = lookahead_operator
-				advance(2)
 				rhs = parse_primary()
-				lookahead = peek()
-				lookahead_operator = get_operator(lookahead)
+				advance()
+				# console.log "match_operator at", index, "in", tokens
+				lookahead_operator = match_operator()
+				# console.log "lookahead_operator", lookahead_operator
 				while (
 					(lookahead_operator?.binary and lookahead_operator.precedence > operator.precedence) or
 					(lookahead_operator?.right_associative and lookahead_operator.precedence is operator.precedence)
 				)
+					# debugger
+					advance(-2)
+					# console.log "parse_expression(#{rhs}, #{lookahead_operator.precedence}) at", index
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
-					lookahead = peek()
-					lookahead_operator = get_operator(lookahead)
+					# console.log "parse_expression returned", rhs, "(now at #{index})"
+					advance(2)
+					lookahead_operator = match_operator()
 				# console.log operator, lhs, rhs
-				lhs = apply_operator(operator, lhs, rhs, op_token)
+				# lhs = apply_operator(operator, lhs, rhs, op_token)
+				lhs = apply_operator(operator, lhs, rhs)
+				# advance()
 				# console.log lhs
-			if lookahead_operator? and not lookahead_operator.binary
-				throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
+			if lookahead_operator?.unary
+				throw new Error "unary operator at end of expression?" # TODO/FIXME: terrible error message
+			# if peek() and not lookahead_operator?
+			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
+			# if peek()
+			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			return lhs
 		
 		parse_expression(parse_primary(), 0)
