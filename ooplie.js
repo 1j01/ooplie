@@ -13,65 +13,7 @@ module.exports = Context = (function() {
   function Context(arg) {
     var operator, ref;
     ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
-    this.patterns = [
-      new Pattern({
-        match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
-        bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
-        fn: (function(_this) {
-          return function(v) {
-            _this.console.log(v("text"));
-          };
-        })(this)
-      }), new Pattern({
-        match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
-        bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
-        fn: (function(_this) {
-          return function(v) {
-            var console;
-            console = _this.console;
-            return eval(v("text"));
-          };
-        })(this)
-      }), new Pattern({
-        match: ["run code <text> with Ooplie", "eval code <text> with Ooplie", "execute code <text> with Ooplie", "interpret code <text> with Ooplie", "interpret <text> as English", "run <text> as English", "execute <text> as English", "eval <text> as English", "interpret <text> as Ooplie code", "run <text> as Ooplie code", "execute <text> as Ooplie code", "eval <text> as Ooplie code", "run Ooplie code <text>", "eval Ooplie code <text>", "execute Ooplie code <text>", "interpret Ooplie code <text>", "run English <text>", "eval English <text>", "execute English <text>", "run <text> with Ooplie", "eval <text> with Ooplie", "execute <text> with Ooplie", "interpret <text> with Ooplie"],
-        bad_match: ["run Ooplie <text>", "eval Ooplie <text>", "execute Ooplie <text>", "interpret Ooplie <text>", "run <text> as Ooplie", "run code <text> as Ooplie", "execute <text> as Ooplie", "execute <text> as Ooplie", "eval <text> as Ooplie", "eval code <text> as Ooplie", "run code <text> as English", "run English code <text>", "eval English code <text>", "execute English code <text>", "interpret English code <text>", "run English code <text>", "eval <text> as English code", "execute English code <text>", "interpret <text> as English code", "make Ooplie interpret <text>", "have Ooplie interpret <text>", "let Ooplie interpret <text>"],
-        fn: (function(_this) {
-          return function(v) {
-            return _this["eval"](v("text"));
-          };
-        })(this)
-      }), new Pattern({
-        match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
-        bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
-        fn: (function(_this) {
-          return function(v) {
-            if (v("condition")) {
-              return v("body");
-            } else {
-              return v("alt_body");
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
-        fn: (function(_this) {
-          return function(v) {
-            if (v("condition")) {
-              return v("body");
-            }
-          };
-        })(this)
-      }), new Pattern({
-        match: ["Unless <condition>, <body>", "Unless <condition> then <body>", "<body> unless <condition>"],
-        fn: (function(_this) {
-          return function(v) {
-            if (!v("condition")) {
-              return v("body");
-            }
-          };
-        })(this)
-      })
-    ];
+    this.patterns = [].concat(require("./library/conditionals"), require("./library/console"), require("./library/eval-js"), require("./library/eval-ooplie"));
     this.classes = [];
     this.instances = [];
     this.variables = {};
@@ -148,7 +90,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, following_value, i, j, k, l, len, len1, len2, len3, len4, len5, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
+        var bad_match, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, m, match, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -182,9 +124,10 @@ module.exports = Context = (function() {
           }
         }
         if (match != null) {
-          return pattern.fn(function(var_name) {
+          get_var_value = function(var_name) {
             return _this.eval_tokens(match[var_name]);
-          });
+          };
+          return pattern.fn(get_var_value, _this);
         } else {
           ref2 = _this.patterns;
           for (m = 0, len3 = ref2.length; m < len3; m++) {
@@ -343,7 +286,7 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Pattern":3,"./Token":4,"./default-operators":5,"./tokenize":7}],2:[function(require,module,exports){
+},{"./Pattern":3,"./Token":4,"./default-operators":5,"./library/conditionals":6,"./library/console":7,"./library/eval-js":8,"./library/eval-ooplie":9,"./tokenize":11}],2:[function(require,module,exports){
 var Operator, Pattern,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -686,6 +629,110 @@ module.exports = [
 
 
 },{"./Operator":2}],6:[function(require,module,exports){
+var Pattern;
+
+Pattern = require("../Pattern");
+
+module.exports = [
+  new Pattern({
+    match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
+    bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
+    fn: (function(_this) {
+      return function(v) {
+        if (v("condition")) {
+          return v("body");
+        } else {
+          return v("alt_body");
+        }
+      };
+    })(this)
+  }), new Pattern({
+    match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
+    fn: (function(_this) {
+      return function(v) {
+        if (v("condition")) {
+          return v("body");
+        }
+      };
+    })(this)
+  }), new Pattern({
+    match: ["Unless <condition>, <body>", "Unless <condition> then <body>", "<body> unless <condition>"],
+    fn: (function(_this) {
+      return function(v) {
+        if (!v("condition")) {
+          return v("body");
+        }
+      };
+    })(this)
+  })
+];
+
+
+},{"../Pattern":3}],7:[function(require,module,exports){
+var Pattern;
+
+Pattern = require("../Pattern");
+
+module.exports = [
+  new Pattern({
+    match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
+    bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
+    fn: (function(_this) {
+      return function(v, context) {
+        context.console.log(v("text"));
+      };
+    })(this)
+  }), new Pattern({
+    match: ["clear the console", "clear console"],
+    bad_match: ["clear the terminal", "clear terminal", "cls", "clr"],
+    fn: (function(_this) {
+      return function(v, context) {
+        context.console.clear();
+      };
+    })(this)
+  })
+];
+
+
+},{"../Pattern":3}],8:[function(require,module,exports){
+var Pattern;
+
+Pattern = require("../Pattern");
+
+module.exports = [
+  new Pattern({
+    match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
+    bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
+    fn: (function(_this) {
+      return function(v, context) {
+        var console;
+        console = context.console;
+        return eval(v("text"));
+      };
+    })(this)
+  })
+];
+
+
+},{"../Pattern":3}],9:[function(require,module,exports){
+var Pattern;
+
+Pattern = require("../Pattern");
+
+module.exports = [
+  new Pattern({
+    match: ["run code <text> with Ooplie", "eval code <text> with Ooplie", "execute code <text> with Ooplie", "interpret code <text> with Ooplie", "interpret <text> as English", "run <text> as English", "execute <text> as English", "eval <text> as English", "interpret <text> as Ooplie code", "run <text> as Ooplie code", "execute <text> as Ooplie code", "eval <text> as Ooplie code", "run Ooplie code <text>", "eval Ooplie code <text>", "execute Ooplie code <text>", "interpret Ooplie code <text>", "run English <text>", "eval English <text>", "execute English <text>", "run <text> with Ooplie", "eval <text> with Ooplie", "execute <text> with Ooplie", "interpret <text> with Ooplie"],
+    bad_match: ["run Ooplie <text>", "eval Ooplie <text>", "execute Ooplie <text>", "interpret Ooplie <text>", "run <text> as Ooplie", "run code <text> as Ooplie", "execute <text> as Ooplie", "execute <text> as Ooplie", "eval <text> as Ooplie", "eval code <text> as Ooplie", "run code <text> as English", "run English code <text>", "eval English code <text>", "execute English code <text>", "interpret English code <text>", "run English code <text>", "eval <text> as English code", "execute English code <text>", "interpret <text> as English code", "make Ooplie interpret <text>", "have Ooplie interpret <text>", "let Ooplie interpret <text>"],
+    fn: (function(_this) {
+      return function(v, context) {
+        return context["eval"](v("text"));
+      };
+    })(this)
+  })
+];
+
+
+},{"../Pattern":3}],10:[function(require,module,exports){
 var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
@@ -704,7 +751,7 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":7}],7:[function(require,module,exports){
+},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":11}],11:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -938,5 +985,5 @@ module.exports = function(source) {
 };
 
 
-},{"./Token":4}]},{},[6])(6)
+},{"./Token":4}]},{},[10])(10)
 });

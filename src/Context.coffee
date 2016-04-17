@@ -17,154 +17,12 @@ class Context
 		# which can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
 		# but may be overall reasonable
 		
-		@patterns = [
-			
-			new Pattern
-				match: [
-					"output <text>"
-					"output <text> to the console"
-					"log <text>"
-					"log <text> to the console"
-					"print <text>"
-					"print <text> to the console"
-					"say <text>"
-				]
-				bad_match: [
-					"puts <text>"
-					"println <text>"
-					"print line <text>" # you can only output one or more lines
-					"printf <text>"
-					"console.log <text>"
-					"writeln <text>"
-					"output <text> to the terminal"
-					"log <text> to the terminal"
-					"print <text> to the terminal"
-				]
-				fn: (v)=>
-					@console.log v("text")
-					return
-			
-			new Pattern
-				match: [
-					"run JS <text>"
-					"run JavaScript <text>"
-					"run <text> as JS"
-					"run <text> as JavaScript"
-					"execute JS <text>"
-					"execute JavaScript <text>"
-					"execute <text> as JS"
-					"execute <text> as JavaScript"
-					"eval JS <text>"
-					"eval JavaScript <text>"
-					"eval <text> as JS"
-					"eval <text> as JavaScript"
-				]
-				bad_match: [
-					"eval <text>" # as what? (should the error message say something like "as what?"?)
-					"execute <text>"
-					"JavaScript <text>" # not sure JavaScript is a verb
-					"JS <text>"
-				]
-				fn: (v)=>
-					{console} = @ # bring @console into scope as "console"
-					eval v("text")
-			
-			new Pattern
-				match: [
-					"run code <text> with Ooplie"
-					"eval code <text> with Ooplie"
-					"execute code <text> with Ooplie"
-					"interpret code <text> with Ooplie"
-					
-					"interpret <text> as English"
-					"run <text> as English"
-					"execute <text> as English"
-					"eval <text> as English"
-					
-					"interpret <text> as Ooplie code"
-					"run <text> as Ooplie code"
-					"execute <text> as Ooplie code"
-					"eval <text> as Ooplie code"
-					
-					"run Ooplie code <text>"
-					"eval Ooplie code <text>"
-					"execute Ooplie code <text>"
-					"interpret Ooplie code <text>"
-					
-					"run English <text>"
-					"eval English <text>"
-					"execute English <text>"
-					
-					"run <text> with Ooplie"
-					"eval <text> with Ooplie"
-					"execute <text> with Ooplie"
-					"interpret <text> with Ooplie"
-				]
-				bad_match: [
-					"run Ooplie <text>"
-					"eval Ooplie <text>"
-					"execute Ooplie <text>"
-					"interpret Ooplie <text>"
-					
-					"run <text> as Ooplie"
-					"run code <text> as Ooplie"
-					"execute <text> as Ooplie"
-					"execute <text> as Ooplie"
-					"eval <text> as Ooplie"
-					"eval code <text> as Ooplie"
-					"run code <text> as English"
-					
-					"run English code <text>"
-					"eval English code <text>"
-					"execute English code <text>"
-					"interpret English code <text>"
-					"run English code <text>"
-					"eval <text> as English code"
-					"execute English code <text>"
-					"interpret <text> as English code"
-					
-					"make Ooplie interpret <text>"
-					"have Ooplie interpret <text>"
-					"let Ooplie interpret <text>"
-				]
-				fn: (v)=>
-					@eval v("text")
-			
-			# NOTE: If-else has to be above If, otherwise If will be matched first
-			new Pattern
-				# TODO: should be able to use <alt body> but spaces are converted to underscores
-				match: [
-					"If <condition>, <body>, else <alt_body>"
-					"If <condition> then <body>, else <alt_body>"
-					"If <condition> then <body> else <alt_body>"
-					"<body> if <condition> else <alt_body>" # pythonic ternary
-				]
-				bad_match: [
-					"if <condition>, then <body>, else <alt_body>"
-					"if <condition>, then <body>, else, <alt_body>"
-					"if <condition>, <body>, else, <alt_body>"
-					# and other things; also this might be sort of arbitrary
-					# comma misplacement should really be handled dynamically by the near-match system
-				]
-				fn: (v)=> if v("condition") then v("body") else v("alt_body")
-			
-			new Pattern
-				match: [
-					"If <condition>, <body>"
-					"If <condition> then <body>"
-					"<body> if <condition>"
-				]
-				fn: (v)=> v("body") if v("condition")
-			
-			new Pattern
-				match: [
-					"Unless <condition>, <body>"
-					"Unless <condition> then <body>" # doesn't sound like good English
-					"<body> unless <condition>"
-				]
-				fn: (v)=> v("body") unless v("condition")
-			
-		]
+		@patterns = [].concat(
+			require "./library/conditionals"
+			require "./library/console"
+			require "./library/eval-js"
+			require "./library/eval-ooplie"
+		)
 		@classes = []
 		@instances = []
 		# TODO: block-level scopes
@@ -243,7 +101,8 @@ class Context
 				break if match?
 			
 			if match?
-				return pattern.fn((var_name)=> @eval_tokens(match[var_name]))
+				get_var_value = (var_name)=> @eval_tokens(match[var_name])
+				return pattern.fn(get_var_value, @)
 			else
 				for pattern in @patterns
 					bad_match = pattern.bad_match(next_tokens)
