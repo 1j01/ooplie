@@ -91,7 +91,8 @@ class Context
 				break if match?
 			
 			if match?
-				get_var_value = (var_name)=> @eval_tokens(match[var_name])
+				get_var_value = (var_name)=>
+					@eval_tokens(match[var_name])
 				return pattern.fn(get_var_value, @)
 			else
 				for pattern in @patterns

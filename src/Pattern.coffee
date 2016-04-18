@@ -1,4 +1,5 @@
 
+tokenize = require "./tokenize"
 {stringify_tokens} = require "./Token"
 
 stringify_matcher = (matcher)->
@@ -9,43 +10,50 @@ class Pattern
 	constructor: ({match, bad_match, @fn})->
 		# TODO: also allow [optional phrase segments]
 		# and maybe (either|or|groups)
+		# TODO: syntax for matching indented blocks 
 		# TODO: try longer matchers first
-		# TODO: use tokenizer to avoid manipulating regexps
 		
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs
-				segments = def
-					.replace(/(^|\ )<(\ |$)/g, " &lt; ")
-					.replace(/(^|\ )>(\ |$)/g, " &gt; ")
-					.replace(/(^|\ )<=(\ |$)/g, " &lt;= ")
-					.replace(/(^|\ )>=(\ |$)/g, " &gt;= ")
-					.replace(/<([^>]*)(\ )/g, (m, words, space)-> "#{words}_**")
-					.replace(/>\ /g, ">")
-					.replace(/>/g, "> ")
-					.trim()
-					.split(" ")
+				tokens = tokenize(def)
+				segments = []
 				variable_names_used = []
-				for segment in segments
-					if segment.match /^<.*>$/
-						variable_name = segment
-							.replace(/[<>]/g, "")
-							.replace(/_\*\*/g, " ")
-						if variable_name in variable_names_used
-							throw new Error "Variable name `#{variable_name}` used twice in pattern `#{def}`"
-						if variable_name is "pattern"
-							throw new Error "Reserved pattern variable `pattern` used in pattern `#{def}`"
-						variable_names_used.push variable_name
-						
-						type: "variable"
-						name: variable_name
-						toString: -> "<#{@name}>"
+				current_variable_name = null
+				for token, index in tokens
+					if token.type is "punctuation"
+						if token.value is "<"
+							if current_variable_name?
+								throw new Error "Unexpected `<` within variable name in pattern `#{def}`"
+							else if tokens[index + 1]?.type is "word"
+								current_variable_name = ""
+							else
+								segments.push {type: token.type, value: token.value, toString: -> @value}
+						else if token.value is ">"
+							if current_variable_name?
+								if current_variable_name in variable_names_used
+									throw new Error "Variable name `#{current_variable_name}` used twice in pattern `#{def}`"
+								if current_variable_name is "pattern"
+									throw new Error "Reserved pattern variable `pattern` used in pattern `#{def}`"
+								variable_names_used.push current_variable_name
+								segments.push {type: "variable", name: current_variable_name, toString: -> "<#{@name}>"}
+								current_variable_name = null
+							else
+								segments.push {type: token.type, value: token.value, toString: -> @value}
+						else if current_variable_name?
+							current_variable_name += token.value
+						else
+							segments.push {type: token.type, value: token.value, toString: -> @value}
 					else
-						value = segment
-							.replace(/&lt;/g, "<")
-							.replace(/&gt;/g, ">")
-						type: if value.match(/\w/) then "word" else "punctuation"
-						value: value
-						toString: -> @value
+						if current_variable_name?
+							# console.log current_variable_name, token, current_variable_name.slice(-1)
+							current_variable_name += " " if current_variable_name.slice(-1).match(/[a-z]/i)
+							current_variable_name += token.value
+						else
+							segments.push {type: token.type, value: token.value, toString: -> @value}
+							# TODO: DRY
+				
+				# console.log "parsed", def, "to", segments
+				segments
 		
 		@matchers = parse_matchers(match)
 		@bad_matchers = parse_matchers(bad_match ? [])

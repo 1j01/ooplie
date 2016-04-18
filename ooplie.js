@@ -292,8 +292,10 @@ module.exports = Operator = (function(superClass) {
 
 
 },{"./Pattern":3}],3:[function(require,module,exports){
-var Pattern, stringify_matcher, stringify_tokens,
+var Pattern, stringify_matcher, stringify_tokens, tokenize,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+tokenize = require("./tokenize");
 
 stringify_tokens = require("./Token").stringify_tokens;
 
@@ -306,48 +308,86 @@ module.exports = Pattern = (function() {
     var bad_match, match, parse_matchers;
     match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
     parse_matchers = function(matcher_defs) {
-      var def, j, len, results, segment, segments, value, variable_name, variable_names_used;
+      var current_variable_name, def, index, j, k, len, len1, ref, results, segments, token, tokens, variable_names_used;
       results = [];
       for (j = 0, len = matcher_defs.length; j < len; j++) {
         def = matcher_defs[j];
-        segments = def.replace(/(^|\ )<(\ |$)/g, " &lt; ").replace(/(^|\ )>(\ |$)/g, " &gt; ").replace(/(^|\ )<=(\ |$)/g, " &lt;= ").replace(/(^|\ )>=(\ |$)/g, " &gt;= ").replace(/<([^>]*)(\ )/g, function(m, words, space) {
-          return words + "_**";
-        }).replace(/>\ /g, ">").replace(/>/g, "> ").trim().split(" ");
+        tokens = tokenize(def);
+        segments = [];
         variable_names_used = [];
-        results.push((function() {
-          var k, len1, results1;
-          results1 = [];
-          for (k = 0, len1 = segments.length; k < len1; k++) {
-            segment = segments[k];
-            if (segment.match(/^<.*>$/)) {
-              variable_name = segment.replace(/[<>]/g, "").replace(/_\*\*/g, " ");
-              if (indexOf.call(variable_names_used, variable_name) >= 0) {
-                throw new Error("Variable name `" + variable_name + "` used twice in pattern `" + def + "`");
+        current_variable_name = null;
+        for (index = k = 0, len1 = tokens.length; k < len1; index = ++k) {
+          token = tokens[index];
+          if (token.type === "punctuation") {
+            if (token.value === "<") {
+              if (current_variable_name != null) {
+                throw new Error("Unexpected `<` within variable name in pattern `" + def + "`");
+              } else if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "word") {
+                current_variable_name = "";
+              } else {
+                segments.push({
+                  type: token.type,
+                  value: token.value,
+                  toString: function() {
+                    return this.value;
+                  }
+                });
               }
-              if (variable_name === "pattern") {
-                throw new Error("Reserved pattern variable `pattern` used in pattern `" + def + "`");
+            } else if (token.value === ">") {
+              if (current_variable_name != null) {
+                if (indexOf.call(variable_names_used, current_variable_name) >= 0) {
+                  throw new Error("Variable name `" + current_variable_name + "` used twice in pattern `" + def + "`");
+                }
+                if (current_variable_name === "pattern") {
+                  throw new Error("Reserved pattern variable `pattern` used in pattern `" + def + "`");
+                }
+                variable_names_used.push(current_variable_name);
+                segments.push({
+                  type: "variable",
+                  name: current_variable_name,
+                  toString: function() {
+                    return "<" + this.name + ">";
+                  }
+                });
+                current_variable_name = null;
+              } else {
+                segments.push({
+                  type: token.type,
+                  value: token.value,
+                  toString: function() {
+                    return this.value;
+                  }
+                });
               }
-              variable_names_used.push(variable_name);
-              results1.push({
-                type: "variable",
-                name: variable_name,
+            } else if (current_variable_name != null) {
+              current_variable_name += token.value;
+            } else {
+              segments.push({
+                type: token.type,
+                value: token.value,
                 toString: function() {
-                  return "<" + this.name + ">";
+                  return this.value;
                 }
               });
+            }
+          } else {
+            if (current_variable_name != null) {
+              if (current_variable_name.slice(-1).match(/[a-z]/i)) {
+                current_variable_name += " ";
+              }
+              current_variable_name += token.value;
             } else {
-              value = segment.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-              results1.push({
-                type: value.match(/\w/) ? "word" : "punctuation",
-                value: value,
+              segments.push({
+                type: token.type,
+                value: token.value,
                 toString: function() {
                   return this.value;
                 }
               });
             }
           }
-          return results1;
-        })());
+        }
+        results.push(segments);
       }
       return results;
     };
@@ -429,7 +469,7 @@ module.exports = Pattern = (function() {
 })();
 
 
-},{"./Token":4}],4:[function(require,module,exports){
+},{"./Token":4,"./tokenize":12}],4:[function(require,module,exports){
 var Token;
 
 module.exports = Token = (function() {
@@ -605,14 +645,14 @@ Pattern = require("../Pattern");
 
 module.exports = [
   new Pattern({
-    match: ["If <condition>, <body>, else <alt_body>", "If <condition> then <body>, else <alt_body>", "If <condition> then <body> else <alt_body>", "<body> if <condition> else <alt_body>"],
-    bad_match: ["if <condition>, then <body>, else <alt_body>", "if <condition>, then <body>, else, <alt_body>", "if <condition>, <body>, else, <alt_body>"],
+    match: ["If <condition>, <body>, else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
+    bad_match: ["if <condition>, then <body>, else <alt body>", "if <condition>, then <body>, else, <alt body>", "if <condition>, <body>, else, <alt body>"],
     fn: (function(_this) {
       return function(v) {
         if (v("condition")) {
           return v("body");
         } else {
-          return v("alt_body");
+          return v("alt body");
         }
       };
     })(this)

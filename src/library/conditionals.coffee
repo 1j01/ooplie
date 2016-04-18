@@ -5,21 +5,20 @@ module.exports = [
 	
 	# NOTE: If-else has to be above If, otherwise If will be matched first
 	new Pattern
-		# TODO: should be able to use <alt body> but spaces are converted to underscores
 		match: [
-			"If <condition>, <body>, else <alt_body>"
-			"If <condition> then <body>, else <alt_body>"
-			"If <condition> then <body> else <alt_body>"
-			"<body> if <condition> else <alt_body>" # pythonic ternary
+			"If <condition>, <body>, else <alt body>"
+			"If <condition> then <body>, else <alt body>"
+			"If <condition> then <body> else <alt body>"
+			"<body> if <condition> else <alt body>" # pythonic ternary
 		]
 		bad_match: [
-			"if <condition>, then <body>, else <alt_body>"
-			"if <condition>, then <body>, else, <alt_body>"
-			"if <condition>, <body>, else, <alt_body>"
+			"if <condition>, then <body>, else <alt body>"
+			"if <condition>, then <body>, else, <alt body>"
+			"if <condition>, <body>, else, <alt body>"
 			# and other things; also this might be sort of arbitrary
 			# comma misplacement should really be handled dynamically by the near-match system
 		]
-		fn: (v)=> if v("condition") then v("body") else v("alt_body")
+		fn: (v)=> if v("condition") then v("body") else v("alt body")
 	
 	new Pattern
 		match: [

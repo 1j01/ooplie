@@ -89,5 +89,26 @@ suite "Pattern", ->
 		expect(pattern.bad_match(tokenize("a is greater than b"))).not.to.exist
 		expect(pattern.bad_match(tokenize("a is more than b"))).to.exist
 	
+	test "bad pattern syntax", ->
+		expect(->
+			pattern = new Pattern
+				match: [
+					"<a> is less than <b<"
+				]
+		).to.throw("`<` within variable name in pattern `<a> is less than <b<`")
+	
+	test "allowed variable names", ->
+		pattern = new Pattern
+			match: [
+				"<alt_body> wut <alt-body-2>"
+				"<aaa$_> ills <bah;)>"
+			]
+		
+		expect(pattern.match(tokenize("a way ills bee"))).to.exist
+		tokens_eql(pattern.match(tokenize("a way wut bee"))["alt_body"], tokenize("a way"))
+		tokens_eql(pattern.match(tokenize("a way wut bee"))["alt-body-2"], tokenize("bee"))
+		tokens_eql(pattern.match(tokenize("a way ills bee"))["aaa$_"], tokenize("a way"))
+		tokens_eql(pattern.match(tokenize("a way ills bee"))["bah;)"], tokenize("bee"))
+	
 	test "near matches"
 	
