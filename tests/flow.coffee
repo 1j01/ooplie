@@ -15,7 +15,6 @@ suite "control flow", ->
 	suite "conditionals", ->
 		
 		# TODO: test multiline and actual actions
-		# TODO: things should be case-insensitive
 		
 		test "if-then", ->
 			evaluate("If true, 5").to(5)
@@ -28,18 +27,29 @@ suite "control flow", ->
 			evaluate("5 if false").to(undefined)
 		
 		test "if-else", ->
-			# evaluate("If true, 5, else 0").to(5)
+			evaluate("If true, 5, else 0").to(5)
 			evaluate("If false, 5, else 0").to(0)
-			# ternary:
-			# evaluate("If true then 5 else 0").to(5)
-			# evaluate("If false then 5 else 0").to(0)
-			# # pythonic ternary:
-			# evaluate("5 if true else 0").to(5)
-			# evaluate("5 if false else 0").to(0)
-			# TODO: test else-ifs
+			# ternary style:
+			evaluate("If true then 5 else 0").to(5)
+			evaluate("If false then 5 else 0").to(0)
+			# pythonic ternary style:
+			evaluate("5 if true else 0").to(5)
+			evaluate("5 if false else 0").to(0)
+		
+		test "if-else-if", ->
+			evaluate("if 5 then 6 else if 2 then 3 else 7").to(6)
+			evaluate("if 0 then 6 else if 2 then 3 else 7").to(3)
+			evaluate("if 0 then 6 else if 0 then 3 else 7").to(7)
+			# ternary style:
+			evaluate("If true then 5 else if true then 11 else 0").to(5)
+			evaluate("If false then 5 else if true then 11 else 0").to(11)
+			evaluate("If false then 5 else if false then 11 else 0").to(0)
+			# pythonic ternary style:
+			evaluate("151 if true else 39 if true else 241").to(151)
+			evaluate("151 if false else 39 if true else 241").to(39)
+			evaluate("151 if false else 39 if false else 241").to(241)
 		
 		test "unless", ->
-			# TODO: test multiline and actual actions
 			evaluate("Unless true, 5").to(undefined)
 			evaluate("Unless false, 5").to(5)
 			# post-unless:
