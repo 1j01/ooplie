@@ -95,11 +95,14 @@ class Pattern
 			i += 1
 		if i is matcher.length
 			variables.pattern = @
+			# console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
+			# console.log "got variables", variables
+			# console.log "ended at index", i, "on", matcher
 			return variables
-		# else
-		# 	console.log "almost matched", tokens, "against", @
-		# 	console.log "got variables", variables
-		# 	console.log "but ended at index", i, "on", matcher
+		else
+			# console.log "almost matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
+			# console.log "got variables", variables
+			# console.log "but ended at index", i, "on", matcher
 	
 	match: (tokens)->
 		for matcher in @matchers

@@ -16,7 +16,7 @@ suite "control flow", ->
 		
 		# TODO: test multiline and actual actions
 		
-		test "if-then", ->
+		test "if statement", ->
 			evaluate("If true, 5").to(5)
 			evaluate("If false, 5").to(undefined)
 			# if-then:
@@ -26,15 +26,19 @@ suite "control flow", ->
 			evaluate("5 if true").to(5)
 			evaluate("5 if false").to(undefined)
 		
-		test "if-else", ->
+		test "if-else statement", ->
 			evaluate("If true, 5, else 0").to(5)
 			evaluate("If false, 5, else 0").to(0)
-			# ternary style:
+			# if-then-else:
 			evaluate("If true then 5 else 0").to(5)
 			evaluate("If false then 5 else 0").to(0)
 			# pythonic ternary style:
 			evaluate("5 if true else 0").to(5)
 			evaluate("5 if false else 0").to(0)
+			# C/JS/etc. ternary style:
+			expect(->
+				evaluate("false ? 1010 : 10101").to(10101)
+			).to.throw("For `false ? 1010: 10101`, use If <condition>, <body>, else <alt body> instead")
 		
 		test "if-else-if", ->
 			evaluate("if 5 then 6 else if 2 then 3 else 7").to(6)
@@ -49,13 +53,29 @@ suite "control flow", ->
 			evaluate("151 if false else 39 if true else 241").to(39)
 			evaluate("151 if false else 39 if false else 241").to(241)
 		
-		test "unless", ->
+		test "unless statement", ->
 			evaluate("Unless true, 5").to(undefined)
 			evaluate("Unless false, 5").to(5)
 			# post-unless:
 			evaluate("5 unless true").to(undefined)
 			evaluate("5 unless false").to(5)
 			# TODO: test unless-else, unless-else-if, unless-else-unless etc. but maybe throw style warnings/errors
+		
+		test "unless-then, unless-else", ->
+			# unless-then
+			expect(->
+				evaluate("Unless true then 5").to(undefined)
+			).to.throw("For `Unless true then 5`, use Unless <condition>, <body> instead")
+			# unless-then-else
+			expect(->
+				evaluate("unless 345 then 404 else 999").to(999)
+			).to.throw("For `unless 345 then 404 else 999`, use <body> unless <condition> in which case <alt body> instead")
+			# unless-else
+			# TODO: we can't match `X unless Y else Z` because it's a bad_match(er)
+			# so even when the pattern is above `X unless Y`, `X unless Y` is matched first
+			# expect(->
+			# 	evaluate("55 unless 5 else 33").to(33)
+			# ).to.throw("For `55 unless 5 else 33`, use <body>, unless <condition> in which case <alt body> instead")
 		
 		test "as expressions"
 			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)

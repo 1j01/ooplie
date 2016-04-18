@@ -17,6 +17,13 @@ module.exports = [
 			"if <condition>, <body>, else, <alt body>"
 			# and other things; also this might be sort of arbitrary
 			# comma misplacement should really be handled dynamically by the near-match system
+			"<condition> ? <body> : <alt body>"
+			"unless <condition>, <alt body> else <body>"
+			"unless <condition>, <alt body>, else <body>"
+			"unless <condition> then <alt body>, else <body>"
+			"unless <condition> then <alt body>, else, <body>"
+			"unless <condition>, then <alt body>, else <body>"
+			"unless <condition>, then <alt body>, else, <body>"
 		]
 		fn: (v)=> if v("condition") then v("body") else v("alt body")
 	
@@ -30,9 +37,30 @@ module.exports = [
 	
 	new Pattern
 		match: [
+			"<body> unless <condition> in which case <alt body>"
+			"<body>, unless <condition> in which case <alt body>"
+			"<body> unless <condition>, in which case <alt body>"
+			"<body>, unless <condition>, in which case <alt body>"
+			"<body> unless <condition> in which case just <alt body>"
+			"<body>, unless <condition> in which case just <alt body>"
+			"<body> unless <condition>, in which case just <alt body>"
+			"<body>, unless <condition>, in which case just <alt body>"
+		]
+		bad_match: [
+			"Unless <condition>, <body>, else <alt body>"
+			"Unless <condition> then <body>, else <alt body>"
+			"Unless <condition> then <body> else <alt body>"
+			"<body> unless <condition> else <alt body>" # psuedo-pythonic ternary
+		]
+		fn: (v)=> unless v("condition") then v("body") else v("alt body")
+	
+	new Pattern
+		match: [
 			"Unless <condition>, <body>"
-			"Unless <condition> then <body>" # doesn't sound like good English
 			"<body> unless <condition>"
+		]
+		bad_match: [
+			"Unless <condition> then <body>" # not good English
 		]
 		fn: (v)=> v("body") unless v("condition")
 	

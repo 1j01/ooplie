@@ -92,12 +92,17 @@ class Context
 			
 			if match?
 				get_var_value = (var_name)=>
+					# console.log "get_var_value", var_name
 					@eval_tokens(match[var_name])
-				return pattern.fn(get_var_value, @)
+				returns = pattern.fn(get_var_value, @)
+				# console.log "return", returns
+				return returns
 			else
 				for pattern in @patterns
 					bad_match = pattern.bad_match(next_tokens)
 					break if bad_match?
+				if bad_match?
+					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 			
 			if next_literal_tokens.length
 				if next_literal_tokens.some((token)-> token.type is "string")
@@ -114,15 +119,19 @@ class Context
 				
 				if next_word_tokens.length
 					if next_word_tok_str of @constants
+						# advance(next_word_tokens.length)
 						return @constants[next_word_tok_str]
 					
 					if next_word_tok_str of @variables
+						# advance(next_word_tokens.length)
 						return @variables[next_word_tok_str]
 				else
 					if tok_str of @constants
+						# advance(next_word_tokens.length)
 						return @constants[tok_str]
 					
 					if tok_str of @variables
+						# advance(next_word_tokens.length)
 						return @variables[tok_str]
 				
 				token = tokens[index]
@@ -135,10 +144,7 @@ class Context
 							# following_value = parse_expression(parse_primary(), 0)
 							return operator.fn(following_value)
 				
-				if bad_match?
-					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
-				else
-					throw new Error "I don't understand `#{tok_str}`"
+				throw new Error "I don't understand `#{tok_str}`"
 		
 		parse_expression = (lhs, min_precedence)=>
 			match_operator = =>
@@ -153,6 +159,8 @@ class Context
 			
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
 				operator = lookahead_operator
+				if lookahead_operator.binary and not tokens[index]?
+					throw new Error "binary operator at end of expression"
 				rhs = parse_primary()
 				advance()
 				lookahead_operator = match_operator()
@@ -160,6 +168,8 @@ class Context
 					(lookahead_operator?.binary and lookahead_operator.precedence > operator.precedence) or
 					(lookahead_operator?.right_associative and lookahead_operator.precedence is operator.precedence)
 				)
+					if lookahead_operator.binary and not tokens[index]?
+						throw new Error "binary operator at end of expression"
 					advance(-2)
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
 					advance(2)
