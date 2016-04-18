@@ -284,7 +284,7 @@ suite "mathematics", ->
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
-	test.skip "basic unary word operators", ->
+	test "basic unary word operators", ->
 		evaluate("negative 5").to(-5)
 		evaluate("positive 5").to(+5)
 		evaluate("the opposite of 2").to(-2)

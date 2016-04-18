@@ -135,14 +135,15 @@ class Context
 						return @variables[tok_str]
 				
 				token = tokens[index]
-				if token.type is "punctuation"
-					for operator in @operators when operator.unary
-						if operator.match(tokens, index)
-							advance()
-							following_value = parse_primary()
-							# following_value = parse_expression(parse_primary(), 1)
-							# following_value = parse_expression(parse_primary(), 0)
-							return operator.fn(following_value)
+				
+				for operator in @operators when operator.unary
+					matcher = operator.match(tokens, index)
+					if matcher
+						advance(matcher.length)
+						following_value = parse_primary()
+						# following_value = parse_expression(parse_primary(), 1)
+						# following_value = parse_expression(parse_primary(), 0)
+						return operator.fn(following_value)
 				
 				throw new Error "I don't understand `#{tok_str}`"
 		
