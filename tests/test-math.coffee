@@ -85,9 +85,10 @@ suite "mathematics", ->
 	test "exponentiation", ->
 		evaluate("2 ^ 8").to(256)
 		evaluate("32^0.8").to(Math.pow(32, 0.8)) # comes out to 16.000000000000004
-		expect(->
-			evaluate("2 ** 8").to(256)
-		).to.throw() # TODO: expect something like "Just use ^ instead"
+		# TODO: bad_match operators
+		# expect(->
+		# 	evaluate("2 ** 8").to(256)
+		# ).to.throw("Just use ^ instead")
 	suite "comparison", ->
 		test "equality", ->
 			evaluate("5 = 5").to(true)
@@ -95,12 +96,13 @@ suite "mathematics", ->
 			evaluate("false = false").to(true)
 			evaluate("true = true").to(true)
 			evaluate("true = false").to(false)
-			expect(->
-				evaluate("5 == 5").to(true)
-			).to.throw() # TODO: expect something like "Just use = instead"
-			expect(->
-				evaluate("5 === 5").to(true)
-			).to.throw() # TODO: expect something like "Just use = instead"
+			# TODO: bad_match operators
+			# expect(->
+			# 	evaluate("5 == 5").to(true)
+			# ).to.throw("Just use = instead")
+			# expect(->
+			# 	evaluate("5 === 5").to(true)
+			# ).to.throw("Just use = instead")
 		test.skip "multiple equality", ->
 			evaluate("5 = 5 = 5").to(true)
 			evaluate("5 = 5 = 3").to(false)
@@ -117,8 +119,8 @@ suite "mathematics", ->
 			evaluate("4 <= 5").to(true)
 			evaluate("-0 < 0").to(false)
 			evaluate("-1 < 1").to(true)
-			# evaluate("-0 < +0").to(false) TODO
-			# evaluate("-1 < +1").to(true)
+			evaluate("-0 < +0").to(false)
+			evaluate("-1 < +1").to(true)
 			evaluate("5 != 3").to(true)
 			evaluate("5 != 5").to(false)
 		test.skip "multiple inequality"
@@ -335,6 +337,7 @@ suite "mathematics", ->
 		evaluate("Is 3 less than 5?").to(yes)
 		evaluate("Is 3 more than 5?").to(no) # throw style error
 		evaluate("Is 5 greater than 3?").to(yes)
+		evaluate("5 is greater than 3, right?").to(yes)
 	test.skip "ranges (intervals)", ->
 		evaluate("from 4 to 6").to(new Range(4, 6)) # inclusive?
 		evaluate("between 4 and 6").to(new Range(4, 6)) # exclusive?
