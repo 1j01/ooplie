@@ -607,18 +607,17 @@ module.exports = [
       return +rhs;
     }
   }), new Operator({
-    match: ["≠", "!=", "does not equal", "is not equal to", "isn't", "is not"],
-    bad_match: ["isnt", "isnt equal to", "isn't equal to"],
+    match: ["≥", ">=", "is greater than or equal to"],
+    bad_match: ["is more than or equal to"],
     precedence: 0,
     fn: function(lhs, rhs) {
-      return lhs !== rhs;
+      return lhs >= rhs;
     }
   }), new Operator({
-    match: ["=", "equals", "is equal to", "is"],
-    bad_match: ["==", "==="],
+    match: ["≤", "<=", "is less than or equal to"],
     precedence: 0,
     fn: function(lhs, rhs) {
-      return lhs === rhs;
+      return lhs <= rhs;
     }
   }), new Operator({
     match: [">", "is greater than"],
@@ -634,17 +633,18 @@ module.exports = [
       return lhs < rhs;
     }
   }), new Operator({
-    match: ["≥", ">=", "is greater than or equal to"],
-    bad_match: ["is more than or equal to"],
+    match: ["≠", "!=", "does not equal", "is not equal to", "isn't", "is not"],
+    bad_match: ["isnt", "isnt equal to", "isn't equal to"],
     precedence: 0,
     fn: function(lhs, rhs) {
-      return lhs >= rhs;
+      return lhs !== rhs;
     }
   }), new Operator({
-    match: ["≤", "<=", "is less than or equal to"],
+    match: ["=", "equals", "is equal to", "is"],
+    bad_match: ["==", "==="],
     precedence: 0,
     fn: function(lhs, rhs) {
-      return lhs <= rhs;
+      return lhs === rhs;
     }
   })
 ];

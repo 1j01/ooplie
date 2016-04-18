@@ -100,6 +100,46 @@ module.exports = [
 	
 	new Operator
 		match: [
+			"≥"
+			">="
+			"is greater than or equal to"
+		]
+		bad_match: [
+			"is more than or equal to"
+		]
+		precedence: 0
+		fn: (lhs, rhs)-> lhs >= rhs
+	
+	new Operator
+		match: [
+			"≤"
+			"<="
+			"is less than or equal to"
+		]
+		precedence: 0
+		fn: (lhs, rhs)-> lhs <= rhs
+	
+	new Operator
+		match: [
+			">"
+			"is greater than"
+		]
+		bad_match: [
+			"is more than"
+		]
+		precedence: 0
+		fn: (lhs, rhs)-> lhs > rhs
+	
+	new Operator
+		match: [
+			"<"
+			"is less than"
+		]
+		precedence: 0
+		fn: (lhs, rhs)-> lhs < rhs
+	
+	new Operator
+		match: [
 			"≠"
 			"!="
 			"does not equal"
@@ -141,45 +181,5 @@ module.exports = [
 			# 		@variables.set(name, value)
 			# else
 			lhs is rhs
-	
-	new Operator
-		match: [
-			">"
-			"is greater than"
-		]
-		bad_match: [
-			"is more than"
-		]
-		precedence: 0
-		fn: (lhs, rhs)-> lhs > rhs
-	
-	new Operator
-		match: [
-			"<"
-			"is less than"
-		]
-		precedence: 0
-		fn: (lhs, rhs)-> lhs < rhs
-	
-	new Operator
-		match: [
-			"≥"
-			">="
-			"is greater than or equal to"
-		]
-		bad_match: [
-			"is more than or equal to"
-		]
-		precedence: 0
-		fn: (lhs, rhs)-> lhs >= rhs
-	
-	new Operator
-		match: [
-			"≤"
-			"<="
-			"is less than or equal to"
-		]
-		precedence: 0
-		fn: (lhs, rhs)-> lhs <= rhs
 	
 ]

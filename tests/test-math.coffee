@@ -314,6 +314,15 @@ suite "mathematics", ->
 		evaluate("5 is not equal to 4").to(true)
 		evaluate("5 is equal to 4").to(false)
 		evaluate("5 is equal to 5").to(true)
+		evaluate("5 is less than 5").to(false)
+		evaluate("4 is less than 5").to(true)
+		evaluate("5 is greater than 5").to(false)
+		evaluate("6 is greater than 5").to(true)
+		evaluate("5 is less than or equal to 5").to(true)
+		evaluate("3 is less than or equal to 5").to(true)
+		evaluate("7 is less than or equal to 5").to(false)
+		evaluate("7 is greater than or equal to 5").to(true)
+		evaluate("5 is greater than or equal to 5").to(true)
 		expect(->
 			evaluate("5 isnt 4").to(true) # throw error
 		).to.throw() # TODO: expect something like "Just use `isn't`"
