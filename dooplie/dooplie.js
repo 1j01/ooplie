@@ -32,7 +32,16 @@ var handle_command = function(command){
 		var span = document.createElement("span");
 		span.style.display = "inline-block";
 		span.style.transform = "rotate(" + (rotate_direction / 4) + "turn)";
-		span.innerText = face;
+		span.style.cursor = "vertical-text";
+		span.style.fontSize = "1.3em";
+		span.innerText = face.replace(">", "〉").replace("<", "〈");
+		// for(var i=0; i<face.length; i++){
+		// 	var char_span = document.createElement("span");
+		// 	char_span.style.display = "inline-block";
+		// 	char_span.style.verticalAlign = "middle";
+		// 	char_span.innerText = face[i];
+		// 	span.appendChild(char_span);
+		// }
 		log("").appendChild(span);
 	};
 	if(command.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)){
