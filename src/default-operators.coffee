@@ -100,6 +100,23 @@ module.exports = [
 	
 	new Operator
 		match: [
+			"≠"
+			"!="
+			"does not equal"
+			"is not equal to"
+			"isn't"
+			"is not"
+		]
+		bad_match: [
+			"isnt" # this isn't CoffeeScript, you can actually punctuate contractions
+			"isnt equal to" # ditto
+			"isn't equal to" # this sounds slightly silly to me
+		]
+		precedence: 0
+		fn: (lhs, rhs)-> lhs isnt rhs
+	
+	new Operator
+		match: [
 			"="
 			"equals"
 			"is equal to"
@@ -124,22 +141,6 @@ module.exports = [
 			# 		@variables.set(name, value)
 			# else
 			lhs is rhs
-	
-	new Operator
-		match: [
-			"≠"
-			"!="
-			"does not equal"
-			"is not equal to"
-			"isn't"
-		]
-		bad_match: [
-			"isnt" # this isn't CoffeeScript, you can actually punctuate contractions
-			"isnt equal to" # ditto
-			"isn't equal to" # this sounds slightly silly to me
-		]
-		precedence: 0
-		fn: (lhs, rhs)-> lhs isnt rhs
 	
 	new Operator
 		match: [

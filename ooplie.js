@@ -607,18 +607,18 @@ module.exports = [
       return +rhs;
     }
   }), new Operator({
+    match: ["≠", "!=", "does not equal", "is not equal to", "isn't", "is not"],
+    bad_match: ["isnt", "isnt equal to", "isn't equal to"],
+    precedence: 0,
+    fn: function(lhs, rhs) {
+      return lhs !== rhs;
+    }
+  }), new Operator({
     match: ["=", "equals", "is equal to", "is"],
     bad_match: ["==", "==="],
     precedence: 0,
     fn: function(lhs, rhs) {
       return lhs === rhs;
-    }
-  }), new Operator({
-    match: ["≠", "!=", "does not equal", "is not equal to", "isn't"],
-    bad_match: ["isnt", "isnt equal to", "isn't equal to"],
-    precedence: 0,
-    fn: function(lhs, rhs) {
-      return lhs !== rhs;
     }
   }), new Operator({
     match: [">", "is greater than"],

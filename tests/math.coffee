@@ -305,16 +305,18 @@ suite "mathematics", ->
 		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
 		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
 		# TODO: nth roots
-	test.skip "worded comparisons", ->
+	test "worded comparisons", ->
 		evaluate("5 equals 5").to(true)
 		evaluate("5 is 5").to(true)
 		evaluate("5 is not 4").to(true)
 		evaluate("5 does not equal 4").to(true)
-		evaluate("5 isnt 4").to(true) # throw error
 		evaluate("5 isn't 4").to(true)
 		evaluate("5 is not equal to 4").to(true)
 		evaluate("5 is equal to 4").to(false)
 		evaluate("5 is equal to 5").to(true)
+		expect(->
+			evaluate("5 isnt 4").to(true) # throw error
+		).to.throw() # TODO: expect something like "Just use `isn't`"
 	test.skip "worded comparison questions", ->
 		evaluate("Does 4 equal 5?").to(no)
 		evaluate("Does 4 = 5?").to(no)
