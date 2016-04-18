@@ -86,7 +86,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
+        var bad_match, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, result, returns, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -171,6 +171,22 @@ module.exports = Context = (function() {
             }
           }
           token = tokens[index];
+          if (token.type === "punctuation" && token.value === "(") {
+            lookahead_index = index;
+            while (true) {
+              lookahead_index += 1;
+              lookahead_token = tokens[lookahead_index];
+              if (lookahead_token != null) {
+                if (lookahead_token.type === "punctuation" && lookahead_token.value === ")") {
+                  result = _this.eval_tokens(tokens.slice(index + 1, lookahead_index));
+                  advance(lookahead_index);
+                  return result;
+                }
+              } else {
+                throw new Error("Missing ending parenthesis in `" + tok_str + "`");
+              }
+            }
+          }
           ref3 = _this.operators;
           for (o = 0, len5 = ref3.length; o < len5; o++) {
             operator = ref3[o];

@@ -125,7 +125,7 @@ suite "mathematics", ->
 			evaluate("5 != 5").to(false)
 		test.skip "multiple inequality"
 		
-	test.skip "parenthesis", ->
+	test "parentheses", ->
 		evaluate("(1)").to(1)
 		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
 		evaluate("(3 * 6) - 1").to((3 * 6) - 1)

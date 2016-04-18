@@ -10,11 +10,9 @@ class Context
 	constructor: ({@console, @supercontext}={})->
 		# TODO: decouple from console somehow?
 		
+		# TODO: seperate AST parsing from eval
 		# semantics are quite tied to context in the case of natural language
-		# so maybe this stuff should be handled a Lexer class
-		# but then the lexer would be coupled with the context
-		# which can be considered a hack: https://en.wikipedia.org/wiki/The_lexer_hack
-		# but may be overall reasonable
+		# the parser will need access to the context
 		
 		@patterns = [].concat(
 			require "./library/conditionals"
@@ -135,6 +133,21 @@ class Context
 						return @variables[tok_str]
 				
 				token = tokens[index]
+				
+				if token.type is "punctuation" and token.value is "("
+					lookahead_index = index
+					loop
+						lookahead_index += 1
+						lookahead_token = tokens[lookahead_index]
+						if lookahead_token?
+							if lookahead_token.type is "punctuation" and lookahead_token.value is ")"
+								# advance(lookahead_index - 1)
+								# return parse_expression(parse_primary(), 0)
+								result = @eval_tokens(tokens.slice(index + 1, lookahead_index))
+								advance(lookahead_index) # NOTE: this may be useless or could even cause problems
+								return result
+						else
+							throw new Error "Missing ending parenthesis in `#{tok_str}`"
 				
 				for operator in @operators when operator.unary
 					matcher = operator.match(tokens, index)
