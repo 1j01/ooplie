@@ -129,13 +129,16 @@ suite "mathematics", ->
 		evaluate("(1)").to(1)
 		evaluate("3 * (6 - 1)").to(3 * (6 - 1))
 		evaluate("(3 * 6) - 1").to((3 * 6) - 1)
+		evaluate("(5 + 2)^2").to((5 + 2) ** 2)
+		evaluate("-(5 + 2)^2").to(-(5 + 2) ** 2)
 	test "order of operations", ->
 		evaluate("1 + 2 * 4").to(1 + (2 * 4))
 		evaluate("3 * 6 - 1").to((3 * 6) - 1)
 		evaluate("0.0 + -.25 - -.75 + 0.0").to(0.5)
 		evaluate("2^1^3").to(2)
-		# TODO/FIXME: supposed to be right-associative
+		# TODO/FIXME:
 		# evaluate("-2^2").to(-4)
+		# evaluate("-(5 + 2)^2 + 1").to(-(5 + 2) ** 2 + 1)
 	test.skip "order of operations obfuscation", ->
 		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
 		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it

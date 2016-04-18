@@ -141,11 +141,9 @@ class Context
 						lookahead_token = tokens[lookahead_index]
 						if lookahead_token?
 							if lookahead_token.type is "punctuation" and lookahead_token.value is ")"
-								# advance(lookahead_index - 1)
-								# return parse_expression(parse_primary(), 0)
-								result = @eval_tokens(tokens.slice(index + 1, lookahead_index))
-								advance(lookahead_index) # NOTE: this may be useless or could even cause problems
-								return result
+								bracketed_value = @eval_tokens(tokens.slice(index + 1, lookahead_index))
+								advance(lookahead_index - 1)
+								return parse_expression(bracketed_value, 0)
 						else
 							throw new Error "Missing ending parenthesis in `#{tok_str}`"
 				

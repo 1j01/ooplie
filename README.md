@@ -5,11 +5,14 @@ Ooplie is a [multi-paradigm][] programming system where you write in English.
 
 <!-- An NLP system? https://en.wikipedia.org/wiki/Natural_language_programming seems to have a somewhat narrow definition, and https://en.wikipedia.org/wiki/Natural_language_processing is rather broad -->
 
-So far you can output text, eval JS, and
+So far you can output text, eval JS, and eval Ooplie code from within Ooplie,
+write expressions with worded operators, unicode operators, or ASCII operators, and
 write trivial (read: useless because there are no variables yet) conditionals.
 
 There's [a nice little console][console] where you can try it out so far,
 and [a million pending tests][tests] (as well as some passing ones).
+
+It runs in [Node.js][] and in the browser.
 
 ## Inspiration
 
@@ -44,7 +47,7 @@ Next up: **parenthesis and indented blocks** (or maybe variables)
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
 Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)
 
-Next, Ooplie should have a good module system.
+Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
 File system support and other things should be implemented this way.
 How the interop should work is not entirely decided.
