@@ -193,15 +193,15 @@ suite "mathematics", ->
 		expect(->
 			evaluate("5 ／ 6").to(5 / 6) # fullwidth solidus
 		).to.throw("use <a> ÷ <b> instead")
-	test.skip "unicode inequality comparisons", ->
+	test "unicode inequality comparisons", ->
 		evaluate("5 ≤ 5").to(true)
 		evaluate("5 ≥ 5").to(true)
-		evaluate("4 ≥ 5").to(true)
-		evaluate("4 ≤ 5").to(false)
+		evaluate("4 ≤ 5").to(true)
+		evaluate("4 ≥ 5").to(false)
 		evaluate("5 ≠ 3").to(true)
 		evaluate("5 ≠ 5").to(false)
-		evaluate("5 ≟ 3").to(false) # questioned equal (should we be using this for within expressions? I guess not since there's no oposite version)
-		evaluate("5 ≟ 5").to(true)
+		# evaluate("5 ≟ 3").to(false) # questioned equal (should we be using this for within expressions? I guess not since there's no oposite version)
+		# evaluate("5 ≟ 5").to(true)
 	test.skip "basic word numbers", ->
 		evaluate("zero").to(0)
 		evaluate("one").to(1)
