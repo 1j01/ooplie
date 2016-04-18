@@ -27,12 +27,24 @@ var context = new Ooplie.Context({console: {clear: clear, log: log}});
 
 var handle_command = function(command){
 	// Conversational trivialities
+	var log_emoji = function(face, rotate_direction){
+		// top notch emotional mirroring
+		var span = document.createElement("span");
+		span.style.display = "inline-block";
+		span.style.transform = "rotate(" + (rotate_direction / 4) + "turn)";
+		span.innerText = face;
+		log("").appendChild(span);
+	};
 	if(command.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)){
 		log((command.match(/^[A-Z]/) ? "Hello" : "hello") + (command.match(/\.|!/) ? "." : ""));
 	}else if(command.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)){
 		log((command.match(/^[A-Z]/) ? "Not much" : "not much") + (command.match(/\?|!/) ? "." : ""));
-	}else if(command.match(/^(>?[:;8X]-?[()O3PCDS]|[D()OC]-?[:;8X]<?)$/i)){
-		log(command); // top notch emotional mirroring
+	}else if(command.match(/^(>?[:;8X]-?[()O03PCDS])$/i)){
+		log_emoji(command, +1);
+	}else if(command.match(/^([D()O0C]-?[:;8X]<?)$/i)){
+		log_emoji(command, -1);
+	}else if(command.match(/^<3$/i)){
+		log("❤");
 	// Unhelp
 	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
 		log("Sorry, I can't help."); // TODO
