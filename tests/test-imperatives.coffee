@@ -32,7 +32,7 @@ evaluate = (expression)->
 	to.a = (type)-> expect(result).to.be.a(type)
 	{to}
 
-suite "imperative", ->
+suite "imperatives", ->
 	
 	test "output to the console", ->
 		expect_output "Hello world", ->
