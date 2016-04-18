@@ -42,10 +42,7 @@ class Context
 		
 		handle_line = =>
 			if line_tokens.length
-				try
-					result = @eval_tokens(line_tokens)
-				catch e
-					callback e
+				result = @eval_tokens(line_tokens)
 			line_tokens = []
 		
 		for token in tokenize(text) when token.type isnt "comment"

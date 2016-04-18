@@ -37,15 +37,19 @@ var handle_command = function(command){
 	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
 		log("Sorry, I can't help."); // TODO
 	}else{
-		context.interpret(command, function(err, result){
-			if(err){
-				var error_entry = log(err);
-				error_entry.classList.add("error");
-			}else{
-				var result_entry = log(result);
-				result_entry.classList.add("result");
-			}
-		});
+		var err;
+		try{
+			var result = context.eval(command);
+		}catch(error){
+			err = error;
+		}
+		if(err){
+			var error_entry = log(err);
+			error_entry.classList.add("error");
+		}else{
+			var result_entry = log(result);
+			result_entry.classList.add("result");
+		}
 	}
 };
 

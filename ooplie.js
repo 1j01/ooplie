@@ -47,14 +47,8 @@ module.exports = Context = (function() {
     line_tokens = [];
     handle_line = (function(_this) {
       return function() {
-        var e, error;
         if (line_tokens.length) {
-          try {
-            result = _this.eval_tokens(line_tokens);
-          } catch (error) {
-            e = error;
-            callback(e);
-          }
+          result = _this.eval_tokens(line_tokens);
         }
         return line_tokens = [];
       };
