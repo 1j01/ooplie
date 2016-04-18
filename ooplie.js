@@ -397,19 +397,23 @@ module.exports = Pattern = (function() {
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var current_variable_tokens, i, j, len, matching, ref, ref1, token, variables;
+    var current_variable_tokens, i, j, len, next_segment, segment, token, token_matches, variables;
     variables = {};
     current_variable_tokens = null;
+    token_matches = function(token, segment) {
+      return (token != null ? token.type : void 0) === segment.type && token.value.toLowerCase() === segment.value.toLowerCase();
+    };
     i = 0;
     for (j = 0, len = tokens.length; j < len; j++) {
       token = tokens[j];
       if (i >= matcher.length) {
         return;
       }
-      matching = matcher[i];
-      if (matching.type === "variable") {
+      segment = matcher[i];
+      if (segment.type === "variable") {
         if (current_variable_tokens != null) {
-          if (token.type === ((ref = matcher[i + 1]) != null ? ref.type : void 0) && token.value === ((ref1 = matcher[i + 1]) != null ? ref1.value : void 0)) {
+          next_segment = matcher[i + 1];
+          if ((next_segment != null) && token_matches(token, next_segment)) {
             current_variable_tokens = null;
             i += 2;
           } else {
@@ -417,12 +421,12 @@ module.exports = Pattern = (function() {
           }
         } else {
           current_variable_tokens = [];
-          variables[matching.name] = current_variable_tokens;
+          variables[segment.name] = current_variable_tokens;
           current_variable_tokens.push(token);
         }
       } else {
         current_variable_tokens = null;
-        if (token.type === matching.type && token.value === matching.value) {
+        if (token_matches(token, segment)) {
           i += 1;
         } else {
           return;

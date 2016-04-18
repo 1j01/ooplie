@@ -20,7 +20,7 @@ suite "Pattern", ->
 					@eval_expression(a) + @eval_expression(b)
 		).to.throw("Variable name `expression` used twice in pattern `<expression> + <expression>`")
 	
-	test "matching words ", ->
+	test "matching words", ->
 		pattern = new Pattern
 			match: [
 				"hey ho"
@@ -32,7 +32,7 @@ suite "Pattern", ->
 		expect(pattern.match(tokenize("woah there"))).not.to.exist
 		expect(pattern.match(tokenize("hey now"))).not.to.exist
 	
-	test "matching variables ", ->
+	test "matching variables", ->
 		pattern = new Pattern
 			match: [
 				"<a> + <b>"
@@ -47,6 +47,16 @@ suite "Pattern", ->
 		expect(pattern.match(tokenize("a +"))).not.to.exist
 		tokens_eql(pattern.match(tokenize("2a + 4b")).a, tokenize("2a"))
 		tokens_eql(pattern.match(tokenize("2a + 4b")).b, tokenize("4b"))
+	
+	test "matching case-insensitive", ->
+		pattern = new Pattern
+			match: [
+				"If <a> then <b>"
+			]
+		
+		expect(pattern.match(tokenize("If a then b"))).to.exist
+		expect(pattern.match(tokenize("if a then b"))).to.exist
+		expect(pattern.match(tokenize("IF a THEN b"))).to.exist
 	
 	test "greater than / less than", ->
 		pattern = new Pattern

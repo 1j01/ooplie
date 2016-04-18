@@ -45,14 +45,12 @@ class Pattern
 							segments.push {type: token.type, value: token.value, toString: -> @value}
 					else
 						if current_variable_name?
-							# console.log current_variable_name, token, current_variable_name.slice(-1)
 							current_variable_name += " " if current_variable_name.slice(-1).match(/[a-z]/i)
 							current_variable_name += token.value
 						else
 							segments.push {type: token.type, value: token.value, toString: -> @value}
 							# TODO: DRY
 				
-				# console.log "parsed", def, "to", segments
 				segments
 		
 		@matchers = parse_matchers(match)
@@ -64,29 +62,34 @@ class Pattern
 		variables = {}
 		current_variable_tokens = null
 		
+		token_matches = (token, segment)->
+			token?.type is segment.type and
+			token.value.toLowerCase() is segment.value.toLowerCase()
+		
 		i = 0
 		for token in tokens
 			if i >= matcher.length
 				# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "(ended)"
 				return
-			matching = matcher[i]
-			if matching.type is "variable"
+			segment = matcher[i]
+			if segment.type is "variable"
 				if current_variable_tokens?
-					if token.type is matcher[i + 1]?.type and token.value is matcher[i + 1]?.value
+					next_segment = matcher[i + 1]
+					if next_segment? and token_matches(token, next_segment)
 						current_variable_tokens = null
 						i += 2 # end of the variable, plus we already matched the next token
 					else
 						current_variable_tokens.push token
 				else
 					current_variable_tokens = []
-					variables[matching.name] = current_variable_tokens
+					variables[segment.name] = current_variable_tokens
 					current_variable_tokens.push token
 			else
 				current_variable_tokens = null
-				if token.type is matching.type and token.value is matching.value
+				if token_matches(token, segment)
 					i += 1
 				else
-					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", i, matching, "vs", token
+					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", i, segment, "vs", token
 					return
 		if current_variable_tokens?
 			i += 1
