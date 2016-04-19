@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="95.241074mm"
+   height="38.876625mm"
+   viewBox="0 0 337.46837 137.75182"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="control-flow-indication-mockup-2.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="83.766893"
+     inkscape:cy="85.563931"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="1"
+     fit-margin-left="1"
+     fit-margin-right="1"
+     fit-margin-bottom="1"
+     inkscape:window-width="1858"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-31.265816,-29.200595)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="57.727695"
+       y="85.674866"
+       id="text4148-2-8-3-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4150-1-0-5-3"
+         x="57.727695"
+         y="85.674866">Say &quot;Go!&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.727695"
+         y="99.737366"
+         id="tspan4169-1">After 5 seconds, say &quot;reached 5 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.727695"
+         y="113.79987"
+         id="tspan4152-1-2-4-3">After 5 more seconds, say &quot;reached 10 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.727695"
+         y="127.86237"
+         id="tspan4154-3-8-8-2" /></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 55.35904,98.032696 c -3.78222,0 -5.4927,1.983344 -5.4927,6.038924 0,3.87392 1.423,5.81364 5.63637,5.81364"
+       id="path4158-9-0-9-9-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 47.05607,95.915156 c 3.52901,0 5.21736,-0.0715 8.25846,-0.0715"
+       id="path4158-9-0-7-1-2-9-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 56.882722,85.827303 c -0.563128,1.096709 -1.96252,2.357977 -4.465452,2.110895 -3.759147,-0.371091 -9.830466,-1.387347 -10.939369,2.160258 -0.805262,2.576196 1.423,5.81364 5.63637,5.81364"
+       id="path4158-9-0-9-9-5-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csac" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="57.013412"
+       y="40.674862"
+       id="text4148-2-8-3-00"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4150-1-0-5-8"
+         x="57.013412"
+         y="40.674862">Say &quot;Go!&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.013412"
+         y="54.737362"
+         id="tspan4169-0">After 5 seconds, say &quot;reached 5 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.013412"
+         y="68.799858"
+         id="tspan4152-1-2-4-7">After 5 more seconds, say &quot;reached 10 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.013412"
+         y="82.862358"
+         id="tspan4154-3-8-8-0" /></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 54.644754,53.032696 c -3.78222,0 -5.4927,1.98334 -5.4927,6.03892 0,3.87392 1.423,5.81364 5.63637,5.81364"
+       id="path4158-9-0-9-9-19"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 46.341784,50.915156 c 3.52901,0 5.21736,-0.0715 8.25846,-0.0715"
+       id="path4158-9-0-7-1-2-9-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 46.256315,39.059536 c -3.78222,0 -5.4927,1.98334 -5.4927,6.03892 0,3.87392 1.423,5.81364 5.63637,5.81364"
+       id="path4158-9-0-9-9-5-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 46.243967,39.058146 c 3.52901,0 5.21736,-0.0715 8.25846,-0.0715"
+       id="path4158-9-0-7-1-2-9-7-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="57.809193"
+       y="128.53201"
+       id="text4148-2-8-3-0-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4150-1-0-5-3-1"
+         x="57.809193"
+         y="128.53201">Say &quot;Go!&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.809193"
+         y="142.59451"
+         id="tspan4169-1-5">After 5 seconds, say &quot;reached 5 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.809193"
+         y="156.65701"
+         id="tspan4152-1-2-4-3-8">After 5 more seconds, say &quot;reached 10 seconds mark&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="57.809193"
+         y="170.71951"
+         id="tspan4154-3-8-8-2-9" /></text>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 56.735182,143.8809 c -1.684006,3.30357 -6.234201,-0.13479 -6.921271,4.07464 -0.41798,2.56081 1.556928,4.78686 5.770298,4.78686"
+       id="path4158-9-0-9-9-1-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 47.137568,138.77229 c 3.529011,0 5.217361,-0.0715 8.258461,-0.0715"
+       id="path4158-9-0-7-1-2-9-4-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 56.964221,128.68444 c -0.563128,1.09671 -1.96252,2.35798 -4.465452,2.11089 -3.759148,-0.37109 -9.830468,-1.38734 -10.93937,2.16026 -0.805262,2.5762 1.423,5.81364 5.63637,5.81364"
+       id="path4158-9-0-9-9-5-6-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csac" />
+  </g>
+</svg>

@@ -1,7 +1,8 @@
 
 Pattern = require "../Pattern"
+Library = require "../Library"
 
-module.exports = [
+module.exports = new Library "JavaScript Eval", patterns: [
 	
 	new Pattern
 		match: [

@@ -3,6 +3,7 @@ module.exports = (tokens, start_index)->
 	opening_token = tokens[start_index]
 	lookahead_index = start_index
 	level = 1
+	# TODO: <> maybe handle XML/HTML
 	loop
 		lookahead_index += 1
 		lookahead_token = tokens[lookahead_index]

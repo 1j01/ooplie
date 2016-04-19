@@ -13,21 +13,24 @@ class Context
 		# TODO: seperate AST parsing from eval
 		# semantics are quite tied to context in the case of natural language
 		# the parser will need access to the context
-		
-		@patterns = [].concat(
+		@libraries = [
 			require "./library/conditionals"
 			require "./library/console"
 			require "./library/eval-js"
 			require "./library/eval-ooplie"
-		)
-		@classes = []
-		@instances = []
+		]
+		@patterns = [].concat((patterns for {patterns} in @libraries)...)
+		# NOTE: @patterns won't get updated when @libraries are added/removed
+		# and I'll want patterns from supercontexts to be available (hopefully not duplicatedly)
+		# so I'll probably want to collect patterns in something like get_patterns in eval_tokens
+		@operators = (operator for operator in default_operators)
+		@constants = require "./constants"
+		@variables = {} # TODO: should be a Map
 		# TODO: block-level scopes
 		# should @supercontext be @superscope?
 		# should contexts be scopes? should scopes be contexts?
-		@variables = {}
-		@constants = require "./constants"
-		@operators = (operator for operator in default_operators)
+		@classes = []
+		@instances = []
 	
 	subcontext: ({console}={})->
 		console ?= @console

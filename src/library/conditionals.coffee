@@ -1,7 +1,8 @@
 
 Pattern = require "../Pattern"
+Library = require "../Library"
 
-module.exports = [
+module.exports = new Library "Conditionals", patterns: [
 	
 	# NOTE: If-else has to be above If, otherwise If will be matched first
 	new Pattern
