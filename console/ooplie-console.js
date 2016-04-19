@@ -1,7 +1,19 @@
 
-var context = new Ooplie.Context({console: {clear: clear, log: log}});
+var con = new SimpleConsole({
+	handleCommand: handle_command,
+	placeholder: "Enter JavaScript or ASCII emoji",
+	storageID: "ooplie"
+});
+document.body.appendChild(con.element);
 
-var handle_command = function(command){
+// con.logHTML(
+// 	"<h1>Welcome to <a href='https://github.com/1j01/ooplie'>Ooplie!</a></h1>" +
+// 	"<p>Try entering <code>5 + 5</code> below. Or some faces.</p>"
+// );
+
+var context = new Ooplie.Context({console: con});
+
+function handle_command(command){
 	// Conversational trivialities
 	var log_emoji = function(face, rotate_direction){
 		// top notch emotional mirroring
@@ -11,21 +23,21 @@ var handle_command = function(command){
 		span.style.cursor = "vertical-text";
 		span.style.fontSize = "1.3em";
 		span.innerText = face.replace(">", "〉").replace("<", "〈");
-		log("").appendChild(span);
+		con.log(span);
 	};
 	if(command.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)){
-		log((command.match(/^[A-Z]/) ? "Hello" : "hello") + (command.match(/\.|!/) ? "." : ""));
+		con.log((command.match(/^[A-Z]/) ? "Hello" : "hello") + (command.match(/\.|!/) ? "." : ""));
 	}else if(command.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)){
-		log((command.match(/^[A-Z]/) ? "Not much" : "not much") + (command.match(/\?|!/) ? "." : ""));
+		con.log((command.match(/^[A-Z]/) ? "Not much" : "not much") + (command.match(/\?|!/) ? "." : ""));
 	}else if(command.match(/^(>?[:;8X]-?[()O03PCDS])$/i)){
 		log_emoji(command, +1);
 	}else if(command.match(/^([D()O0C]-?[:;8X]<?)$/i)){
 		log_emoji(command, -1);
 	}else if(command.match(/^<3$/i)){
-		log("❤");
+		con.log("❤");
 	// Unhelp
 	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
-		log("Sorry, I can't help."); // TODO
+		con.log("Sorry, I can't help."); // TODO
 	}else{
 		var err;
 		try{
@@ -34,11 +46,9 @@ var handle_command = function(command){
 			err = error;
 		}
 		if(err){
-			var error_entry = log(err);
-			error_entry.classList.add("error");
+			con.error(err);
 		}else{
-			var result_entry = log(result);
-			result_entry.classList.add("result");
+			con.log(result).classList.add("result");
 		}
 	}
 };
