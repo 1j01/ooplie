@@ -128,20 +128,14 @@ class Context
 						if lookahead_token?
 							if token.type is "punctuation"
 								if lookahead_token.type is "punctuation"
-									increased = lookahead_token.value is token.value
-									decreased = lookahead_token.value is switch token.value
-										when "(" then ")"
-										when "[" then "]"
-										when "{" then "}"
-								else
-									increased = decreased = 0
+									open_bracket = token.value
+									close_bracket = {"(": ")", "[": "]", "{": "}"}[open_bracket]
+									level += 1 if lookahead_token.value is open_bracket
+									level -= 1 if lookahead_token.value is close_bracket
 							else
-								increased = lookahead_token.type is "indent"
-								decreased = lookahead_token.type is "dedent"
+								level += 1 if  lookahead_token.type is "indent"
+								level -= 1 if  lookahead_token.type is "dedent"
 							
-							# console.log "level", level, lookahead_token.value, increased, decreased
-							
-							level += increased - decreased
 							ended = level is 0
 							
 							if ended
@@ -164,8 +158,8 @@ class Context
 						# following_value = parse_expression(parse_primary(), 0)
 						return operator.fn(following_value)
 				
-				throw new Error "I don't understand `#{JSON.stringify next_tokens}`"
-				# throw new Error "I don't understand `#{tok_str}`"
+				# throw new Error "I don't understand `#{JSON.stringify next_tokens}`"
+				throw new Error "I don't understand `#{tok_str}`"
 		
 		parse_expression = (lhs, min_precedence)=>
 			match_operator = =>

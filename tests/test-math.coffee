@@ -131,6 +131,9 @@ suite "mathematics", ->
 		evaluate("(3 * 6) - 1").to((3 * 6) - 1)
 		evaluate("(5 + 2)^2").to((5 + 2) ** 2)
 		evaluate("-(5 + 2)^2").to(-(5 + 2) ** 2)
+		# TODO/FIXME: (order of operations)
+		# evaluate("5 + (6 - 1) * 2").to(5 + (6 - 1) * 2)
+		# evaluate("5 + ((3 * 6) - 1) * 2").to(5 + ((3 * 6) - 1) * 2)
 	test "order of operations", ->
 		evaluate("1 + 2 * 4").to(1 + (2 * 4))
 		evaluate("3 * 6 - 1").to((3 * 6) - 1)

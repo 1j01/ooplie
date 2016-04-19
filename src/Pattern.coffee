@@ -106,41 +106,27 @@ class Pattern
 						if lookahead_token?
 							if token.type is "punctuation"
 								if lookahead_token.type is "punctuation"
-									increased = lookahead_token.value is token.value
-									decreased = lookahead_token.value is switch token.value
-										when "(" then ")"
-										when "[" then "]"
-										when "{" then "}"
-								else
-									increased = decreased = 0
+									open_bracket = token.value
+									close_bracket = {"(": ")", "[": "]", "{": "}"}[open_bracket]
+									level += 1 if lookahead_token.value is open_bracket
+									level -= 1 if lookahead_token.value is close_bracket
 							else
-								increased = lookahead_token.type is "indent"
-								decreased = lookahead_token.type is "dedent"
+								level += 1 if  lookahead_token.type is "indent"
+								level -= 1 if  lookahead_token.type is "dedent"
 							
-							# console.log "Ptn. level", level, lookahead_token.value, increased, decreased
-							
-							level += increased - decreased
 							ended = level is 0
-							
-							# console.log "Ptn. now lvl", level, ended
 							
 							if ended
 								bracketed_tokens = tokens.slice(token_index + 1, lookahead_index)
-								# console.log "Ptn. bracketed_tokens", bracketed_tokens
-								# token_index += lookahead_index - 2
 								token_index = lookahead_index - 1
-								# return parse_expression(bracketed_value, 0)
-								# console.log "add `#{stringify_tokens(bracketed_tokens)}` to #{segment.name} (`#{stringify_tokens(current_variable_tokens)}`)"
 								current_variable_tokens = current_variable_tokens.concat(bracketed_tokens)
 								variables[segment.name] = current_variable_tokens
 								break
 						else
 							if token.type is "punctuation"
-								# console.error "Ptn. wtf ()", tokens, lookahead_index
-								throw new Error "Ptn. Missing ending parenthesis in `#{stringify_tokens(tokens)}`"
+								throw new Error "Missing ending parenthesis in `#{tok_str}`"
 							else
-								# console.error "Ptn. wtf", tokens, lookahead_index
-								throw new Error "Ptn. Missing ending... dedent? in `#{stringify_tokens(tokens)}`? #{JSON.stringify tokens}"
+								throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
 			else
 				# console.log "segment", segment.value, "token", token
 				current_variable_tokens = null
