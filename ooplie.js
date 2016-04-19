@@ -75,7 +75,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, bracketed_value, ended, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
+        var bad_match, bracketed_value, decreased, ended, following_value, get_var_value, i, increased, j, k, l, len, len1, len2, len3, len4, len5, level, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -162,20 +162,33 @@ module.exports = Context = (function() {
           token = tokens[index];
           if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
             lookahead_index = index;
+            level = 1;
             while (true) {
               lookahead_index += 1;
               lookahead_token = tokens[lookahead_index];
               if (lookahead_token != null) {
-                ended = token.type === "punctuation" ? lookahead_token.type === "punctuation" && lookahead_token.value === (function() {
-                  switch (token.value) {
-                    case "(":
-                      return ")";
-                    case "[":
-                      return "]";
-                    case "{":
-                      return "}";
+                if (token.type === "punctuation") {
+                  if (lookahead_token.type === "punctuation") {
+                    increased = lookahead_token.value === token.value;
+                    decreased = lookahead_token.value === (function() {
+                      switch (token.value) {
+                        case "(":
+                          return ")";
+                        case "[":
+                          return "]";
+                        case "{":
+                          return "}";
+                      }
+                    })();
+                  } else {
+                    increased = decreased = 0;
                   }
-                })() : lookahead_token.type === "dedent";
+                } else {
+                  increased = lookahead_token.type === "indent";
+                  decreased = lookahead_token.type === "dedent";
+                }
+                level += increased - decreased;
+                ended = level === 0;
                 if (ended) {
                   bracketed_value = _this.eval_tokens(tokens.slice(index + 1, lookahead_index));
                   advance(lookahead_index - 1);
@@ -333,15 +346,15 @@ module.exports = Pattern = (function() {
     var bad_match, match, parse_matchers;
     match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
     parse_matchers = function(matcher_defs) {
-      var current_variable_name, def, index, j, k, len, len1, ref, results, segments, token, tokens, variable_names_used;
+      var current_variable_name, def, i, index, j, len, len1, ref, results, segments, token, tokens, variable_names_used;
       results = [];
-      for (j = 0, len = matcher_defs.length; j < len; j++) {
-        def = matcher_defs[j];
+      for (i = 0, len = matcher_defs.length; i < len; i++) {
+        def = matcher_defs[i];
         tokens = tokenize(def);
         segments = [];
         variable_names_used = [];
         current_variable_name = null;
-        for (index = k = 0, len1 = tokens.length; k < len1; index = ++k) {
+        for (index = j = 0, len1 = tokens.length; j < len1; index = ++j) {
           token = tokens[index];
           if (token.type === "punctuation") {
             if (token.value === "<") {
@@ -422,25 +435,30 @@ module.exports = Pattern = (function() {
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var current_variable_tokens, i, j, len, next_segment, segment, token, token_matches, variables;
+    var bracketed_tokens, current_variable_tokens, decreased, ended, increased, level, lookahead_index, lookahead_token, matcher_index, next_segment, ref, ref1, segment, token, token_index, token_matches, variables;
     variables = {};
     current_variable_tokens = null;
     token_matches = function(token, segment) {
       return (token != null ? token.type : void 0) === segment.type && token.value.toLowerCase() === segment.value.toLowerCase();
     };
-    i = 0;
-    for (j = 0, len = tokens.length; j < len; j++) {
-      token = tokens[j];
-      if (i >= matcher.length) {
+    token_index = 0;
+    matcher_index = 0;
+    while (token_index < tokens.length) {
+      token = tokens[token_index];
+      if (matcher_index >= matcher.length) {
         return;
       }
-      segment = matcher[i];
+      segment = matcher[matcher_index];
       if (segment.type === "variable") {
+        if (token.type === "newline" && ((ref = (ref1 = tokens[token_index + 1]) != null ? ref1.type : void 0) === "indent" || ref === "dedent")) {
+          token_index += 1;
+          continue;
+        }
         if (current_variable_tokens != null) {
-          next_segment = matcher[i + 1];
+          next_segment = matcher[matcher_index + 1];
           if ((next_segment != null) && token_matches(token, next_segment)) {
             current_variable_tokens = null;
-            i += 2;
+            matcher_index += 2;
           } else {
             current_variable_tokens.push(token);
           }
@@ -449,19 +467,65 @@ module.exports = Pattern = (function() {
           variables[segment.name] = current_variable_tokens;
           current_variable_tokens.push(token);
         }
+        if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
+          lookahead_index = token_index;
+          level = 1;
+          while (true) {
+            lookahead_index += 1;
+            lookahead_token = tokens[lookahead_index];
+            if (lookahead_token != null) {
+              if (token.type === "punctuation") {
+                if (lookahead_token.type === "punctuation") {
+                  increased = lookahead_token.value === token.value;
+                  decreased = lookahead_token.value === (function() {
+                    switch (token.value) {
+                      case "(":
+                        return ")";
+                      case "[":
+                        return "]";
+                      case "{":
+                        return "}";
+                    }
+                  })();
+                } else {
+                  increased = decreased = 0;
+                }
+              } else {
+                increased = lookahead_token.type === "indent";
+                decreased = lookahead_token.type === "dedent";
+              }
+              level += increased - decreased;
+              ended = level === 0;
+              if (ended) {
+                bracketed_tokens = tokens.slice(token_index + 1, lookahead_index);
+                token_index = lookahead_index - 1;
+                current_variable_tokens = current_variable_tokens.concat(bracketed_tokens);
+                variables[segment.name] = current_variable_tokens;
+                break;
+              }
+            } else {
+              if (token.type === "punctuation") {
+                throw new Error("Ptn. Missing ending parenthesis in `" + (stringify_tokens(tokens)) + "`");
+              } else {
+                throw new Error("Ptn. Missing ending... dedent? in `" + (stringify_tokens(tokens)) + "`? " + (JSON.stringify(tokens)));
+              }
+            }
+          }
+        }
       } else {
         current_variable_tokens = null;
         if (token_matches(token, segment)) {
-          i += 1;
+          matcher_index += 1;
         } else {
           return;
         }
       }
+      token_index += 1;
     }
     if (current_variable_tokens != null) {
-      i += 1;
+      matcher_index += 1;
     }
-    if (i === matcher.length) {
+    if (matcher_index === matcher.length) {
       variables.pattern = this;
       return variables;
     } else {
@@ -470,10 +534,10 @@ module.exports = Pattern = (function() {
   };
 
   Pattern.prototype.match = function(tokens) {
-    var j, len, match, matcher, ref;
+    var i, len, match, matcher, ref;
     ref = this.matchers;
-    for (j = 0, len = ref.length; j < len; j++) {
-      matcher = ref[j];
+    for (i = 0, len = ref.length; i < len; i++) {
+      matcher = ref[i];
       match = this.match_with(tokens, matcher);
       if (match != null) {
         return match;
@@ -482,10 +546,10 @@ module.exports = Pattern = (function() {
   };
 
   Pattern.prototype.bad_match = function(tokens) {
-    var j, len, match, matcher, ref;
+    var i, len, match, matcher, ref;
     ref = this.bad_matchers;
-    for (j = 0, len = ref.length; j < len; j++) {
-      matcher = ref[j];
+    for (i = 0, len = ref.length; i < len; i++) {
+      matcher = ref[i];
       match = this.match_with(tokens, matcher);
       if (match != null) {
         return match;

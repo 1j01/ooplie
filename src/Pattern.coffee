@@ -59,6 +59,7 @@ class Pattern
 		@prefered = match[0]
 	
 	match_with: (tokens, matcher)->
+		# console.log "match_with", tokens, stringify_matcher(matcher)
 		variables = {}
 		current_variable_tokens = null
 		
@@ -66,43 +67,101 @@ class Pattern
 			token?.type is segment.type and
 			token.value.toLowerCase() is segment.value.toLowerCase()
 		
-		i = 0
-		for token in tokens
-			if i >= matcher.length
+		token_index = 0
+		matcher_index = 0
+		while token_index < tokens.length
+			token = tokens[token_index]
+			if matcher_index >= matcher.length
 				# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "(ended)"
 				return
-			segment = matcher[i]
+			segment = matcher[matcher_index]
+			# console.log "segment", segment, "token", token
+			# console.log "token", token, "variable", 
 			if segment.type is "variable"
+				# console.log "variable segment", matcher_index, segment.name, "token", token
+				# console.log token.type is "newline", tokens[token_index + 1]?.type
+				if token.type is "newline" and tokens[token_index + 1]?.type in ["indent", "dedent"]
+					token_index += 1
+					# console.log tokens, token_index
+					continue
+				
 				if current_variable_tokens?
-					next_segment = matcher[i + 1]
+					next_segment = matcher[matcher_index + 1]
 					if next_segment? and token_matches(token, next_segment)
 						current_variable_tokens = null
-						i += 2 # end of the variable, plus we already matched the next token
+						matcher_index += 2 # end of the variable, plus we already matched the next token
 					else
 						current_variable_tokens.push token
 				else
 					current_variable_tokens = []
 					variables[segment.name] = current_variable_tokens
 					current_variable_tokens.push token
+				
+				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
+					lookahead_index = token_index
+					level = 1
+					loop
+						lookahead_index += 1
+						lookahead_token = tokens[lookahead_index]
+						if lookahead_token?
+							if token.type is "punctuation"
+								if lookahead_token.type is "punctuation"
+									increased = lookahead_token.value is token.value
+									decreased = lookahead_token.value is switch token.value
+										when "(" then ")"
+										when "[" then "]"
+										when "{" then "}"
+								else
+									increased = decreased = 0
+							else
+								increased = lookahead_token.type is "indent"
+								decreased = lookahead_token.type is "dedent"
+							
+							# console.log "Ptn. level", level, lookahead_token.value, increased, decreased
+							
+							level += increased - decreased
+							ended = level is 0
+							
+							# console.log "Ptn. now lvl", level, ended
+							
+							if ended
+								bracketed_tokens = tokens.slice(token_index + 1, lookahead_index)
+								# console.log "Ptn. bracketed_tokens", bracketed_tokens
+								# token_index += lookahead_index - 2
+								token_index = lookahead_index - 1
+								# return parse_expression(bracketed_value, 0)
+								# console.log "add `#{stringify_tokens(bracketed_tokens)}` to #{segment.name} (`#{stringify_tokens(current_variable_tokens)}`)"
+								current_variable_tokens = current_variable_tokens.concat(bracketed_tokens)
+								variables[segment.name] = current_variable_tokens
+								break
+						else
+							if token.type is "punctuation"
+								# console.error "Ptn. wtf ()", tokens, lookahead_index
+								throw new Error "Ptn. Missing ending parenthesis in `#{stringify_tokens(tokens)}`"
+							else
+								# console.error "Ptn. wtf", tokens, lookahead_index
+								throw new Error "Ptn. Missing ending... dedent? in `#{stringify_tokens(tokens)}`? #{JSON.stringify tokens}"
 			else
+				# console.log "segment", segment.value, "token", token
 				current_variable_tokens = null
 				if token_matches(token, segment)
-					i += 1
+					matcher_index += 1
 				else
-					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", i, segment, "vs", token
+					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", matcher_index, segment, "vs", token
 					return
+			token_index += 1
 		if current_variable_tokens?
-			i += 1
-		if i is matcher.length
+			matcher_index += 1
+		if matcher_index is matcher.length
 			variables.pattern = @
 			# console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
 			# console.log "got variables", variables
-			# console.log "ended at index", i, "on", matcher
+			# console.log "ended at index", matcher_index, "on", matcher
 			return variables
 		else
 			# console.log "almost matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
 			# console.log "got variables", variables
-			# console.log "but ended at index", i, "on", matcher
+			# console.log "but ended at index", matcher_index, "on", matcher
 	
 	match: (tokens)->
 		for matcher in @matchers

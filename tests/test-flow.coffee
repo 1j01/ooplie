@@ -107,7 +107,7 @@ suite "control flow", ->
 					5
 			""").to(5)
 		
-		test.skip "nested blocks", ->
+		test "nested blocks", ->
 			evaluate("""
 				If true,
 					If true,

@@ -34,30 +34,7 @@ class Context
 		new Context {console, supercontext: @}
 	
 	eval: (text)->
-		# result = undefined
-		
-		# line_tokens = []
-		
-		# handle_line = =>
-		# 	if line_tokens.length
-		# 		result = @eval_tokens(line_tokens)
-		# 	line_tokens = []
-		
 		tokens = tokenize(text)
-		
-		# for token, index in tokens when token.type isnt "comment"
-		# 	next_token = tokens[index + 1]
-		# 	if token.type is "newline"
-		# 		# unless next_token.type in ["indent", "outdent"]
-		# 		unless next_token.type is "indent"
-		# 			if 
-		# 			handle_line()
-		# 	else
-		# 		line_tokens.push token
-		
-		# handle_line()
-		
-		# result
 		
 		# @eval_tokens(token for token in tokens when token.type isnt "comment")
 		@eval_tokens(token for token in tokens when token.type not in ["newline", "comment"])
@@ -100,10 +77,8 @@ class Context
 			
 			if match?
 				get_var_value = (var_name)=>
-					# console.log "get_var_value", var_name
 					@eval_tokens(match[var_name])
 				returns = pattern.fn(get_var_value, @)
-				# console.log "return", returns
 				return returns
 			else
 				for pattern in @patterns
@@ -146,19 +121,29 @@ class Context
 				
 				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
 					lookahead_index = index
+					level = 1
 					loop
 						lookahead_index += 1
 						lookahead_token = tokens[lookahead_index]
 						if lookahead_token?
-							ended =
-								if token.type is "punctuation"
-									lookahead_token.type is "punctuation" and
-									lookahead_token.value is switch token.value
+							if token.type is "punctuation"
+								if lookahead_token.type is "punctuation"
+									increased = lookahead_token.value is token.value
+									decreased = lookahead_token.value is switch token.value
 										when "(" then ")"
 										when "[" then "]"
 										when "{" then "}"
 								else
-									lookahead_token.type is "dedent"
+									increased = decreased = 0
+							else
+								increased = lookahead_token.type is "indent"
+								decreased = lookahead_token.type is "dedent"
+							
+							# console.log "level", level, lookahead_token.value, increased, decreased
+							
+							level += increased - decreased
+							ended = level is 0
+							
 							if ended
 								bracketed_value = @eval_tokens(tokens.slice(index + 1, lookahead_index))
 								advance(lookahead_index - 1)
@@ -167,6 +152,7 @@ class Context
 							if token.type is "punctuation"
 								throw new Error "Missing ending parenthesis in `#{tok_str}`"
 							else
+								# console.error "wtf", next_tokens, tokens
 								throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
 				
 				for operator in @operators when operator.unary

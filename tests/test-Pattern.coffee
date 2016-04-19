@@ -58,6 +58,32 @@ suite "Pattern", ->
 		expect(pattern.match(tokenize("if a then b"))).to.exist
 		expect(pattern.match(tokenize("IF a THEN b"))).to.exist
 	
+	test "matching indented blocks", ->
+		pattern = new Pattern
+			match: [
+				"If <a>, <b> else <c>"
+			]
+		
+		match = pattern.match(tokenize("""
+			If a,
+				If x, y else z
+			else
+				c
+		"""))
+		expect(match).to.exist
+		tokens_eql(match.a, tokenize("a"))
+		tokens_eql(match.b, [].concat(
+			{type: "indent", value: "\t"}
+			tokenize("If x, y else z")
+			{type: "newline", value: "\n"}
+			{type: "dedent", value: ""}
+		))
+		tokens_eql(match.c, [].concat(
+			{type: "indent", value: "\t"}
+			{type: "word", value: "c"}
+			{type: "dedent", value: ""}
+		))
+	
 	test "greater than / less than", ->
 		pattern = new Pattern
 			match: [
