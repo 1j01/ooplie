@@ -287,11 +287,12 @@ suite "mathematics", ->
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
+		evaluate("2 to the power of 8").to(2 ** 8)
 	test "basic unary word operators", ->
 		evaluate("negative 5").to(-5)
 		evaluate("positive 5").to(+5)
 		evaluate("the opposite of 2").to(-2)
-	test.skip "word operators", ->
+	test.skip "advanced word operators", ->
 		evaluate("5 over 6").to(5 / 6) # throw style warning / error
 		evaluate("half of 6").to(3)
 		evaluate("a third of 12").to(4)
@@ -302,8 +303,7 @@ suite "mathematics", ->
 		evaluate("5 less than 7").to(2) # throw style warning / error?
 		evaluate("5 more than 7").to(5 + 7) # throw style error
 		evaluate("5 greater than 7").to(5 + 7) # throw style warning / error?
-		evaluate("2 to the power of 8").to(256)
-		evaluate("2 to the 8th power").to(256)
+		evaluate("2 to the 8th power").to(2 ** 8)
 		evaluate("the square root of 2").to(Math.sqrt(2))
 		evaluate("root 2").to(Math.sqrt(2))
 		evaluate("radical 2").to(Math.sqrt(2))
