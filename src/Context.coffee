@@ -8,7 +8,9 @@ find_closing_token = require "./find-closing-token"
 module.exports =
 class Context
 	constructor: ({@console, @supercontext}={})->
-		# TODO: decouple from console somehow?
+		# TODO: further decouple from console somehow?
+		# console IO is exceedingly common, but it might be good to establish
+		# a more reusable pattern for passing interfaces and things to a context
 		
 		# TODO: seperate AST parsing from eval
 		# semantics are quite tied to context in the case of natural language
@@ -25,6 +27,7 @@ class Context
 		# so I'll probably want to collect patterns in something like get_patterns in eval_tokens
 		@operators = (operator for operator in default_operators)
 		@constants = require "./constants"
+		# TODO: constants and operators should be in libraries too
 		@variables = {} # TODO: should be a Map
 		# TODO: block-level scopes
 		# should @supercontext be @superscope?

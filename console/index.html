@@ -1,23 +1,25 @@
 <!doctype html>
-<link rel="stylesheet" href="dooplie.css">
+<link rel="stylesheet" href="lib/simple-console.css">
 <link rel="stylesheet" href="lib/octicons/octicons.css">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ooplie Console</title>
 <body>
 <div
-	id="ooplie-output"
+	id="simple-console-output"
 	role="log"
 	aria-live="polite"
 ></div>
-<div id="ooplie-input-wrapper">
+<div id="simple-console-input-wrapper">
 	<span class="octicon octicon-chevron-right"></span>
 	<input
-		id="ooplie-input"
+		id="simple-console-input"
 		autofocus
 		placeholder="Enter commands or expressions"
 		aria-label="Enter commands or expressions"
-		aria-controls="ooplie-output"
+		aria-controls="simple-console-output"
 	></input>
 </div>
+<script src="lib/simple-console.js"></script>
 <script src="../ooplie.js"></script>
-<script src="dooplie.js"></script>
+<script src="ooplie-console.js"></script>
 </body>
