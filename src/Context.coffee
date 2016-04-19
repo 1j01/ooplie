@@ -2,8 +2,8 @@
 tokenize = require "./tokenize"
 Pattern = require "./Pattern"
 {stringify_tokens} = Token = require "./Token"
-
 default_operators = require "./default-operators"
+find_closing_token = require "./find-closing-token"
 
 module.exports =
 class Context
@@ -120,34 +120,11 @@ class Context
 				token = tokens[index]
 				
 				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
-					lookahead_index = index
-					level = 1
-					loop
-						lookahead_index += 1
-						lookahead_token = tokens[lookahead_index]
-						if lookahead_token?
-							if token.type is "punctuation"
-								if lookahead_token.type is "punctuation"
-									open_bracket = token.value
-									close_bracket = {"(": ")", "[": "]", "{": "}"}[open_bracket]
-									level += 1 if lookahead_token.value is open_bracket
-									level -= 1 if lookahead_token.value is close_bracket
-							else
-								level += 1 if  lookahead_token.type is "indent"
-								level -= 1 if  lookahead_token.type is "dedent"
-							
-							ended = level is 0
-							
-							if ended
-								bracketed_value = @eval_tokens(tokens.slice(index + 1, lookahead_index))
-								advance(lookahead_index - 1)
-								return parse_expression(bracketed_value, 0)
-						else
-							if token.type is "punctuation"
-								throw new Error "Missing ending parenthesis in `#{tok_str}`"
-							else
-								# console.error "wtf", next_tokens, tokens
-								throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
+					closing_token_index = find_closing_token tokens, index
+					bracketed_tokens = tokens.slice(index + 1, closing_token_index)
+					bracketed_value = @eval_tokens(bracketed_tokens)
+					advance(closing_token_index - 1)
+					return parse_expression(bracketed_value, 0)
 				
 				for operator in @operators when operator.unary
 					matcher = operator.match(tokens, index)

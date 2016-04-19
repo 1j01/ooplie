@@ -1,5 +1,5 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Context, Pattern, Token, default_operators, stringify_tokens, tokenize;
+var Context, Pattern, Token, default_operators, find_closing_token, stringify_tokens, tokenize;
 
 tokenize = require("./tokenize");
 
@@ -8,6 +8,8 @@ Pattern = require("./Pattern");
 stringify_tokens = (Token = require("./Token")).stringify_tokens;
 
 default_operators = require("./default-operators");
+
+find_closing_token = require("./find-closing-token");
 
 module.exports = Context = (function() {
   function Context(arg) {
@@ -75,7 +77,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, bracketed_value, close_bracket, ended, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, level, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, open_bracket, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
+        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -161,49 +163,11 @@ module.exports = Context = (function() {
           }
           token = tokens[index];
           if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
-            lookahead_index = index;
-            level = 1;
-            while (true) {
-              lookahead_index += 1;
-              lookahead_token = tokens[lookahead_index];
-              if (lookahead_token != null) {
-                if (token.type === "punctuation") {
-                  if (lookahead_token.type === "punctuation") {
-                    open_bracket = token.value;
-                    close_bracket = {
-                      "(": ")",
-                      "[": "]",
-                      "{": "}"
-                    }[open_bracket];
-                    if (lookahead_token.value === open_bracket) {
-                      level += 1;
-                    }
-                    if (lookahead_token.value === close_bracket) {
-                      level -= 1;
-                    }
-                  }
-                } else {
-                  if (lookahead_token.type === "indent") {
-                    level += 1;
-                  }
-                  if (lookahead_token.type === "dedent") {
-                    level -= 1;
-                  }
-                }
-                ended = level === 0;
-                if (ended) {
-                  bracketed_value = _this.eval_tokens(tokens.slice(index + 1, lookahead_index));
-                  advance(lookahead_index - 1);
-                  return parse_expression(bracketed_value, 0);
-                }
-              } else {
-                if (token.type === "punctuation") {
-                  throw new Error("Missing ending parenthesis in `" + tok_str + "`");
-                } else {
-                  throw new Error("Missing ending... dedent? in `" + tok_str + "`? " + (JSON.stringify(next_tokens)));
-                }
-              }
-            }
+            closing_token_index = find_closing_token(tokens, index);
+            bracketed_tokens = tokens.slice(index + 1, closing_token_index);
+            bracketed_value = _this.eval_tokens(bracketed_tokens);
+            advance(closing_token_index - 1);
+            return parse_expression(bracketed_value, 0);
           }
           ref3 = _this.operators;
           for (o = 0, len5 = ref3.length; o < len5; o++) {
@@ -272,7 +236,7 @@ module.exports = Context = (function() {
 })();
 
 
-},{"./Pattern":3,"./Token":4,"./constants":5,"./default-operators":6,"./library/conditionals":7,"./library/console":8,"./library/eval-js":9,"./library/eval-ooplie":10,"./tokenize":12}],2:[function(require,module,exports){
+},{"./Pattern":3,"./Token":4,"./constants":5,"./default-operators":6,"./find-closing-token":7,"./library/conditionals":8,"./library/console":9,"./library/eval-js":10,"./library/eval-ooplie":11,"./tokenize":13}],2:[function(require,module,exports){
 var Operator, Pattern,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -332,12 +296,14 @@ module.exports = Operator = (function(superClass) {
 
 
 },{"./Pattern":3}],3:[function(require,module,exports){
-var Pattern, stringify_matcher, stringify_tokens, tokenize,
+var Pattern, find_closing_token, stringify_matcher, stringify_tokens, tokenize,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 tokenize = require("./tokenize");
 
 stringify_tokens = require("./Token").stringify_tokens;
+
+find_closing_token = require("./find-closing-token");
 
 stringify_matcher = function(matcher) {
   return matcher.join(" ");
@@ -437,7 +403,7 @@ module.exports = Pattern = (function() {
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var bracketed_tokens, close_bracket, current_variable_tokens, ended, level, lookahead_index, lookahead_token, matcher_index, next_segment, open_bracket, ref, ref1, segment, token, token_index, token_matches, variables;
+    var bracketed_tokens, closing_token_index, current_variable_tokens, matcher_index, next_segment, ref, ref1, segment, token, token_index, token_matches, variables;
     variables = {};
     current_variable_tokens = null;
     token_matches = function(token, segment) {
@@ -470,51 +436,11 @@ module.exports = Pattern = (function() {
           current_variable_tokens.push(token);
         }
         if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
-          lookahead_index = token_index;
-          level = 1;
-          while (true) {
-            lookahead_index += 1;
-            lookahead_token = tokens[lookahead_index];
-            if (lookahead_token != null) {
-              if (token.type === "punctuation") {
-                if (lookahead_token.type === "punctuation") {
-                  open_bracket = token.value;
-                  close_bracket = {
-                    "(": ")",
-                    "[": "]",
-                    "{": "}"
-                  }[open_bracket];
-                  if (lookahead_token.value === open_bracket) {
-                    level += 1;
-                  }
-                  if (lookahead_token.value === close_bracket) {
-                    level -= 1;
-                  }
-                }
-              } else {
-                if (lookahead_token.type === "indent") {
-                  level += 1;
-                }
-                if (lookahead_token.type === "dedent") {
-                  level -= 1;
-                }
-              }
-              ended = level === 0;
-              if (ended) {
-                bracketed_tokens = tokens.slice(token_index + 1, lookahead_index);
-                token_index = lookahead_index - 1;
-                current_variable_tokens = current_variable_tokens.concat(bracketed_tokens);
-                variables[segment.name] = current_variable_tokens;
-                break;
-              }
-            } else {
-              if (token.type === "punctuation") {
-                throw new Error("Missing ending parenthesis in `" + tok_str + "`");
-              } else {
-                throw new Error("Missing ending... dedent? in `" + tok_str + "`? " + (JSON.stringify(next_tokens)));
-              }
-            }
-          }
+          closing_token_index = find_closing_token(tokens, token_index);
+          bracketed_tokens = tokens.slice(token_index + 1, closing_token_index);
+          token_index = closing_token_index - 1;
+          current_variable_tokens = current_variable_tokens.concat(bracketed_tokens);
+          variables[segment.name] = current_variable_tokens;
         }
       } else {
         current_variable_tokens = null;
@@ -568,7 +494,7 @@ module.exports = Pattern = (function() {
 })();
 
 
-},{"./Token":4,"./tokenize":12}],4:[function(require,module,exports){
+},{"./Token":4,"./find-closing-token":7,"./tokenize":13}],4:[function(require,module,exports){
 var Token;
 
 module.exports = Token = (function() {
@@ -738,6 +664,58 @@ module.exports = [
 
 
 },{"./Operator":2}],7:[function(require,module,exports){
+module.exports = function(tokens, start_index) {
+  var closing_bracket, ended, level, lookahead_index, lookahead_token, opening_bracket, opening_token;
+  opening_token = tokens[start_index];
+  lookahead_index = start_index;
+  level = 1;
+  while (true) {
+    lookahead_index += 1;
+    lookahead_token = tokens[lookahead_index];
+    if (lookahead_token != null) {
+      if (opening_token.type === "punctuation") {
+        if (lookahead_token.type === "punctuation") {
+          opening_bracket = opening_token.value;
+          closing_bracket = {
+            "(": ")",
+            "[": "]",
+            "{": "}"
+          }[opening_bracket];
+          if (lookahead_token.value === opening_bracket) {
+            level += 1;
+          }
+          if (lookahead_token.value === closing_bracket) {
+            level -= 1;
+          }
+        }
+      } else {
+        if (lookahead_token.type === "indent") {
+          level += 1;
+        }
+        if (lookahead_token.type === "dedent") {
+          level -= 1;
+        }
+      }
+      ended = level === 0;
+      if (ended) {
+        return lookahead_index;
+      }
+    } else {
+      if (opening_token.type === "punctuation") {
+        if (opening_token) {
+          throw new Error("Missing ending parenthesis in `" + tok_str + "`");
+        } else {
+          throw new Error("Missing ending bracket in `" + tok_str + "`");
+        }
+      } else {
+        throw new Error("Missing ending... dedent? in `" + tok_str + "`? " + (JSON.stringify(next_tokens)));
+      }
+    }
+  }
+};
+
+
+},{}],8:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -790,7 +768,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],8:[function(require,module,exports){
+},{"../Pattern":3}],9:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -816,7 +794,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],9:[function(require,module,exports){
+},{"../Pattern":3}],10:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -836,7 +814,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],10:[function(require,module,exports){
+},{"../Pattern":3}],11:[function(require,module,exports){
 var Pattern;
 
 Pattern = require("../Pattern");
@@ -854,7 +832,7 @@ module.exports = [
 ];
 
 
-},{"../Pattern":3}],11:[function(require,module,exports){
+},{"../Pattern":3}],12:[function(require,module,exports){
 var Context, Pattern, Token, tokenize;
 
 Context = require('./Context');
@@ -873,7 +851,7 @@ module.exports = {
 };
 
 
-},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":12}],12:[function(require,module,exports){
+},{"./Context":1,"./Pattern":3,"./Token":4,"./tokenize":13}],13:[function(require,module,exports){
 var Token, check_indentation;
 
 Token = require('./Token');
@@ -1107,5 +1085,5 @@ module.exports = function(source) {
 };
 
 
-},{"./Token":4}]},{},[11])(11)
+},{"./Token":4}]},{},[12])(12)
 });

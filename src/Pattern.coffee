@@ -1,6 +1,7 @@
 
 tokenize = require "./tokenize"
 {stringify_tokens} = require "./Token"
+find_closing_token = require "./find-closing-token"
 
 stringify_matcher = (matcher)->
 	matcher.join(" ")
@@ -98,35 +99,11 @@ class Pattern
 					current_variable_tokens.push token
 				
 				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
-					lookahead_index = token_index
-					level = 1
-					loop
-						lookahead_index += 1
-						lookahead_token = tokens[lookahead_index]
-						if lookahead_token?
-							if token.type is "punctuation"
-								if lookahead_token.type is "punctuation"
-									open_bracket = token.value
-									close_bracket = {"(": ")", "[": "]", "{": "}"}[open_bracket]
-									level += 1 if lookahead_token.value is open_bracket
-									level -= 1 if lookahead_token.value is close_bracket
-							else
-								level += 1 if  lookahead_token.type is "indent"
-								level -= 1 if  lookahead_token.type is "dedent"
-							
-							ended = level is 0
-							
-							if ended
-								bracketed_tokens = tokens.slice(token_index + 1, lookahead_index)
-								token_index = lookahead_index - 1
-								current_variable_tokens = current_variable_tokens.concat(bracketed_tokens)
-								variables[segment.name] = current_variable_tokens
-								break
-						else
-							if token.type is "punctuation"
-								throw new Error "Missing ending parenthesis in `#{tok_str}`"
-							else
-								throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
+					closing_token_index = find_closing_token tokens, token_index
+					bracketed_tokens = tokens.slice(token_index + 1, closing_token_index)
+					token_index = closing_token_index - 1
+					current_variable_tokens = current_variable_tokens.concat(bracketed_tokens)
+					variables[segment.name] = current_variable_tokens
 			else
 				# console.log "segment", segment.value, "token", token
 				current_variable_tokens = null
