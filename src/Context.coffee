@@ -34,24 +34,33 @@ class Context
 		new Context {console, supercontext: @}
 	
 	eval: (text)->
-		result = undefined
+		# result = undefined
 		
-		line_tokens = []
+		# line_tokens = []
 		
-		handle_line = =>
-			if line_tokens.length
-				result = @eval_tokens(line_tokens)
-			line_tokens = []
+		# handle_line = =>
+		# 	if line_tokens.length
+		# 		result = @eval_tokens(line_tokens)
+		# 	line_tokens = []
 		
-		for token in tokenize(text) when token.type isnt "comment"
-			if token.type is "newline"
-				handle_line()
-			else
-				line_tokens.push token
+		tokens = tokenize(text)
 		
-		handle_line()
+		# for token, index in tokens when token.type isnt "comment"
+		# 	next_token = tokens[index + 1]
+		# 	if token.type is "newline"
+		# 		# unless next_token.type in ["indent", "outdent"]
+		# 		unless next_token.type is "indent"
+		# 			if 
+		# 			handle_line()
+		# 	else
+		# 		line_tokens.push token
 		
-		result
+		# handle_line()
+		
+		# result
+		
+		# @eval_tokens(token for token in tokens when token.type isnt "comment")
+		@eval_tokens(token for token in tokens when token.type not in ["newline", "comment"])
 		
 		# eval is syncronous, but could return Promises for asyncronous operations
 		# a block of async statements should probably return a single Promise that wraps all the Promises of its statements
@@ -64,6 +73,7 @@ class Context
 			index += advance_by
 		
 		parse_primary = =>
+			# TODO: rename; the first "next" token is the current token; maybe "active"?
 			next_tokens = tokens.slice(index)
 			return if next_tokens.length is 0
 			
@@ -134,18 +144,30 @@ class Context
 				
 				token = tokens[index]
 				
-				if token.type is "punctuation" and token.value is "("
+				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
 					lookahead_index = index
 					loop
 						lookahead_index += 1
 						lookahead_token = tokens[lookahead_index]
 						if lookahead_token?
-							if lookahead_token.type is "punctuation" and lookahead_token.value is ")"
+							ended =
+								if token.type is "punctuation"
+									lookahead_token.type is "punctuation" and
+									lookahead_token.value is switch token.value
+										when "(" then ")"
+										when "[" then "]"
+										when "{" then "}"
+								else
+									lookahead_token.type is "dedent"
+							if ended
 								bracketed_value = @eval_tokens(tokens.slice(index + 1, lookahead_index))
 								advance(lookahead_index - 1)
 								return parse_expression(bracketed_value, 0)
 						else
-							throw new Error "Missing ending parenthesis in `#{tok_str}`"
+							if token.type is "punctuation"
+								throw new Error "Missing ending parenthesis in `#{tok_str}`"
+							else
+								throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
 				
 				for operator in @operators when operator.unary
 					matcher = operator.match(tokens, index)
@@ -156,7 +178,8 @@ class Context
 						# following_value = parse_expression(parse_primary(), 0)
 						return operator.fn(following_value)
 				
-				throw new Error "I don't understand `#{tok_str}`"
+				throw new Error "I don't understand `#{JSON.stringify next_tokens}`"
+				# throw new Error "I don't understand `#{tok_str}`"
 		
 		parse_expression = (lhs, min_precedence)=>
 			match_operator = =>

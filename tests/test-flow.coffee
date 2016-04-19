@@ -12,9 +12,9 @@ evaluate = (expression)->
 
 suite "control flow", ->
 	
+	test "multiple statements"
+	
 	suite "conditionals", ->
-		
-		# TODO: test multiline and actual actions
 		
 		test "if statement", ->
 			evaluate("If true, 5").to(5)
@@ -59,7 +59,6 @@ suite "control flow", ->
 			# post-unless:
 			evaluate("5 unless true").to(undefined)
 			evaluate("5 unless false").to(5)
-			# TODO: test unless-else, unless-else-if, unless-else-unless etc. but maybe throw style warnings/errors
 		
 		test "unless-then, unless-else", ->
 			# unless-then
@@ -73,9 +72,69 @@ suite "control flow", ->
 			# unless-else
 			# TODO: we can't match `X unless Y else Z` because it's a bad_match(er)
 			# so even when the pattern is above `X unless Y`, `X unless Y` is matched first
+			# might need to make something like a bad_clear_match(er)
 			# expect(->
 			# 	evaluate("55 unless 5 else 33").to(33)
 			# ).to.throw("For `55 unless 5 else 33`, use <body>, unless <condition> in which case <alt body> instead")
+		
+		test "as blocks", ->
+			evaluate("""
+				If true,
+					5
+			""").to(5)
+			evaluate("""
+				If false,
+					5
+			""").to(undefined)
+			evaluate("""
+				If true,
+					5
+				Else
+					1
+			""").to(5)
+			evaluate("""
+				If false,
+					5
+				Else
+					1
+			""").to(1)
+			evaluate("""
+				Unless true,
+					5
+			""").to(undefined)
+			evaluate("""
+				Unless false,
+					5
+			""").to(5)
+		
+		test.skip "nested blocks", ->
+			evaluate("""
+				If true,
+					If true,
+						500
+					Else
+						400
+				Else
+					100
+			""").to(500)
+			evaluate("""
+				If false,
+					If true,
+						500
+					Else
+						400
+				Else
+					100
+			""").to(100)
+			evaluate("""
+				If true,
+					If false,
+						500
+					Else
+						400
+				Else
+					100
+			""").to(400)
 		
 		test "as expressions"
 			# like in CoffeeScript (probably the best thing about CoffeeScript and CoffeeScript is pretty good)

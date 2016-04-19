@@ -7,6 +7,7 @@ module.exports = [
 	new Pattern
 		match: [
 			"If <condition>, <body>, else <alt body>"
+			"If <condition>, <body> else <alt body>"
 			"If <condition> then <body>, else <alt body>"
 			"If <condition> then <body> else <alt body>"
 			"<body> if <condition> else <alt body>" # pythonic ternary

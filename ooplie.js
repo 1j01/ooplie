@@ -42,30 +42,19 @@ module.exports = Context = (function() {
   };
 
   Context.prototype["eval"] = function(text) {
-    var handle_line, j, len, line_tokens, ref, result, token;
-    result = void 0;
-    line_tokens = [];
-    handle_line = (function(_this) {
-      return function() {
-        if (line_tokens.length) {
-          result = _this.eval_tokens(line_tokens);
-        }
-        return line_tokens = [];
-      };
-    })(this);
-    ref = tokenize(text);
-    for (j = 0, len = ref.length; j < len; j++) {
-      token = ref[j];
-      if (token.type !== "comment") {
-        if (token.type === "newline") {
-          handle_line();
-        } else {
-          line_tokens.push(token);
+    var token, tokens;
+    tokens = tokenize(text);
+    return this.eval_tokens((function() {
+      var j, len, ref, results;
+      results = [];
+      for (j = 0, len = tokens.length; j < len; j++) {
+        token = tokens[j];
+        if ((ref = token.type) !== "newline" && ref !== "comment") {
+          results.push(token);
         }
       }
-    }
-    handle_line();
-    return result;
+      return results;
+    })());
   };
 
   Context.prototype.eval_tokens = function(tokens) {
@@ -86,7 +75,7 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, bracketed_value, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
+        var bad_match, bracketed_value, ended, following_value, get_var_value, i, j, k, l, len, len1, len2, len3, len4, len5, lookahead_index, lookahead_token, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -171,19 +160,33 @@ module.exports = Context = (function() {
             }
           }
           token = tokens[index];
-          if (token.type === "punctuation" && token.value === "(") {
+          if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
             lookahead_index = index;
             while (true) {
               lookahead_index += 1;
               lookahead_token = tokens[lookahead_index];
               if (lookahead_token != null) {
-                if (lookahead_token.type === "punctuation" && lookahead_token.value === ")") {
+                ended = token.type === "punctuation" ? lookahead_token.type === "punctuation" && lookahead_token.value === (function() {
+                  switch (token.value) {
+                    case "(":
+                      return ")";
+                    case "[":
+                      return "]";
+                    case "{":
+                      return "}";
+                  }
+                })() : lookahead_token.type === "dedent";
+                if (ended) {
                   bracketed_value = _this.eval_tokens(tokens.slice(index + 1, lookahead_index));
                   advance(lookahead_index - 1);
                   return parse_expression(bracketed_value, 0);
                 }
               } else {
-                throw new Error("Missing ending parenthesis in `" + tok_str + "`");
+                if (token.type === "punctuation") {
+                  throw new Error("Missing ending parenthesis in `" + tok_str + "`");
+                } else {
+                  throw new Error("Missing ending... dedent? in `" + tok_str + "`? " + (JSON.stringify(next_tokens)));
+                }
               }
             }
           }
@@ -200,7 +203,7 @@ module.exports = Context = (function() {
               return operator.fn(following_value);
             }
           }
-          throw new Error("I don't understand `" + tok_str + "`");
+          throw new Error("I don't understand `" + (JSON.stringify(next_tokens)) + "`");
         }
       };
     })(this);
@@ -673,7 +676,7 @@ Pattern = require("../Pattern");
 
 module.exports = [
   new Pattern({
-    match: ["If <condition>, <body>, else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
+    match: ["If <condition>, <body>, else <alt body>", "If <condition>, <body> else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
     bad_match: ["if <condition>, then <body>, else <alt body>", "if <condition>, then <body>, else, <alt body>", "if <condition>, <body>, else, <alt body>", "<condition> ? <body> : <alt body>", "unless <condition>, <alt body> else <body>", "unless <condition>, <alt body>, else <body>", "unless <condition> then <alt body>, else <body>", "unless <condition> then <alt body>, else, <body>", "unless <condition>, then <alt body>, else <body>", "unless <condition>, then <alt body>, else, <body>"],
     fn: (function(_this) {
       return function(v) {
