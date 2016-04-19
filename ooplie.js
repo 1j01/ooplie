@@ -403,7 +403,7 @@ module.exports = Pattern = (function() {
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {
-    var bracketed_tokens, closing_token_index, current_variable_tokens, matcher_index, next_segment, ref, ref1, segment, token, token_index, token_matches, variables;
+    var bracketed_tokens, closing_token_index, current_variable_tokens, matcher_index, next_segment, ref, ref1, ref2, segment, token, token_index, token_matches, variables;
     variables = {};
     current_variable_tokens = null;
     token_matches = function(token, segment) {
@@ -413,37 +413,33 @@ module.exports = Pattern = (function() {
     matcher_index = 0;
     while (token_index < tokens.length) {
       token = tokens[token_index];
-      if (matcher_index >= matcher.length) {
+      segment = matcher[matcher_index];
+      if (segment == null) {
         return;
       }
-      segment = matcher[matcher_index];
       if (segment.type === "variable") {
         if (token.type === "newline" && ((ref = (ref1 = tokens[token_index + 1]) != null ? ref1.type : void 0) === "indent" || ref === "dedent")) {
           token_index += 1;
           continue;
         }
-        if (current_variable_tokens != null) {
+        if (variables[segment.name] != null) {
           next_segment = matcher[matcher_index + 1];
           if ((next_segment != null) && token_matches(token, next_segment)) {
-            current_variable_tokens = null;
-            matcher_index += 2;
+            matcher_index += 1;
+            continue;
           } else {
-            current_variable_tokens.push(token);
+            variables[segment.name].push(token);
           }
         } else {
-          current_variable_tokens = [];
-          variables[segment.name] = current_variable_tokens;
-          current_variable_tokens.push(token);
+          variables[segment.name] = [token];
         }
-        if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
+        if (token.type === "punctuation" && ((ref2 = token.value) === "(" || ref2 === "[" || ref2 === "{") || token.type === "indent") {
           closing_token_index = find_closing_token(tokens, token_index);
           bracketed_tokens = tokens.slice(token_index + 1, closing_token_index);
           token_index = closing_token_index - 1;
-          current_variable_tokens = current_variable_tokens.concat(bracketed_tokens);
-          variables[segment.name] = current_variable_tokens;
+          variables[segment.name] = variables[segment.name].concat(bracketed_tokens);
         }
       } else {
-        current_variable_tokens = null;
         if (token_matches(token, segment)) {
           matcher_index += 1;
         } else {
@@ -452,7 +448,7 @@ module.exports = Pattern = (function() {
       }
       token_index += 1;
     }
-    if (current_variable_tokens != null) {
+    if (variables[segment.name] != null) {
       matcher_index += 1;
     }
     if (matcher_index === matcher.length) {

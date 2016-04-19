@@ -60,7 +60,6 @@ class Pattern
 		@prefered = match[0]
 	
 	match_with: (tokens, matcher)->
-		# console.log "match_with", tokens, stringify_matcher(matcher)
 		variables = {}
 		current_variable_tokens = null
 		
@@ -72,49 +71,42 @@ class Pattern
 		matcher_index = 0
 		while token_index < tokens.length
 			token = tokens[token_index]
-			if matcher_index >= matcher.length
+			segment = matcher[matcher_index]
+			unless segment?
 				# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "(ended)"
 				return
-			segment = matcher[matcher_index]
-			# console.log "segment", segment, "token", token
-			# console.log "token", token, "variable", 
 			if segment.type is "variable"
-				# console.log "variable segment", matcher_index, segment.name, "token", token
-				# console.log token.type is "newline", tokens[token_index + 1]?.type
 				if token.type is "newline" and tokens[token_index + 1]?.type in ["indent", "dedent"]
 					token_index += 1
-					# console.log tokens, token_index
 					continue
 				
-				if current_variable_tokens?
+				if variables[segment.name]?
 					next_segment = matcher[matcher_index + 1]
 					if next_segment? and token_matches(token, next_segment)
-						current_variable_tokens = null
-						matcher_index += 2 # end of the variable, plus we already matched the next token
+						matcher_index += 1 # end of the variable
+						continue # do not pass go, do not increment token_index
 					else
-						current_variable_tokens.push token
+						variables[segment.name].push token
 				else
-					current_variable_tokens = []
-					variables[segment.name] = current_variable_tokens
-					current_variable_tokens.push token
+					variables[segment.name] = [token]
 				
-				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
+				if token.type is "punctuation" and token.value in ["(", "[", "{"] or token.type is "indent"
 					closing_token_index = find_closing_token tokens, token_index
 					bracketed_tokens = tokens.slice(token_index + 1, closing_token_index)
 					token_index = closing_token_index - 1
-					current_variable_tokens = current_variable_tokens.concat(bracketed_tokens)
-					variables[segment.name] = current_variable_tokens
+					variables[segment.name] = variables[segment.name].concat(bracketed_tokens)
 			else
-				# console.log "segment", segment.value, "token", token
-				current_variable_tokens = null
 				if token_matches(token, segment)
 					matcher_index += 1
 				else
 					# console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", matcher_index, segment, "vs", token
 					return
+			
 			token_index += 1
-		if current_variable_tokens?
+		
+		if variables[segment.name]?
 			matcher_index += 1
+		
 		if matcher_index is matcher.length
 			variables.pattern = @
 			# console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
