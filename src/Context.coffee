@@ -32,6 +32,7 @@ class Context
 		# TODO: block-level scopes
 		# should @supercontext be @superscope?
 		# should contexts be scopes? should scopes be contexts?
+		# also make sure we don't encourage global-like behavior
 		@classes = []
 		@instances = []
 	

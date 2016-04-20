@@ -16,6 +16,17 @@ class Pattern
 		# 	what to do = "todo items"
 		# 	write what to do to "./todo.txt"
 		
+		# should it be possible to have an "action" and a "fn"?
+		# like fn if it's in an expression but action if it's a statement?
+		# is that even a distinction that can be made?
+		# probably not
+		# besides, things like eval and even conditionals can be either or both
+		# how will `=` work?
+		# 	a = b
+		# 	if a = b, ...
+		
+		# @fn = action ? fn
+		
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs
 				tokens = tokenize(def)

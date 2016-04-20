@@ -37,6 +37,17 @@ Could gather some quotes here and relate them to the project:
 ([Toward a better programming][])
 
 Ooplie will have an expressive and rather comprehensive time module.
+
+http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
+
+https://multikulti.wordpress.com/2013/01/09/english-as-a-programming-language/
+
+http://repository.cmu.edu/cgi/viewcontent.cgi?article=1165&context=hcii
+
+http://stackoverflow.com/questions/3067377/what-programming-language-is-the-most-english-like
+
+http://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-is-the-difference-between-natural-languages?rq=1
+
 -->
 
 

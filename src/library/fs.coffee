@@ -13,6 +13,10 @@ module.exports = new Library "File System", patterns: [
 	
 	# TODO: async! use streams and/or promises
 	
+	# TODO: probably should take an object-oriented approach, i.e.
+	# 	output the file's contents and delete the file
+	# once we have some OOP facilities
+	
 	new Pattern
 		match: [
 			"Write <data> to file <file>"
@@ -41,12 +45,27 @@ module.exports = new Library "File System", patterns: [
 			"Read <file>"
 		]
 		fn: (v)=>
-			fs.readFileSync v("file")
+			fs.readFileSync v("file"), "utf8"
 			# TODO: export variable data
 			# if you say "Read JSON from data.json",
 			# 	it should define a variable called "JSON"
 			# otherwise
 			# 	it should define a variable called "data" and/or "the file's contents"
+	
+	new Pattern
+		match: [
+			"Read from <file> as a buffer"
+			"Read file <file> as a buffer"
+			# "Read <data> from <file> as a buffer"
+			# TODO: match the above first but prefer this variation:
+			"Read <file> as a buffer"
+		]
+		fn: (v)=>
+			fs.readFileSync v("file")
+			# TODO: export variable "the buffer" and maybe "the file's contents"
+			# "buffer contents"
+			# "...as a buffer named Jerry"
+			
 	
 	new Pattern
 		match: [
