@@ -415,6 +415,7 @@ suite "mathematics", ->
 		evaluate("a goof + a gaff = a gaff").to(true) # the distributive poppardy
 		evaluate("a laugh + a goof = a spoof").to(true)
 		evaluate("a laugh + a goof + a gaff = a romp").to(true)
+		evaluate("a romp + a riot + a ball + a laugh + a goof + a gaff = sqrt(a spoof)").to(true)
 		evaluate("a look + a gaff = a gander").to(true)
 		evaluate("a spoof + a boo = a spook").to(true)
 		evaluate("a gaff + a neck = a giraffe").to(true)

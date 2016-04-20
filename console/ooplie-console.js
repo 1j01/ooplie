@@ -13,6 +13,112 @@ document.body.appendChild(con.element);
 
 var context = new Ooplie.Context({console: con});
 
+// context.loadLibrary(new Library());
+// context.libraries.push(new Ooplie.Library());
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"report an issue with Ooplie",
+		"report an issue",
+		"report a bug with Ooplie",
+		"report a bug",
+		"open an issue with Ooplie",
+		"open an issue",
+		"open an issue report with Ooplie",
+		"open an issue report",
+		"open a bug report with Ooplie",
+		"open a bug report",
+		"file an issue with Ooplie",
+		"file an issue",
+		"file an issue report with Ooplie",
+		"file an issue report",
+		"file a bug with Ooplie",
+		"file a bug",
+		"file a bug report with Ooplie",
+		"file a bug report"
+	],
+	maybe_match: [
+		"oh man",
+		"wtf",
+		"hey!",
+		"um",
+		"um..."
+	],
+	bad_match: [
+		"that's a bug",
+		"that's not right",
+		"that's weird",
+		"that was weird",
+		"report a bug on Ooplie",
+		"report an issue on Ooplie",
+		"open an issue on Ooplie",
+		"I found a bug",
+		"I think I found a bug",
+		"I think that's a bug"
+	],
+	// TODO: "action" for things that only "do"
+	// to avoid logging "undefined" all the time
+	fn: function(){
+		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
+	}
+}));
+context.patterns.push(new Ooplie.Pattern({
+	// TODO: have a command "go to"/"open"
+	// and define constants for "this repo on GitHub" etc.
+	// also constants should be able to have matchers
+	match: [
+		"go to this repository on GitHub",
+		"go to this repo on GitHub",
+		"go to this repository",
+		"go to this repo",
+	],
+	bad_match: [
+		"go to GitHub",
+		"open GitHub",
+		"open the repo",
+		"open this repo",
+		"open the repository",
+		"open this repository",
+		"open the repo on GitHub",
+		"open this repo on GitHub",
+		"open the repository on GitHub",
+		"open this repository on GitHub"
+	],
+	fn: function(){
+		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
+		
+	}
+}));
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"report an issue with this console",
+		"report a bug with this console",
+		"open an issue with this console",
+		"open an issue report with this console",
+		"open a bug report with this console",
+		"file an issue with this console",
+		"file an issue report with this console",
+		"file a bug with this console",
+		"file a bug report with this console",
+		
+		"report an issue with the console",
+		"report a bug with the console",
+		"open an issue with the console",
+		"open an issue report with the console",
+		"open a bug report with the console",
+		"file an issue with the console",
+		"file an issue report with the console",
+		"file a bug with the console",
+		"file a bug report with the console"
+	],
+	// TODO: maybe have maybe_match(ers) for "report a bug" etc.
+	// TODO: "action" for things that only "do"
+	// to avoid logging "undefined" all the time
+	fn: function(){
+		con.logHTML("<a href='https://github.com/1j01/simple-console/issues/new' target='_blank'>https://github.com/1j01/simple-console/issues/new</a>");
+	}
+}));
+
 function handle_command(command){
 	// Conversational trivialities
 	var log_emoji = function(face, rotate_direction){
