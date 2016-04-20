@@ -1,16 +1,13 @@
 
-html,
-body {
-	height: 100%;
+.simple-console {
 	display: flex;
 	flex: 1;
-	margin: 0;
-	box-sizing: border-box;
+	flex-direction: column;
 	font-family: sans-serif;
 }
 
-body {
-	flex-direction: column;
+.simple-console-output {
+	overflow: auto;
 }
 
 .simple-console-output,
@@ -25,6 +22,7 @@ body {
 .simple-console-input {
 	flex: 1;
 	font-size: inherit;
+	height: 1em;
 	color: inherit;
 	background: transparent;
 	border: 0;
@@ -34,9 +32,8 @@ body {
 	outline: 0;
 	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
-
-.simple-console-output {
-	overflow: auto;
+.simple-console-input-wrapper button {
+	margin-left: 0.2rem;
 }
 .simple-console-input-wrapper,
 .entry {
@@ -44,8 +41,7 @@ body {
 	padding-left: 1rem; /* = A */
 	position: relative;
 }
-.simple-console-input-wrapper > .octicon:first-child,
-.entry.input > .octicon:first-child {
+.simple-console-chevron {
 	position: absolute;
 	left: 0;
 	top: 0;

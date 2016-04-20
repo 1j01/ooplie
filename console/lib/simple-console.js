@@ -1,7 +1,7 @@
 
-var SimpleConsole = function(options){
+var SimpleConsole = function(options) {
 
-	if(!options.handleCommand){
+	if (!options.handleCommand) {
 		throw new Error("options.handleCommand is required");
 	}
 
@@ -10,9 +10,13 @@ var SimpleConsole = function(options){
 	var autofocus = options.autofocus;
 	var storage_id = options.storageID || "simple-console";
 
-	var add_chevron = function(element){
+	var add_chevron = function(element) {
 		var icon = document.createElement("span");
-		icon.className = "octicon octicon-chevron-right";
+		icon.className = "simple-console-chevron";
+		icon.innerHTML =
+			'<svg width="1em" height="1em" viewBox="0 0 16 16">' +
+				'<path d="M6,4L10,8L6,12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>' +
+			'</svg>';
 		element.insertBefore(icon, element.firstChild);
 	};
 
@@ -38,24 +42,24 @@ var SimpleConsole = function(options){
 	console_element.appendChild(input_wrapper);
 	input_wrapper.appendChild(input);
 
-	var clear = function(){
+	var clear = function() {
 		output.innerHTML = "";
 	};
 
-	var log = function(content){
+	var log = function(content) {
 		var was_scrolled_to_bottom = output.is_scrolled_to_bottom();
 
 		var entry = document.createElement("div");
 		entry.className = "entry";
-		if(content instanceof Element){
+		if (content instanceof Element) {
 			entry.appendChild(content);
-		}else{
+		} else {
 			entry.innerText = entry.textContent = content;
 		}
 		output.appendChild(entry);
 
-		setTimeout(function(){
-			if(was_scrolled_to_bottom){
+		setTimeout(function() {
+			if (was_scrolled_to_bottom) {
 				output.scroll_to_bottom();
 			}
 		});
@@ -63,79 +67,91 @@ var SimpleConsole = function(options){
 		return entry;
 	};
 
-	var logHTML = function(html){
+	var logHTML = function(html) {
 		var entry = log("");
 		entry.innerHTML = html;
 		return entry;
 	};
 
-	var error = function(error_message){
+	var error = function(error_message) {
 		var error_entry = log(error_message);
 		error_entry.classList.add("error");
 		return error_entry;
 	};
 
-	output.is_scrolled_to_bottom = function(){
-		return output.scrollTop + output.clientHeight >= output.scrollHeight
+	output.is_scrolled_to_bottom = function() {
+		return output.scrollTop + output.clientHeight >= output.scrollHeight;
 	};
 
-	output.scroll_to_bottom = function(){
+	output.scroll_to_bottom = function() {
 		output.scrollTop = output.scrollHeight;
 	};
 
 	var command_history = [];
-	var cmdi = command_history.length;
+	var command_index = command_history.length;
 	var command_history_key = storage_id + " command history";
 
-	var load_command_history = function(){
-		try{
+	var load_command_history = function() {
+		try {
 			command_history = JSON.parse(localStorage[command_history_key]);
-			cmdi = command_history.length;
-		}catch(e){}
+			command_index = command_history.length;
+		} catch (e) {}
 	};
 
-	var save_command_history = function(){
-		try{
+	var save_command_history = function() {
+		try {
 			localStorage[command_history_key] = JSON.stringify(command_history);
-		}catch(e){}
+		} catch (e) {}
 	};
 
 	load_command_history();
 
-	input.addEventListener("keydown", function(e){
-		if(e.keyCode === 13){ // Enter
+	input.addEventListener("keydown", function(e) {
+		if (e.keyCode === 13) { // Enter
 
 			var command = input.value;
-			if(command === ""){ return; }
+			if (command === "") {
+				return;
+			}
 			input.value = "";
 
-			command_history.push(command);
-			cmdi = command_history.length;
+			if (command_history[command_history.length - 1] !== command) {
+				command_history.push(command);
+			}
+			command_index = command_history.length;
 			save_command_history();
 
 			var command_entry = log(command);
 			command_entry.classList.add("input");
-			var icon = document.createElement("span");
-			icon.className = "octicon octicon-chevron-right";
-			command_entry.insertBefore(icon, command_entry.firstChild);
+			add_chevron(command_entry);
 
 			output.scroll_to_bottom();
 
 			handle_command(command);
 
-		}else if(e.keyCode === 38){ // Up
-			input.value = (--cmdi < 0) ? (cmdi = -1, "") : command_history[cmdi];
+		} else if (e.keyCode === 38) { // Up
+			if (--command_index < 0) {
+				command_index = -1;
+				input.value = "";
+			} else {
+				input.value = command_history[command_index];
+			}
 			input.setSelectionRange(input.value.length, input.value.length);
 			e.preventDefault();
-		}else if(e.keyCode === 40){ // Down
-			input.value = (++cmdi >= command_history.length) ? (cmdi = command_history.length, "") : command_history[cmdi];
+		} else if (e.keyCode === 40) { // Down
+			if (++command_index >= command_history.length) {
+				command_index = command_history.length;
+				input.value = "";
+			} else {
+				input.value = command_history[command_index];
+			}
 			input.setSelectionRange(input.value.length, input.value.length);
 			e.preventDefault();
-		}else if(e.keyCode === 46 && e.shiftKey){ // Shift+Delete
-			if(input.value === command_history[cmdi]){
-				command_history.splice(cmdi, 1);
-				cmdi = Math.max(0, cmdi - 1)
-				input.value = command_history[cmdi] || "";
+		} else if (e.keyCode === 46 && e.shiftKey) { // Shift+Delete
+			if (input.value === command_history[command_index]) {
+				command_history.splice(command_index, 1);
+				command_index = Math.max(0, command_index - 1)
+				input.value = command_history[command_index] || "";
 				save_command_history();
 			}
 			e.preventDefault();
@@ -143,8 +159,9 @@ var SimpleConsole = function(options){
 	});
 
 	this.element = console_element;
+	this.input = input;
 
-	this.handleUncaughtErrors = function(){
+	this.handleUncaughtErrors = function() {
 		window.onerror = error;
 	};
 
