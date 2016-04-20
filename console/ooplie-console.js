@@ -34,25 +34,40 @@ var update_parts_menu = function(){
 	parts_menu.innerHTML = "";
 	for(var i = 0; i < context.libraries.length; i++){
 		var library = context.libraries[i];
-		// TODO: sections should be accordians
 		var library_section = document.createElement("section");
 		var library_header = document.createElement("h1");
 		library_header.innerText = library_header.textContent = library.name;
 		library_section.appendChild(library_header);
+		var fold = document.createElement("div");
+		fold.classList.add("fold");
+		library_section.appendChild(fold);
 		for(var j = 0; j < library.patterns.length; j++){
 			var pattern = library.patterns[j];
 			var pattern_el = document.createElement("p");
 			pattern_el.classList.add("pattern");
+			// TODO: mark up variables with <var> tags
 			pattern_el.innerText = pattern_el.textContent = pattern.prefered;
-			library_section.appendChild(pattern_el);
+			fold.appendChild(pattern_el);
 		}
 		parts_menu.appendChild(library_section);
 	}
+	new Accordion(parts_menu);
+	// TODO: fix ugly animations when opening or resizing across the css break point
 };
+// TODO: normalize pattern names
+// TODO: add extra information about patterns
+// TODO: constants etc.
 
 var open_parts_menu = function(){
-	update_parts_menu();
 	parts_menu.style.display = "block";
+	update_parts_menu();
+	parts_menu.querySelector("h1").focus();
+	// TODO: make the sections expanded by default in a better way
+	// TODO: save state to localStorage
+	var headers = parts_menu.querySelectorAll("h1");
+	for(var i=0; i<headers.length; i++){
+		headers[i].click();
+	}
 };
 
 var close_parts_menu = function(){
