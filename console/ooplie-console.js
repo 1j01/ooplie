@@ -13,8 +13,90 @@ document.body.appendChild(con.element);
 
 var context = new Ooplie.Context({console: con});
 
+var parts_menu_button = document.createElement("button");
+parts_menu_button.classList.add("parts-menu-button");
+con.input.parentElement.appendChild(parts_menu_button);
+// con.input.parentElement.insertBefore(parts_menu_button, con.input.parentElement.firstChild);
+
+var parts_menu = document.createElement("div");
+parts_menu.classList.add("parts-menu");
+con.input.parentElement.appendChild(parts_menu);
+
+var parts_menu_icon = document.createElement("img");
+parts_menu_icon.classList.add("parts-menu-button");
+parts_menu_button.appendChild(parts_menu_icon);
+parts_menu_icon.src = "parts.svg";
+
 // context.loadLibrary(new Library());
 // context.libraries.push(new Ooplie.Library());
+
+var update_parts_menu = function(){
+	parts_menu.innerHTML = "";
+	for(var i = 0; i < context.libraries.length; i++){
+		var library = context.libraries[i];
+		var library_section = document.createElement("section");
+		var library_header = document.createElement("h1");
+		library_header.innerText = library_header.textContent = library.name;
+		library_section.appendChild(library_header);
+		for(var j = 0; j < library.patterns.length; j++){
+			var pattern = library.patterns[j];
+			var pattern_header = document.createElement("h3");
+			pattern_header.innerText = pattern_header.textContent = pattern.prefered;
+			library_section.appendChild(pattern_header);
+		}
+		parts_menu.appendChild(library_section);
+	}
+};
+
+var open_parts_menu = function(){
+	update_parts_menu();
+	parts_menu.style.display = "block";
+};
+
+var close_parts_menu = function(){
+	parts_menu.style.display = "none";
+};
+
+var parts_menu_is_open = function(){
+	return parts_menu.style.display === "block";
+};
+
+var toggle_parts_menu = function(){
+	if(parts_menu_is_open()){
+		close_parts_menu();
+	}else{
+		open_parts_menu();
+	}
+};
+
+close_parts_menu();
+
+parts_menu_button.addEventListener("click", function(e){
+	toggle_parts_menu();
+});
+
+addEventListener("mousedown", function(e){
+	if(parts_menu_is_open()){
+		if(!e.target.closest(".parts-menu-button, .parts-menu")){
+			e.preventDefault();
+			close_parts_menu();
+		}
+	}
+});
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"Open the parts menu",
+		"Show the parts menu"
+	],
+	bad_match: [
+		"Open the parts drawer",
+		"Show the parts drawer"
+	],
+	fn: function(){
+		open_parts_menu();
+	}
+}));
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
@@ -56,8 +138,6 @@ context.patterns.push(new Ooplie.Pattern({
 		"I think I found a bug",
 		"I think that's a bug"
 	],
-	// TODO: "action" for things that only "do"
-	// to avoid logging "undefined" all the time
 	fn: function(){
 		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
 	}
@@ -119,6 +199,7 @@ context.patterns.push(new Ooplie.Pattern({
 	}
 }));
 
+// TODO: avoid logging "undefined" all the time
 function handle_command(command){
 	// Conversational trivialities
 	var log_emoji = function(face, rotate_direction){
