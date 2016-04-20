@@ -11,8 +11,10 @@ class Pattern
 	constructor: ({match, bad_match, @fn})->
 		# TODO: also allow [optional phrase segments]
 		# and maybe (either|or|groups)
-		# TODO: syntax for matching indented blocks 
 		# TODO: try longer matchers first
+		# TODO: backtracking, for e.g.
+		# 	what to do = "todo items"
+		# 	write what to do to "./todo.txt"
 		
 		parse_matchers = (matcher_defs)->
 			for def in matcher_defs

@@ -67,10 +67,10 @@ context.patterns.push(new Ooplie.Pattern({
 	// and define constants for "this repo on GitHub" etc.
 	// also constants should be able to have matchers
 	match: [
-		"go to this repository on GitHub",
+		"go to this repo",
 		"go to this repo on GitHub",
 		"go to this repository",
-		"go to this repo",
+		"go to this repository on GitHub",
 	],
 	bad_match: [
 		"go to GitHub",
@@ -86,7 +86,7 @@ context.patterns.push(new Ooplie.Pattern({
 	],
 	fn: function(){
 		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
-		
+		// TODO: maybe output "Opening <linky link>" and call window.open()
 	}
 }));
 context.patterns.push(new Ooplie.Pattern({
