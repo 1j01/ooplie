@@ -430,6 +430,7 @@ module.exports = Pattern = (function() {
     this.matchers = parse_matchers(match);
     this.bad_matchers = parse_matchers(bad_match != null ? bad_match : []);
     this.prefered = match[0];
+    this.prefered_matcher = this.matchers[0];
   }
 
   Pattern.prototype.match_with = function(tokens, matcher) {

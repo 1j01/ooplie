@@ -71,6 +71,7 @@ class Pattern
 		@bad_matchers = parse_matchers(bad_match ? [])
 		
 		@prefered = match[0]
+		@prefered_matcher = @matchers[0]
 	
 	match_with: (tokens, matcher)->
 		variables = {}

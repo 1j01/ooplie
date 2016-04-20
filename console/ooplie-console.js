@@ -16,7 +16,7 @@ var context = new Ooplie.Context({console: con});
 var parts_menu_button = document.createElement("button");
 parts_menu_button.classList.add("parts-menu-button");
 con.input.parentElement.appendChild(parts_menu_button);
-// con.input.parentElement.insertBefore(parts_menu_button, con.input.parentElement.firstChild);
+parts_menu_button.setAttribute("title", "Parts menu");
 
 var parts_menu = document.createElement("div");
 parts_menu.classList.add("parts-menu");
@@ -34,15 +34,17 @@ var update_parts_menu = function(){
 	parts_menu.innerHTML = "";
 	for(var i = 0; i < context.libraries.length; i++){
 		var library = context.libraries[i];
+		// TODO: sections should be accordians
 		var library_section = document.createElement("section");
 		var library_header = document.createElement("h1");
 		library_header.innerText = library_header.textContent = library.name;
 		library_section.appendChild(library_header);
 		for(var j = 0; j < library.patterns.length; j++){
 			var pattern = library.patterns[j];
-			var pattern_header = document.createElement("h3");
-			pattern_header.innerText = pattern_header.textContent = pattern.prefered;
-			library_section.appendChild(pattern_header);
+			var pattern_el = document.createElement("p");
+			pattern_el.classList.add("pattern");
+			pattern_el.innerText = pattern_el.textContent = pattern.prefered;
+			library_section.appendChild(pattern_el);
 		}
 		parts_menu.appendChild(library_section);
 	}
