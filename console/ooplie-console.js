@@ -339,12 +339,22 @@ context.patterns.push(new Ooplie.Pattern({
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
+		"Switch to dark theme",
+		"Switch to the dark theme",
+		"Switch theme to dark",
+		"Switch the theme to dark",
+		"Switch style to dark",
+		"Switch the style to dark",
+		"Switch to dark style",
+		"Switch to dark the style",
+		"Switch to dark mode", // TODO: "Already in dark mode"
+		"Use dark theme",
+		"Use the dark theme",
+		"Use dark mode", // TODO: "Already in dark mode"
 		"Set theme to dark",
 		"Set the theme to dark",
 		"Set style to dark",
 		"Set the style to dark",
-		"Use the dark theme",
-		"Use dark theme",
 		"Choose theme dark",
 		"Choose dark theme"
 	],
@@ -353,7 +363,8 @@ context.patterns.push(new Ooplie.Pattern({
 		"Use the dark styles",
 		"Use the dark stylesheet",
 		"theme dark",
-		"dark theme"
+		"dark theme",
+		"dark mode"
 	],
 	fn: function(){
 		var previous_theme = get_theme();
@@ -368,12 +379,22 @@ context.patterns.push(new Ooplie.Pattern({
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
+		"Switch to light theme",
+		"Switch to the light theme",
+		"Switch theme to light",
+		"Switch the theme to light",
+		"Switch style to light",
+		"Switch the style to light",
+		"Switch to light style",
+		"Switch to light the style",
+		"Switch to light mode", // TODO: "Already in light mode"
+		"Use light theme",
+		"Use light mode", // TODO: "Already in light mode"
+		"Use the light theme",
 		"Set theme to light",
 		"Set the theme to light",
 		"Set style to light",
 		"Set the style to light",
-		"Use the light theme",
-		"Use light theme",
 		"Choose theme light",
 		"Choose light theme"
 	],
@@ -382,7 +403,8 @@ context.patterns.push(new Ooplie.Pattern({
 		"Use the light styles",
 		"Use the light stylesheet",
 		"theme light",
-		"light theme"
+		"light theme",
+		"light mode"
 	],
 	fn: function(){
 		var previous_theme = get_theme();
