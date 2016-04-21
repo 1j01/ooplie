@@ -27,9 +27,6 @@ parts_menu_icon.classList.add("parts-menu-button");
 parts_menu_button.appendChild(parts_menu_icon);
 parts_menu_icon.src = "parts.svg";
 
-// context.loadLibrary(new Library());
-// context.libraries.push(new Ooplie.Library());
-
 var accordion_state = {};
 
 var update_parts_menu = function(){
@@ -90,9 +87,8 @@ var update_parts_menu = function(){
 	}
 	// TODO: fix ugly animations when opening or resizing across the css break point
 };
-// TODO: normalize pattern names
-// TODO: add extra information about patterns
-// TODO: constants etc.
+// TODO: add extra information about patterns, like alternate phrasings, maybe descriptions?
+// TODO: display constants etc.
 
 var open_parts_menu = function(){
 	parts_menu.style.display = "block";
@@ -160,6 +156,12 @@ addEventListener("keydown", function(e){
 // 	}
 // });
 
+// TODO: use a Library so these commands can show up in the parts menu
+// what should the library be called? "Ooplie Console"?
+// "Console" is already a thing, but should it just be in the same category?
+// context.loadLibrary(new Library());
+// context.libraries.push(new Ooplie.Library());
+
 context.patterns.push(new Ooplie.Pattern({
 	match: [
 		"Open the parts menu",
@@ -176,24 +178,24 @@ context.patterns.push(new Ooplie.Pattern({
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
-		"report an issue with Ooplie",
-		"report an issue",
-		"report a bug with Ooplie",
-		"report a bug",
-		"open an issue with Ooplie",
-		"open an issue",
-		"open an issue report with Ooplie",
-		"open an issue report",
-		"open a bug report with Ooplie",
-		"open a bug report",
-		"file an issue with Ooplie",
-		"file an issue",
-		"file an issue report with Ooplie",
-		"file an issue report",
-		"file a bug with Ooplie",
-		"file a bug",
-		"file a bug report with Ooplie",
-		"file a bug report"
+		"Report an issue with Ooplie",
+		"Report an issue",
+		"Report a bug with Ooplie",
+		"Report a bug",
+		"Open an issue with Ooplie",
+		"Open an issue",
+		"Open an issue report with Ooplie",
+		"Open an issue report",
+		"Open a bug report with Ooplie",
+		"Open a bug report",
+		"File an issue with Ooplie",
+		"File an issue",
+		"File an issue report with Ooplie",
+		"File an issue report",
+		"File a bug with Ooplie",
+		"File a bug",
+		"File a bug report with Ooplie",
+		"File a bug report"
 	],
 	maybe_match: [
 		"oh man",
@@ -203,13 +205,13 @@ context.patterns.push(new Ooplie.Pattern({
 		"um..."
 	],
 	bad_match: [
-		"that's a bug",
-		"that's not right",
-		"that's weird",
-		"that was weird",
-		"report a bug on Ooplie",
-		"report an issue on Ooplie",
-		"open an issue on Ooplie",
+		"That's a bug",
+		"That's not right",
+		"That's weird",
+		"That was weird",
+		"Report a bug on Ooplie",
+		"Report an issue on Ooplie",
+		"Open an issue on Ooplie",
 		"I found a bug",
 		"I think I found a bug",
 		"I think that's a bug"
@@ -223,22 +225,22 @@ context.patterns.push(new Ooplie.Pattern({
 	// and define constants for "this repo on GitHub" etc.
 	// also constants should be able to have matchers
 	match: [
-		"go to this repo",
-		"go to this repo on GitHub",
-		"go to this repository",
-		"go to this repository on GitHub",
+		"Go to this repo",
+		"Go to this repo on GitHub",
+		"Go to this repository",
+		"Go to this repository on GitHub",
 	],
 	bad_match: [
-		"go to GitHub",
-		"open GitHub",
-		"open the repo",
-		"open this repo",
-		"open the repository",
-		"open this repository",
-		"open the repo on GitHub",
-		"open this repo on GitHub",
-		"open the repository on GitHub",
-		"open this repository on GitHub"
+		"Go to GitHub",
+		"Open GitHub",
+		"Open the repo",
+		"Open this repo",
+		"Open the repository",
+		"Open this repository",
+		"Open the repo on GitHub",
+		"Open this repo on GitHub",
+		"Open the repository on GitHub",
+		"Open this repository on GitHub"
 	],
 	fn: function(){
 		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
@@ -247,25 +249,25 @@ context.patterns.push(new Ooplie.Pattern({
 }));
 context.patterns.push(new Ooplie.Pattern({
 	match: [
-		"report an issue with this console",
-		"report a bug with this console",
-		"open an issue with this console",
-		"open an issue report with this console",
-		"open a bug report with this console",
-		"file an issue with this console",
-		"file an issue report with this console",
-		"file a bug with this console",
-		"file a bug report with this console",
+		"Report an issue with this console",
+		"Report a bug with this console",
+		"Open an issue with this console",
+		"Open an issue report with this console",
+		"Open a bug report with this console",
+		"File an issue with this console",
+		"File an issue report with this console",
+		"File a bug with this console",
+		"File a bug report with this console",
 		
-		"report an issue with the console",
-		"report a bug with the console",
-		"open an issue with the console",
-		"open an issue report with the console",
-		"open a bug report with the console",
-		"file an issue with the console",
-		"file an issue report with the console",
-		"file a bug with the console",
-		"file a bug report with the console"
+		"Report an issue with the console",
+		"Report a bug with the console",
+		"Open an issue with the console",
+		"Open an issue report with the console",
+		"Open a bug report with the console",
+		"File an issue with the console",
+		"File an issue report with the console",
+		"File a bug with the console",
+		"File a bug report with the console"
 	],
 	// TODO: maybe have maybe_match(ers) for "report a bug" etc.
 	// TODO: "action" for things that only "do"
@@ -274,6 +276,8 @@ context.patterns.push(new Ooplie.Pattern({
 		con.logHTML("<a href='https://github.com/1j01/simple-console/issues/new' target='_blank'>https://github.com/1j01/simple-console/issues/new</a>");
 	}
 }));
+
+// TODO: add command to set the theme to light or dark
 
 // TODO: avoid logging "undefined" all the time
 function handle_command(command){
@@ -300,7 +304,7 @@ function handle_command(command){
 		con.log("❤");
 	// Unhelp
 	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
-		con.log("Sorry, I can't help."); // TODO
+		con.log("Sorry, I can't help."); // TODO: recommend the parts menu at least
 	}else{
 		var err;
 		try{

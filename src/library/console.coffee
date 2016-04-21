@@ -6,13 +6,13 @@ module.exports = new Library "Console", patterns: [
 	
 	new Pattern
 		match: [
-			"output <text>"
-			"output <text> to the console"
-			"log <text>"
-			"log <text> to the console"
-			"print <text>"
-			"print <text> to the console"
-			"say <text>"
+			"Output <text>"
+			"Output <text> to the console"
+			"Log <text>"
+			"Log <text> to the console"
+			"Print <text>"
+			"Print <text> to the console"
+			"Say <text>"
 		]
 		bad_match: [
 			"puts <text>"
@@ -31,12 +31,12 @@ module.exports = new Library "Console", patterns: [
 	
 	new Pattern
 		match: [
-			"clear the console"
-			"clear console"
+			"Clear the console"
+			"Clear console"
 		]
 		bad_match: [
-			"clear the terminal"
-			"clear terminal"
+			"Clear the terminal"
+			"Clear terminal"
 			"cls"
 			"clr"
 		]

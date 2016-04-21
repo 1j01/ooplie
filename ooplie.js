@@ -809,7 +809,7 @@ Library = require("../Library");
 module.exports = new Library("Console", {
   patterns: [
     new Pattern({
-      match: ["output <text>", "output <text> to the console", "log <text>", "log <text> to the console", "print <text>", "print <text> to the console", "say <text>"],
+      match: ["Output <text>", "Output <text> to the console", "Log <text>", "Log <text> to the console", "Print <text>", "Print <text> to the console", "Say <text>"],
       bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
       fn: (function(_this) {
         return function(v, context) {
@@ -817,8 +817,8 @@ module.exports = new Library("Console", {
         };
       })(this)
     }), new Pattern({
-      match: ["clear the console", "clear console"],
-      bad_match: ["clear the terminal", "clear terminal", "cls", "clr"],
+      match: ["Clear the console", "Clear console"],
+      bad_match: ["Clear the terminal", "Clear terminal", "cls", "clr"],
       fn: (function(_this) {
         return function(v, context) {
           context.console.clear();
@@ -839,8 +839,8 @@ Library = require("../Library");
 module.exports = new Library("JavaScript Eval", {
   patterns: [
     new Pattern({
-      match: ["run JS <text>", "run JavaScript <text>", "run <text> as JS", "run <text> as JavaScript", "execute JS <text>", "execute JavaScript <text>", "execute <text> as JS", "execute <text> as JavaScript", "eval JS <text>", "eval JavaScript <text>", "eval <text> as JS", "eval <text> as JavaScript"],
-      bad_match: ["eval <text>", "execute <text>", "JavaScript <text>", "JS <text>"],
+      match: ["Run JS <text>", "Run JavaScript <text>", "Run <text> as JS", "Run <text> as JavaScript", "Execute JS <text>", "Execute JavaScript <text>", "Execute <text> as JS", "Execute <text> as JavaScript", "Eval JS <text>", "Eval JavaScript <text>", "Eval <text> as JS", "Eval <text> as JavaScript"],
+      bad_match: ["Eval <text>", "Run <text>", "Execute <text>", "JavaScript <text>", "JS <text>"],
       fn: (function(_this) {
         return function(v, context) {
           var console;
@@ -863,8 +863,8 @@ Library = require("../Library");
 module.exports = new Library("Ooplie Eval", {
   patterns: [
     new Pattern({
-      match: ["run code <text> with Ooplie", "eval code <text> with Ooplie", "execute code <text> with Ooplie", "interpret code <text> with Ooplie", "interpret <text> as English", "run <text> as English", "execute <text> as English", "eval <text> as English", "interpret <text> as Ooplie code", "run <text> as Ooplie code", "execute <text> as Ooplie code", "eval <text> as Ooplie code", "run Ooplie code <text>", "eval Ooplie code <text>", "execute Ooplie code <text>", "interpret Ooplie code <text>", "run English <text>", "eval English <text>", "execute English <text>", "run <text> with Ooplie", "eval <text> with Ooplie", "execute <text> with Ooplie", "interpret <text> with Ooplie"],
-      bad_match: ["run Ooplie <text>", "eval Ooplie <text>", "execute Ooplie <text>", "interpret Ooplie <text>", "run <text> as Ooplie", "run code <text> as Ooplie", "execute <text> as Ooplie", "execute <text> as Ooplie", "eval <text> as Ooplie", "eval code <text> as Ooplie", "run code <text> as English", "run English code <text>", "eval English code <text>", "execute English code <text>", "interpret English code <text>", "run English code <text>", "eval <text> as English code", "execute English code <text>", "interpret <text> as English code", "make Ooplie interpret <text>", "have Ooplie interpret <text>", "let Ooplie interpret <text>"],
+      match: ["Interpret <text> as English", "Run <text> as English", "Execute <text> as English", "Eval <text> as English", "Interpret <text> as Ooplie code", "Run <text> as Ooplie code", "Execute <text> as Ooplie code", "Eval <text> as Ooplie code", "Run code <text> with Ooplie", "Eval code <text> with Ooplie", "Execute code <text> with Ooplie", "Interpret code <text> with Ooplie", "Run Ooplie code <text>", "Eval Ooplie code <text>", "Execute Ooplie code <text>", "Interpret Ooplie code <text>", "Run English <text>", "Eval English <text>", "Execute English <text>", "Interpret <text> with Ooplie", "Run <text> with Ooplie", "Eval <text> with Ooplie", "Execute <text> with Ooplie"],
+      bad_match: ["Run Ooplie <text>", "Eval Ooplie <text>", "Execute Ooplie <text>", "Interpret Ooplie <text>", "Run <text> as Ooplie", "Run code <text> as Ooplie", "Execute <text> as Ooplie", "Execute <text> as Ooplie", "Eval <text> as Ooplie", "Eval code <text> as Ooplie", "Run code <text> as English", "Run English code <text>", "Eval English code <text>", "Execute English code <text>", "Interpret English code <text>", "Run English code <text>", "Eval <text> as English code", "Execute English code <text>", "Interpret <text> as English code", "Make Ooplie Interpret <text>", "Have Ooplie Interpret <text>", "Let Ooplie Interpret <text>"],
       fn: (function(_this) {
         return function(v, context) {
           return context["eval"](v("text"));
