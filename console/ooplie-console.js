@@ -165,14 +165,54 @@ addEventListener("keydown", function(e){
 context.patterns.push(new Ooplie.Pattern({
 	match: [
 		"Open the parts menu",
-		"Show the parts menu"
+		"Show the parts menu",
+		"Open parts menu",
+		"Show parts menu"
 	],
 	bad_match: [
 		"Open the parts drawer",
-		"Show the parts drawer"
+		"Show the parts drawer",
+		"Open parts drawer",
+		"Show parts drawer"
 	],
 	fn: function(){
 		open_parts_menu();
+	}
+}));
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"Close the parts menu",
+		"Hide the parts menu",
+		"Close parts menu",
+		"Hide parts menu"
+	],
+	bad_match: [
+		"Close the parts drawer",
+		"Hide the parts drawer",
+		"Close parts drawer",
+		"Hide parts drawer"
+	],
+	fn: function(){
+		close_parts_menu();
+	}
+}));
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"Toggle the parts menu",
+		"Toggle parts menu"
+	],
+	bad_match: [
+		"Show/hide the parts menu",
+		"Show/hide parts menu",
+		"Toggle the parts drawer",
+		"Show/hide the parts drawer",
+		"Toggle parts drawer",
+		"Show/hide parts drawer"
+	],
+	fn: function(){
+		toggle_parts_menu();
 	}
 }));
 
