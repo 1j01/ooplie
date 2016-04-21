@@ -30,28 +30,53 @@ parts_menu_icon.src = "parts.svg";
 // context.loadLibrary(new Library());
 // context.libraries.push(new Ooplie.Library());
 
+var accordion_state = {};
+
 var update_parts_menu = function(){
 	parts_menu.innerHTML = "";
+	
 	for(var i = 0; i < context.libraries.length; i++){
 		var library = context.libraries[i];
 		var library_section = document.createElement("section");
+		library_section.classList.add("library");
+		library_section.id = library.name.replace(/\W/g, "") + "-library";
 		var library_header = document.createElement("h1");
+		library_header.classList.add("library-header");
 		library_header.innerText = library_header.textContent = library.name;
 		library_section.appendChild(library_header);
-		var fold = document.createElement("div");
-		fold.classList.add("fold");
-		library_section.appendChild(fold);
+		var library_content = document.createElement("div");
+		library_content.classList.add("library-content");
+		library_section.appendChild(library_content);
 		for(var j = 0; j < library.patterns.length; j++){
 			var pattern = library.patterns[j];
 			var pattern_el = document.createElement("p");
 			pattern_el.classList.add("pattern");
 			// TODO: mark up variables with <var> tags
 			pattern_el.innerText = pattern_el.textContent = pattern.prefered;
-			fold.appendChild(pattern_el);
+			library_content.appendChild(pattern_el);
 		}
 		parts_menu.appendChild(library_section);
 	}
-	new Accordion(parts_menu);
+	
+	var accordion = new Accordion(parts_menu, {
+		onToggle: function(fold, is_open){
+			// console.log(accordion, fold, is_open);
+			// console.log(fold.el.id, is_open);
+			accordion_state[fold.el.id] = is_open;
+			localStorage["ooplie-parts-menu-accordion-state"] = JSON.stringify(accordion_state);
+		}
+	});
+	
+	try{
+		accordion_state = JSON.parse(localStorage["ooplie-parts-menu-accordion-state"]);
+	}catch(e){}
+	
+	var headers = parts_menu.querySelectorAll("h1");
+	for(var i=0; i<headers.length; i++){
+		if(accordion_state[headers[i].parentElement.id] !== false){
+			headers[i].click();
+		}
+	}
 	// TODO: fix ugly animations when opening or resizing across the css break point
 };
 // TODO: normalize pattern names
@@ -62,12 +87,6 @@ var open_parts_menu = function(){
 	parts_menu.style.display = "block";
 	update_parts_menu();
 	parts_menu.querySelector("h1").focus();
-	// TODO: make the sections expanded by default in a better way
-	// TODO: save state to localStorage
-	var headers = parts_menu.querySelectorAll("h1");
-	for(var i=0; i<headers.length; i++){
-		headers[i].click();
-	}
 };
 
 var close_parts_menu = function(){
