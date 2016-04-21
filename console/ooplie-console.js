@@ -71,7 +71,9 @@ var update_parts_menu = function(){
 	var accordion = new Accordion(parts_menu, {
 		onToggle: function(fold, is_open){
 			accordion_state[fold.el.id] = is_open;
-			localStorage["ooplie-parts-menu-accordion-state"] = JSON.stringify(accordion_state);
+			try{
+				localStorage["ooplie-parts-menu-accordion-state"] = JSON.stringify(accordion_state);
+			}catch(e){}
 		}
 	});
 	
@@ -161,6 +163,17 @@ addEventListener("keydown", function(e){
 // "Console" is already a thing, but should it just be in the same category?
 // context.loadLibrary(new Library());
 // context.libraries.push(new Ooplie.Library());
+
+var set_theme = function(theme){
+	document.body.className = theme;
+	try{
+		localStorage.ooplie_console_theme = theme;
+	}catch(e){}
+};
+
+try{
+	set_theme(localStorage.ooplie_console_theme);
+}catch(e){}
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
@@ -317,9 +330,63 @@ context.patterns.push(new Ooplie.Pattern({
 	}
 }));
 
-// TODO: add command to set the theme to light or dark
+// TODO: these should be a single command
+// but it would be good to have the actual options appear in the parts menu
+
+// TODO: instead of logging "undefined", log "Theme set to <theme>." or "Already using <theme> theme."
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"Set theme to dark",
+		"Set the theme to dark",
+		"Set style to dark",
+		"Set the style to dark",
+		"Use the dark theme",
+		"Use dark theme",
+		"Choose theme dark",
+		"Choose dark theme"
+	],
+	bad_match: [
+		"Use the dark style",
+		"Use the dark styles",
+		"Use the dark stylesheet",
+		"theme dark",
+		"dark theme"
+	],
+	fn: function(){
+		set_theme("dark");
+	}
+}));
+
+context.patterns.push(new Ooplie.Pattern({
+	match: [
+		"Set theme to light",
+		"Set the theme to light",
+		"Set style to light",
+		"Set the style to light",
+		"Use the light theme",
+		"Use light theme",
+		"Choose theme light",
+		"Choose light theme"
+	],
+	bad_match: [
+		"Use the light style",
+		"Use the light styles",
+		"Use the light stylesheet",
+		"theme light",
+		"light theme"
+	],
+	fn: function(){
+		set_theme("light");
+	}
+}));
+
+// TODO: maybe have a "Toggle dark theme" command
+// and/or "Toggle theme", "Change theme", "Choose a theme"
+// (maybe more themes but whatever)
 
 // TODO: avoid logging "undefined" all the time
+
 function handle_command(command){
 	// Conversational trivialities
 	var log_emoji = function(face, rotate_direction){
