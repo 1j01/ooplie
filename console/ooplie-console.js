@@ -60,8 +60,6 @@ var update_parts_menu = function(){
 	
 	var accordion = new Accordion(parts_menu, {
 		onToggle: function(fold, is_open){
-			// console.log(accordion, fold, is_open);
-			// console.log(fold.el.id, is_open);
 			accordion_state[fold.el.id] = is_open;
 			localStorage["ooplie-parts-menu-accordion-state"] = JSON.stringify(accordion_state);
 		}
@@ -86,7 +84,6 @@ var update_parts_menu = function(){
 var open_parts_menu = function(){
 	parts_menu.style.display = "block";
 	update_parts_menu();
-	parts_menu.querySelector("h1").focus();
 };
 
 var close_parts_menu = function(){
@@ -111,14 +108,44 @@ parts_menu_button.addEventListener("click", function(e){
 	toggle_parts_menu();
 });
 
-addEventListener("mousedown", function(e){
+parts_menu_button.addEventListener("keydown", function(e){
+	if(e.keyCode === 40){ // Down
+		if(!parts_menu_is_open()){
+			open_parts_menu();
+		}
+		parts_menu.querySelector("h1").focus();
+	}
+});
+
+// con.input.addEventListener("focus", function(e){
+// 	close_parts_menu();
+// });
+
+// parts_menu.addEventListener("keydown", function(e){
+// 	if(e.keyCode === 38){ // Up
+// 		if(document.activeElement === parts_menu.querySelector("h1")){
+// 			parts_menu_button.focus();
+// 		}
+// 	}
+// });
+
+addEventListener("keydown", function(e){
 	if(parts_menu_is_open()){
-		if(!e.target.closest(".parts-menu-button, .parts-menu")){
+		if(e.keyCode === 27){
 			e.preventDefault();
 			close_parts_menu();
 		}
 	}
 });
+
+// addEventListener("mousedown", function(e){
+// 	if(parts_menu_is_open()){
+// 		if(!e.target.closest(".parts-menu-button, .parts-menu")){
+// 			e.preventDefault();
+// 			close_parts_menu();
+// 		}
+// 	}
+// });
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
