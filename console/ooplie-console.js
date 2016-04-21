@@ -95,6 +95,7 @@ var update_parts_menu = function(){
 var open_parts_menu = function(){
 	parts_menu.style.display = "block";
 	update_parts_menu();
+	// TODO: scroll menu into view
 };
 
 var close_parts_menu = function(){
@@ -169,6 +170,10 @@ var set_theme = function(theme){
 	try{
 		localStorage.ooplie_console_theme = theme;
 	}catch(e){}
+};
+
+var get_theme = function(){
+	return document.body.className;
 };
 
 try{
@@ -250,6 +255,7 @@ context.patterns.push(new Ooplie.Pattern({
 		"File a bug report with Ooplie",
 		"File a bug report"
 	],
+	// TODO: maybe_match "report a bug" etc.
 	maybe_match: [
 		"oh man",
 		"wtf",
@@ -322,9 +328,7 @@ context.patterns.push(new Ooplie.Pattern({
 		"File a bug with the console",
 		"File a bug report with the console"
 	],
-	// TODO: maybe have maybe_match(ers) for "report a bug" etc.
-	// TODO: "action" for things that only "do"
-	// to avoid logging "undefined" all the time
+	// TODO: maybe_match "report a bug" etc.
 	fn: function(){
 		con.logHTML("<a href='https://github.com/1j01/simple-console/issues/new' target='_blank'>https://github.com/1j01/simple-console/issues/new</a>");
 	}
@@ -332,8 +336,6 @@ context.patterns.push(new Ooplie.Pattern({
 
 // TODO: these should be a single command
 // but it would be good to have the actual options appear in the parts menu
-
-// TODO: instead of logging "undefined", log "Theme set to <theme>." or "Already using <theme> theme."
 
 context.patterns.push(new Ooplie.Pattern({
 	match: [
@@ -354,7 +356,13 @@ context.patterns.push(new Ooplie.Pattern({
 		"dark theme"
 	],
 	fn: function(){
+		var previous_theme = get_theme();
 		set_theme("dark");
+		if(previous_theme !== "dark"){
+			con.log("Theme set to dark.");
+		}else{
+			con.log("Already using dark theme.");
+		}
 	}
 }));
 
@@ -377,15 +385,19 @@ context.patterns.push(new Ooplie.Pattern({
 		"light theme"
 	],
 	fn: function(){
+		var previous_theme = get_theme();
 		set_theme("light");
+		if(previous_theme !== "light"){
+			con.log("Theme set to light.");
+		}else{
+			con.log("Already using light theme.");
+		}
 	}
 }));
 
 // TODO: maybe have a "Toggle dark theme" command
 // and/or "Toggle theme", "Change theme", "Choose a theme"
 // (maybe more themes but whatever)
-
-// TODO: avoid logging "undefined" all the time
 
 function handle_command(command){
 	// Conversational trivialities
@@ -421,7 +433,7 @@ function handle_command(command){
 		}
 		if(err){
 			con.error(err);
-		}else{
+		}else if(result !== undefined){
 			con.log(result).classList.add("result");
 		}
 	}
