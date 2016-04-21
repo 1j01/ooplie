@@ -42,7 +42,7 @@ var update_parts_menu = function(){
 		library_section.id = library.name.replace(/\W/g, "") + "-library";
 		var library_header = document.createElement("h1");
 		library_header.classList.add("library-header");
-		library_header.innerText = library_header.textContent = library.name;
+		library_header.textContent = library.name;
 		library_section.appendChild(library_header);
 		var library_content = document.createElement("div");
 		library_content.classList.add("library-content");
@@ -52,7 +52,20 @@ var update_parts_menu = function(){
 			var pattern_el = document.createElement("p");
 			pattern_el.classList.add("pattern");
 			// TODO: mark up variables with <var> tags
-			pattern_el.innerText = pattern_el.textContent = pattern.prefered;
+			var matcher = pattern.prefered_matcher;
+			for(var k = 0; k < matcher.length; k++){
+				var segment = matcher[k];
+				if(segment.type !== "punctuation" || !segment.value.match(/[?:;,.]/)){
+					pattern_el.appendChild(document.createTextNode(" "));
+				}
+				if(segment.type === "variable"){
+					var var_el = document.createElement("var");
+					var_el.textContent = segment.name;
+					pattern_el.appendChild(var_el);
+				}else{
+					pattern_el.appendChild(document.createTextNode(segment.value));
+				}
+			}
 			library_content.appendChild(pattern_el);
 		}
 		parts_menu.appendChild(library_section);

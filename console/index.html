@@ -21,6 +21,18 @@
 		a:not(:hover) {
 			text-decoration: none;
 		}
+		code,
+		var,
+		samp {
+			font-family: inherit;
+			font-style: normal;
+			padding: 0.1em 0.15em;
+			border: 1px solid rgba(128, 128, 128, 0.5);
+			border-radius: 0.15em;
+		}
+		.pattern var {
+			color: #797979;
+		}
 		.parts-menu-button {
 			background: transparent;
 			border: 0;
@@ -32,13 +44,21 @@
 			-moz-user-select: none;
 			-webkit-user-select: none;
 			opacity: 1;
-		}
-		.parts-menu-button:hover,
-		.parts-menu-button:focus {
-			-webkit-filter: invert() sepia() saturate(500) hue-rotate(-50deg) invert();
 			outline: 0;
 		}
-		.parts-menu-button:active {
+		.dark .parts-menu-button img {
+			-webkit-filter: invert();
+			opacity: 1;
+		}
+		.parts-menu-button:hover img,
+		.parts-menu-button:focus img {
+			-webkit-filter: invert() sepia() saturate(500) hue-rotate(-50deg) invert();
+		}
+		.dark .parts-menu-button:hover img,
+		.dark .parts-menu-button:focus img {
+			-webkit-filter: invert() sepia() saturate(500) hue-rotate(-50deg) invert() brightness(200%);
+		}
+		.parts-menu-button:active img {
 			opacity: 0.8;
 		}
 		.parts-menu-button img {
@@ -51,12 +71,10 @@
 			right: 0;
 			margin: 0.5em;
 			margin-top: 1.5em;
-			/*padding: 0.5em;*/
-			border: 1px solid rgba(0, 0, 0, 0.2);
+			border: 1px solid rgba(128, 128, 128, 0.5);
 			border-radius: 0.2em;
 			/*box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);*/
 			min-width: 50em;
-			/*max-width: 100%; doesn't work: min-width wins */
 		}
 		@media (max-width: 52em) {
 			.parts-menu {
@@ -67,28 +85,21 @@
 		section > h1 {
 			margin: 0;
 			padding: 0.5rem;
-			/*border-bottom: 1px solid rgba(0, 0, 0, 0.2);*/
-			/*border-top: 1px solid rgba(0, 0, 0, 0.2);*/
-			/*outline: 1px solid rgba(0, 0, 0, 0.2);*/
 		}
 		section > h1:focus {
 			outline: 0;
-			background: rgba(0, 0, 0, 0.05);
-			/*background: #4078c0;*/
-			/*color: white;*/
+			background: rgba(128, 128, 128, 0.1);
 		}
 		.pattern {
 			margin: 0;
 			padding: 0.5em;
 		}
 		section {
-			/*width: calc(100% - 1em);*/
 			width: 100%;
 		}
 	</style>
 	<script src="lib/simple-console.js"></script>
-	<!-- <script src="lib/accordion.min.js"></script> -->
-	<script src="lib/accordion.js"></script>
+	<script src="lib/accordion.min.js"></script>
 	<script src="../ooplie.js"></script>
 	<script src="ooplie-console.js"></script>
 </body>
