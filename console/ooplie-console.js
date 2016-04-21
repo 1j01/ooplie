@@ -304,7 +304,7 @@ function handle_command(command){
 		con.log("❤");
 	// Unhelp
 	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
-		con.log("Sorry, I can't help."); // TODO: recommend the parts menu at least
+		con.log("Open the parts menu to see commands and expressions you can use. Note that there are often many synoynms for a command.");
 	}else{
 		var err;
 		try{
