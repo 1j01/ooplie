@@ -818,7 +818,7 @@ module.exports = new Library("Console", {
       })(this)
     }), new Pattern({
       match: ["Clear the console", "Clear console"],
-      bad_match: ["Clear the terminal", "Clear terminal", "cls", "clr"],
+      bad_match: ["Clear the terminal", "Clear terminal", "clear", "cls", "clr"],
       fn: (function(_this) {
         return function(v, context) {
           context.console.clear();

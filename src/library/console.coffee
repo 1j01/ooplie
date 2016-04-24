@@ -37,6 +37,7 @@ module.exports = new Library "Console", patterns: [
 		bad_match: [
 			"Clear the terminal"
 			"Clear terminal"
+			"clear"
 			"cls"
 			"clr"
 		]
