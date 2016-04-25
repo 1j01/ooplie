@@ -1,18 +1,24 @@
 
 # Ooplie
 
-Ooplie is a [multi-paradigm][] programming system where you write in English.
+Ooplie is a ~~[multi-paradigm][]~~ (currently rather [imperative][]) programming system where you write in English.
 
 <!-- An NLP system? https://en.wikipedia.org/wiki/Natural_language_programming seems to have a somewhat narrow definition, and https://en.wikipedia.org/wiki/Natural_language_processing is rather broad -->
+
+<!-- https://en.wikipedia.org/wiki/Controlled_natural_language -->
 
 So far you can output text, eval JS, and eval Ooplie code from within Ooplie,
 write expressions with worded operators, unicode operators, or ASCII operators, and
 write trivial (read: useless because there are no variables yet) conditionals.
 
-There's [a nice little console][console] where you can try it out so far,
-and [a million pending tests][tests] (as well as some passing ones).
+There's [a nice little console][console] where you can try it out so far.
+It has a Parts menu where you can see the available commands and expressions.
+Each command has multiple synonyms, often many.
+Everything is organized into libraries, and yes, conditionals are defined in a library.
+You can run the console as a desktop app with `cd console && npm i && npm start`.
+In the future, this will give you access to additional libraries for file system manipulation etc.
 
-It runs in [Node.js][] and in the browser.
+Ooplie runs in [Node.js][] and in the browser.
 
 ## Inspiration
 
@@ -49,6 +55,18 @@ http://stackoverflow.com/questions/3067377/what-programming-language-is-the-most
 http://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-is-the-difference-between-natural-languages?rq=1
 
 -->
+
+## Motivation
+
+I just want see what it would be like to program in English to be honest.
+
+I don't think this is the be-all and end-all of programming paradigms.
+Unless a future of realtime cross-translated collaborative structured document editing is realized, it's probably not going to be better than a more syntactical programming language for international collaboration on software projects.
+High expectations of lingual [disambiguation][] and common sense mean it will never feel smart enough without some machine learning and huge amounts of data.
+That's not very distributable, so [a compiler would][Programming with Natural Language Is Actually Going to Work] probably work better.
+But then you miss certain possiblities afforded by a dynamic interpreter.
+
+Someone's gotta do it.
 
 
 ## Roadmap
@@ -147,11 +165,14 @@ and/or run `npm test`
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
+[imperative]: https://en.wikipedia.org/wiki/Imperative_programming "Imperative programming - Wikipedia"
 [abstraction]: https://en.wikipedia.org/wiki/Abstraction_(computer_science) "Abstraction (computer science) - Wikipedia"
 [code folding]: https://en.wikipedia.org/wiki/Code_folding "Code folding - Wikipedia"
 [IP levels of detail]: https://en.wikipedia.org/wiki/Intentional_programming#Levels_of_detail "\"Levels of detail\" in Intentional programming - Wikipedia"
+[disambiguation]: https://en.wikipedia.org/wiki/Word-sense_disambiguation "Word-sense disambiguation - Wikipedia"
+[Programming with Natural Language Is Actually Going to Work]: http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
 [Why are programming languages in English?]: https://www.reddit.com/r/explainlikeimfive/comments/1ugrcl/eli5_why_are_programming_languages_in_english/
-[console]: http://1j01.github.io/ooplie/dooplie/
+[console]: http://1j01.github.io/ooplie/console/
 [tests]: ./test.html
 [npm]: https://www.npmjs.com/
 [live-server]: https://www.npmjs.com/package/live-server
