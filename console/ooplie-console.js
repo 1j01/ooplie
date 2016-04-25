@@ -36,20 +36,25 @@ var update_parts_menu = function(){
 	
 	for(var i = 0; i < context.libraries.length; i++){
 		var library = context.libraries[i];
+		
 		var library_section = document.createElement("section");
 		library_section.classList.add("library");
 		library_section.id = library.name.replace(/\W/g, "") + "-library";
+		
 		var library_header = document.createElement("h1");
 		library_header.classList.add("library-header");
 		library_header.textContent = library.name;
 		library_section.appendChild(library_header);
+		
 		var library_content = document.createElement("div");
 		library_content.classList.add("library-content");
 		library_section.appendChild(library_content);
+		
 		for(var j = 0; j < library.patterns.length; j++){
 			var pattern = library.patterns[j];
 			var pattern_el = document.createElement("p");
 			pattern_el.classList.add("pattern");
+			
 			var matcher = pattern.prefered_matcher;
 			for(var k = 0; k < matcher.length; k++){
 				var segment = matcher[k];
@@ -64,6 +69,7 @@ var update_parts_menu = function(){
 					pattern_el.appendChild(document.createTextNode(segment.value));
 				}
 			}
+			
 			library_content.appendChild(pattern_el);
 		}
 		for(var j = 0; j < library.operators.length; j++){
@@ -88,8 +94,15 @@ var update_parts_menu = function(){
 			var_el.textContent = "b";
 			operator_el.appendChild(var_el);
 			
+			if(j !== 0){
+				var separator_el = document.createElement("hr");
+				separator_el.classList.add("separator");
+				library_content.appendChild(separator_el);
+			}
+			
 			library_content.appendChild(operator_el);
 		}
+		var j = 0;
 		for(var constant_name in library.constants){
 			// TODO: show e.g. "Archimedes' constant = pi = π = 3.141592653589793"
 			// TODO: fix selection behavior
@@ -100,6 +113,13 @@ var update_parts_menu = function(){
 			constant_el.appendChild(document.createTextNode(constant_name));
 			constant_el.appendChild(document.createTextNode(" = "));
 			constant_el.appendChild(document.createTextNode(constant_value));
+			
+			if(j !== 0){
+				var separator_el = document.createElement("hr");
+				separator_el.classList.add("separator");
+				library_content.appendChild(separator_el);
+			}
+			j++;
 			
 			library_content.appendChild(constant_el);
 		}
@@ -335,7 +355,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Open this repository on GitHub"
 		],
 		fn: function(){
-			con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
+			con.logHTML("<a href='https://github.com/1j01/ooplie' target='_blank'>https://github.com/1j01/ooplie</a>");
 			// TODO: maybe output "Opening <linky link>" and call window.open()
 		}
 	}),

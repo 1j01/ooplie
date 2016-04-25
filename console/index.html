@@ -29,6 +29,7 @@
 			padding: 0.1em 0.15em;
 			border: 1px solid rgba(128, 128, 128, 0.5);
 			border-radius: 0.15em;
+			white-space: nowrap;
 		}
 		.parts-menu var {
 			color: #797979;
@@ -73,7 +74,6 @@
 			margin-top: 1.5em;
 			border: 1px solid rgba(128, 128, 128, 0.5);
 			border-radius: 0.2em;
-			/*box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);*/
 			min-width: 50em;
 		}
 		@media (max-width: 52em) {
@@ -93,15 +93,9 @@
 		section {
 			width: 100%;
 		}
-		/*.pattern,
-		.constant {
-			margin: 0;
-			padding: 0.5em;
+		.pattern {
+		    line-height: 1.6em;
 		}
-		.operator {
-			padding: 1em 2em;
-			display: inline-block;
-		}*/
 		.pattern,
 		.operator,
 		.constant {
@@ -109,9 +103,17 @@
 			padding: 0.5rem 0.5rem;
 		}
 		.operator,
-		.constant {
-			/* TODO: separators */
+		.constant,
+		.separator {
 			display: inline-block;
+		}
+		.separator {
+			border: 0;
+			border-left: 1px solid rgba(128, 128, 128, 0.3);
+			height: 100%;
+			/* display: inline; */
+			height: 1.8em;
+			vertical-align: middle;
 		}
 	</style>
 	<script src="lib/simple-console.js"></script>
