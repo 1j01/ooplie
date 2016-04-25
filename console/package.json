@@ -49,6 +49,7 @@
   },
   "main": "index.html",
   "window": {
+    "id": "ooplie-console",
     "icon": "images/icon-2.png"
   },
   "dependencies": {
