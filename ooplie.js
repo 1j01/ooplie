@@ -192,6 +192,9 @@ module.exports = Context = (function() {
             matcher = operator.match(tokens, index);
             if (matcher) {
               advance(matcher.length);
+              if (index === tokens.length) {
+                throw new Error("missing right operand for `" + operator.prefered + "`");
+              }
               following_value = parse_primary();
               return operator.fn(following_value);
             }
@@ -220,14 +223,14 @@ module.exports = Context = (function() {
         while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
           operator = lookahead_operator;
           if (lookahead_operator.binary && (tokens[index] == null)) {
-            throw new Error("binary operator at end of expression");
+            throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
           }
           rhs = parse_primary();
           advance();
           lookahead_operator = match_operator();
           while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
             if (lookahead_operator.binary && (tokens[index] == null)) {
-              throw new Error("binary operator at end of expression");
+              throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
             }
             advance(-2);
             rhs = parse_expression(rhs, lookahead_operator.precedence);
@@ -237,7 +240,7 @@ module.exports = Context = (function() {
           lhs = operator.fn(lhs, rhs);
         }
         if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
-          throw new Error("unary operator at end of expression?");
+          throw new Error("unary operator at end of expression? (missing right operand?)");
         }
         return lhs;
       };

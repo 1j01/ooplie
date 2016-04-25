@@ -149,6 +149,10 @@ class Context
 					matcher = operator.match(tokens, index)
 					if matcher
 						advance(matcher.length)
+						if index is tokens.length
+							# throw new Error "unary operator at end of expression (missing right operand)"
+							throw new Error "missing right operand for `#{operator.prefered}`"
+						
 						following_value = parse_primary()
 						# following_value = parse_expression(parse_primary(), 1)
 						# following_value = parse_expression(parse_primary(), 0)
@@ -171,7 +175,7 @@ class Context
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
 				operator = lookahead_operator
 				if lookahead_operator.binary and not tokens[index]?
-					throw new Error "binary operator at end of expression"
+					throw new Error "missing right operand for `#{lookahead_operator.prefered}`"
 				rhs = parse_primary()
 				advance()
 				lookahead_operator = match_operator()
@@ -180,14 +184,14 @@ class Context
 					(lookahead_operator?.right_associative and lookahead_operator.precedence is operator.precedence)
 				)
 					if lookahead_operator.binary and not tokens[index]?
-						throw new Error "binary operator at end of expression"
+						throw new Error "missing right operand for `#{lookahead_operator.prefered}`"
 					advance(-2)
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
 					advance(2)
 					lookahead_operator = match_operator()
 				lhs = operator.fn(lhs, rhs)
 			if lookahead_operator?.unary
-				throw new Error "unary operator at end of expression?" # TODO/FIXME: terrible error message
+				throw new Error "unary operator at end of expression? (missing right operand?)" # TODO/FIXME: terrible error message
 			# if peek() and not lookahead_operator?
 			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			# if peek()

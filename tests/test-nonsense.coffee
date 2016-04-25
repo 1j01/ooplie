@@ -47,15 +47,6 @@ suite "nonsense", ->
 	
 	test.skip "unexpected end of input", ->
 		expect(->
-			context.eval('5 +')
-		).to.throw("binary operator at end")
-		expect(->
-			context.eval('5 + 3 *')
-		).to.throw("binary operator at end")
-		expect(->
-			context.eval('5 + 3 * -')
-		).to.throw("unary operator at end")
-		expect(->
 			context.eval('3 tho')
 		).to.throw("3 tho?")
 		expect(->
@@ -70,6 +61,20 @@ suite "nonsense", ->
 		expect(->
 			context.eval('3|')
 		).to.throw("what is this pipe you speak of?")
+	
+	test "missing right operand", ->
+		expect(->
+			context.eval('5 +')
+		).to.throw("missing right operand for `+`")
+		expect(->
+			context.eval('5 + 3 *')
+		).to.throw("missing right operand for `×`") # TODO: `*`
+		expect(->
+			context.eval('5 + 3 * -')
+		).to.throw("missing right operand for `−`") # TODO: `-`
+		expect(->
+			context.eval('+')
+		).to.throw("missing right operand for `+`")
 	
 	test.skip "missing left operand", ->
 		expect(->
