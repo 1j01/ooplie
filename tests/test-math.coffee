@@ -21,12 +21,6 @@ suite "mathematics", ->
 		evaluate("+2.345").to(+2.345)
 		evaluate("-+2.345").to(-2.345)
 		evaluate("+-2.345").to(-2.345)
-		# evaluate("2.345+").to(3.345) # throw error
-		# evaluate("2.345-").to(3.345) # throw error
-		# evaluate("2.345++").to(3.345) # throw error
-		# evaluate("++2.345").to(3.345) # throw error
-		# evaluate("--2.345").to(3.345) # throw error
-		# evaluate("2.345--").to(3.345) # throw error
 	test.skip "numbers with commas", ->
 		evaluate("5,000").to(5000) # throw style error? commas are sometimes used as decimal marks
 		evaluate("5,000,000").to(5000000) # throw style error? commas are sometimes used as decimal marks
@@ -142,12 +136,6 @@ suite "mathematics", ->
 		# TODO/FIXME:
 		# evaluate("-2^2").to(-4)
 		# evaluate("-(5 + 2)^2 + 1").to(-(5 + 2) ** 2 + 1)
-	test.skip "order of operations obfuscation", ->
-		evaluate("3 * 6-1").to(3 * 6 - 1) # throw style error when whitespace obfuscates order of operations
-		evaluate("3*6 - 1").to(3 * 6 - 1) # but not when it enforces it
-		evaluate("1 + 3 ^ 3 * 2").to(55) # throw style error / warning for exponents with whitespace?
-		evaluate("1+3 ^ 3*2").to(55) # definitely throw here
-		evaluate("1 + 3^3 * 2").to(55) # that's more like it
 		
 	test.skip "percentages", ->
 		# should this be a style warning? percentages, like degrees, are kinda arbitrary and I don't like them
@@ -331,9 +319,10 @@ suite "mathematics", ->
 		evaluate("7 is less than or equal to 5").to(false)
 		evaluate("7 is greater than or equal to 5").to(true)
 		evaluate("5 is greater than or equal to 5").to(true)
-		expect(->
-			evaluate("5 isnt 4").to(true) # throw error
-		).to.throw() # TODO: expect something like "Just use `isn't`"
+		# TODO/FIXME:
+		# expect(->
+		# 	evaluate("5 isnt 4").to(true)
+		# ).to.throw("Just use `isn't`")
 	test.skip "worded comparison questions", ->
 		evaluate("Does 4 equal 5?").to(no)
 		evaluate("Does 4 = 5?").to(no)

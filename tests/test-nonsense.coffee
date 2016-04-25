@@ -13,85 +13,123 @@ evaluate = (expression)->
 suite "nonsense", ->
 	test.skip "gibberish argument", ->
 		expect(->
-			evaluate("say sdfsdfj")
+			context.eval("say sdfsdfj")
 			# currently this fails because there's no console to log to,
 			# but it should probably show this error first and foremost anyways
 		).to.throw("I don't understand `sdfsdfj`")
 	
 	test.skip "consecutive numbers", ->
 		expect(->
-			evaluate("5 10")
+			context.eval("5 10")
 		).to.throw("consecutive numbers")
 		expect(->
-			evaluate("'but I\\'m' 5 10 'doing concatenation!'")
+			context.eval("'but I\\'m' 5 10 'doing concatenation!'")
 		).to.throw("consecutive numbers")
 	
 	test.skip "mixed multiple comparison", ->
 		expect(->
-			evaluate("a <= b = c")
+			context.eval("a <= b = c")
 		).to.throw("multiple comparison mismatch")
 		expect(->
-			evaluate("a = b >= c")
+			context.eval("a = b >= c")
 		).to.throw("multiple comparison mismatch")
 		expect(->
-			evaluate("a < b > c")
+			context.eval("a < b > c")
 		).to.throw("multiple comparison mismatch")
 	
 	test.skip "type mismatch", ->
 		expect(->
-			evaluate('5 - "LUL"')
+			context.eval('5 - "LUL"')
 		).to.throw("type mismatch")
 		expect(->
-			evaluate('"derp"^2')
+			context.eval('"derp"^2')
 		).to.throw("type mismatch")
 	
 	test.skip "unexpected end of input", ->
 		expect(->
-			evaluate('5 +')
+			context.eval('5 +')
 		).to.throw("binary operator at end")
 		expect(->
-			evaluate('5 + 3 *')
+			context.eval('5 + 3 *')
 		).to.throw("binary operator at end")
 		expect(->
-			evaluate('5 + 3 * -')
+			context.eval('5 + 3 * -')
 		).to.throw("unary operator at end")
 		expect(->
-			evaluate('3 tho')
+			context.eval('3 tho')
 		).to.throw("3 tho?")
 		expect(->
-			evaluate('3(')
+			context.eval('3(')
 		).to.throw("missing ending parenthesis")
 		expect(->
-			evaluate('3}')
+			context.eval('3}')
 		).to.throw("unexpected ending curly bracket")
 		expect(->
-			evaluate('3\\')
+			context.eval('3\\')
 		).to.throw("backslash what?")
 		expect(->
-			evaluate('3|')
+			context.eval('3|')
 		).to.throw("what is this pipe you speak of?")
 	
 	test.skip "missing left operand", ->
 		expect(->
-			evaluate('^2')
+			context.eval('^2')
 		).to.throw("missing left operand for `^`")
 		expect(->
-			evaluate('* 2')
+			context.eval('* 2')
 		).to.throw("missing left operand for `*`")
 		# is this supposed to be a bulleted list?
 	
+	test.skip "unknown variable as left operand", ->
+		expect(->
+			context.eval('a + 5')
+		).to.throw("I don't understand `a`")
+		# or better yet "`a` is not defined" (in this case, which you probably can't distinguish from anything else)
+	
 	test.skip "unknown operators", ->
 		expect(->
-			evaluate('5 $ 2')
+			context.eval('5 $ 2')
 		).to.throw("unknown binary operator?")
 		expect(->
-			evaluate('5 $ 2')
+			context.eval('5 ! 2')
 		).to.throw("is this a binary operator I don't know about?")
 	
-	test.skip "nonsense units", ->
+	test.skip "incrementing number literals", ->
 		expect(->
-			evaluate('100% meters')
-		).to.throw("unit doesn't make sense")
+			context.eval("2.345++")
+		).to.throw("um")
+		expect(->
+			context.eval("2.345--")
+		).to.throw("um")
+		expect(->
+			context.eval("--2.345")
+		).to.throw("um")
+		expect(->
+			context.eval("++2.345")
+		).to.throw("um")
 	
+	test.skip "obfuscation of order of operations", ->
+		# throw style error when whitespace obfuscates order of operations
+		expect(->
+			evaluate("3 * 6-1").to(3 * 6 - 1) 
+		).to.throw("Spacing does not match the order of operations")
+		# but not when it enforces it
+		evaluate("3*6 - 1").to(3 * 6 - 1)
+		# definitely throw here
+		expect(->
+			evaluate("1+3 ^ 3*2").to(55)
+		).to.throw("Spacing does not match the order of operations. Add parentheses if you want it to behave how it looks. Otherwise, fix the whitespace.")
+		# that's more like it
+		evaluate("1 + 3^3 * 2").to(55)
 		
-		
+		# throw style error / warning for exponents with whitespace?
+		# expect(->
+		# 	evaluate("1 + 3 ^ 3 * 2").to(55) 
+		# ).to.throw("Unexpected whitespace around exponent")
+		# ).to.throw("Bad whitespace around exponent; plz remove")
+	
+	test.skip "bad units", ->
+		# you know, like percent meters
+		expect(->
+			context.eval('100% meters')
+		).to.throw("unit doesn't make sense")
