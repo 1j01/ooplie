@@ -7,16 +7,16 @@ Library = require "../Library"
 
 module.exports = new Library "File System", patterns: [
 	
-	# TODO: if it doesn't exist, unless it exists, unless it already exists
-	# unless there's already a file there, in which case...
-	
-	# TODO: "if we're writing to a file"? "whether we're reading to a file"?
-	
 	# TODO: async! use streams and/or promises
 	
 	# TODO: probably should take an object-oriented approach, i.e.
 	# 	output the file's contents and delete the file
 	# once we have some OOP facilities
+	
+	# TODO: if it doesn't exist, unless it exists, unless it already exists
+	# unless there's already a file there, in which case...
+	
+	# TODO: "if we're writing to a file"? "whether we're reading to a file"?
 	
 	# TODO: globbing (how?)
 	
@@ -115,10 +115,15 @@ module.exports = new Library "File System", patterns: [
 			# TODO: match the above first but prefer this variation:
 			"Read <file> as a buffer"
 		]
+		bad_match: [
+			"Read from <file> as buffer"
+			"Read file <file> as buffer"
+			"Read <file> as buffer"
+		]
 		fn: (v)=>
 			fs.readFileSync v("file")
-			# TODO: export variable "the buffer" and maybe "the file's contents"
-			# "buffer contents"
+			# TODO: export variable "the buffer" and maybe also "the file's contents"
+			# "buffer contents"?
 			# "...as a buffer named Jerry"
 			
 	

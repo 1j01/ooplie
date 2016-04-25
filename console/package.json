@@ -1,0 +1,57 @@
+{
+  "name": "ooplie-console",
+  "description": "Ooplie console desktop app",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/1j01/ooplie.git"
+  },
+  "bugs": {
+    "url": "http://github.com/1j01/ooplie/issues"
+  },
+  "author": "Isaiah Odhner <isaiahodhner@gmail.com>",
+  "license": "GPL-3.0",
+  "keywords": [
+    "ooplie-console",
+    "console",
+    "ooplie",
+    "dooplie",
+    "object-oriented",
+    "programming",
+    "language",
+    "programming-language",
+    "program",
+    "natural-language",
+    "natural-language-programming",
+    "NLP",
+    "multi-paradigm",
+    "imperative",
+    "natural",
+    "command",
+    "interpret",
+    "interpreter",
+    "english",
+    "dynamic",
+    "lingual",
+    "engine",
+    "algebra",
+    "math",
+    "maths",
+    "mathematics",
+    "scripting",
+    "scripting-language",
+    "script",
+    "web"
+  ],
+  "scripts": {
+    "start": "nw"
+  },
+  "main": "index.html",
+  "window": {
+    "icon": "images/icon-2.png"
+  },
+  "dependencies": {
+    "nw": "^0.14.2-sdk"
+  }
+}

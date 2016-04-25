@@ -11,6 +11,12 @@ document.body.appendChild(con.element);
 // 	"<p>Try entering <code>5 + 5</code> below. Or some faces.</p>"
 // );
 
+// con.log("require: " + (require));
+// con.log("self.Ooplie: " + JSON.stringify(self.Ooplie));
+// con.log("require('ooplie'): " + JSON.stringify(require("ooplie")));
+// con.log("require('ooplie')???");
+var Ooplie = typeof require !== "undefined" ? require("../ooplie") : self.Ooplie;
+
 var context = new Ooplie.Context({console: con});
 
 var parts_menu_button = document.createElement("button");
@@ -25,7 +31,7 @@ con.input.parentElement.appendChild(parts_menu);
 var parts_menu_icon = document.createElement("img");
 parts_menu_icon.classList.add("parts-menu-button");
 parts_menu_button.appendChild(parts_menu_icon);
-parts_menu_icon.src = "parts.svg";
+parts_menu_icon.src = "images/parts.svg";
 
 var accordion_state = {};
 
@@ -352,6 +358,7 @@ context.patterns.push(new Ooplie.Pattern({
 		"Use the dark theme",
 		"Use dark mode", // TODO: "Already in dark mode"
 		"Set theme to dark",
+		"Set theme dark",
 		"Set the theme to dark",
 		"Set style to dark",
 		"Set the style to dark",
@@ -392,6 +399,7 @@ context.patterns.push(new Ooplie.Pattern({
 		"Use light mode", // TODO: "Already in light mode"
 		"Use the light theme",
 		"Set theme to light",
+		"Set theme light",
 		"Set the theme to light",
 		"Set style to light",
 		"Set the style to light",
