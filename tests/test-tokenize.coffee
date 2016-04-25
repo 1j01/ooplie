@@ -152,6 +152,31 @@ suite "tokenize", ->
 			{type: "punctuation", value: "?"}
 		])
 	
+	test "numbers at the end of sentences", ->
+		tokenize("Three equals 3.").to([
+			{type: "word", value: "Three"}
+			{type: "word", value: "equals"}
+			{type: "number", value: 3}
+			{type: "punctuation", value: "."}
+		])
+		tokenize("Three equals 3. That's a fact.").to([
+			{type: "word", value: "Three"}
+			{type: "word", value: "equals"}
+			{type: "number", value: 3}
+			{type: "punctuation", value: "."}
+			{type: "word", value: "That's"}
+			{type: "word", value: "a"}
+			{type: "word", value: "fact"}
+			{type: "punctuation", value: "."}
+		])
+		tokenize("Just... 42...?").to([
+			{type: "word", value: "Just"}
+			{type: "punctuation", value: "..."}
+			{type: "number", value: 42}
+			{type: "punctuation", value: "..."}
+			{type: "punctuation", value: "?"}
+		])
+	
 	test "simple strings", ->
 		tokenize("say 'hi'").to([
 			{type: "word", value: "say"}
