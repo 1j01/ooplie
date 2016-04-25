@@ -102,26 +102,43 @@ var update_parts_menu = function(){
 			
 			library_content.appendChild(operator_el);
 		}
-		var j = 0;
+		var constants_by_value = new Map;
 		for(var constant_name in library.constants){
-			// TODO: show e.g. "Archimedes' constant = pi = π = 3.141592653589793"
-			// TODO: fix selection behavior
 			var constant_value = library.constants[constant_name];
-			var constant_el = document.createElement("div");
-			constant_el.classList.add("constant");
+			if(constants_by_value.has(constant_value)){
+				constants_by_value.set(constant_value, [constant_name].concat(constants_by_value.get(constant_value)));
+			}else{
+				constants_by_value.set(constant_value, [constant_name]);
+			}
+		}
+		var is_first_consant = true;
+		for(var [constant_value, constant_names] of constants_by_value){
 			
-			constant_el.appendChild(document.createTextNode(constant_name));
-			constant_el.appendChild(document.createTextNode(" = "));
-			constant_el.appendChild(document.createTextNode(constant_value));
-			
-			if(j !== 0){
+			if(!is_first_consant){
 				var separator_el = document.createElement("hr");
 				separator_el.classList.add("separator");
 				library_content.appendChild(separator_el);
+				library_content.appendChild(document.createTextNode(" "));
 			}
-			j++;
+			
+			var constant_el = document.createElement("div");
+			constant_el.classList.add("constant");
+			
+			for(var k=0; k<constant_names.length; k++){
+				var constant_name = constant_names[k];
+				if(k !== 0){
+					constant_el.appendChild(document.createTextNode(" = "));
+				}
+				constant_el.appendChild(document.createTextNode(constant_name));
+			}
+			if(constant_names.indexOf("" + constant_value) === -1){
+				constant_el.appendChild(document.createTextNode(" = "));
+				constant_el.appendChild(document.createTextNode(constant_value));
+			}
 			
 			library_content.appendChild(constant_el);
+			
+			is_first_consant = false;
 		}
 		parts_menu.appendChild(library_section);
 	}
