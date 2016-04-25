@@ -1,5 +1,6 @@
 
 fs = require "fs"
+path = require "path"
 
 Pattern = require "../Pattern"
 Library = require "../Library"
@@ -9,13 +10,67 @@ module.exports = new Library "File System", patterns: [
 	# TODO: if it doesn't exist, unless it exists, unless it already exists
 	# unless there's already a file there, in which case...
 	
-	# TODO: "if we're writing to a file"?
+	# TODO: "if we're writing to a file"? "whether we're reading to a file"?
 	
 	# TODO: async! use streams and/or promises
 	
 	# TODO: probably should take an object-oriented approach, i.e.
 	# 	output the file's contents and delete the file
 	# once we have some OOP facilities
+	
+	# TODO: globbing (how?)
+	
+	new Pattern
+		match: [
+			"Make directory <dir>"
+			"Create directory <dir>"
+			"Make folder <dir>"
+			"Create folder <dir>"
+		]
+		bad_match: [
+			"Make dir <dir>"
+			"Create dir <dir>"
+			"mkdir <dir>"
+		]
+		fn: (v)=>
+			fs.mkdir(v("dir"))
+	
+	new Pattern
+		match: [
+			"Make directories <dir>"
+			"Create directories <dir>"
+			"Make folders <dir>"
+			"Create folders <dir>"
+		]
+		bad_match: [
+			"Make directories recursively <dir>"
+			"Create directories recursively <dir>"
+			"Make dirs recursively <dir>"
+			"Create dirs recursively <dir>"
+			"Make dirs <dir>"
+			"Create dirs <dir>"
+			"Make path <dir>"
+			"Create path <dir>"
+			"mkdirp <dir>"
+			"mkdirs <dir>"
+		]
+		fn: (v)=>
+			throw new Error "Not implemented (needs an npm module)"
+	
+	new Pattern
+		match: [
+			"Make directories for <file path>"
+			"Create directories <file path>"
+			"Make all the directories for <file path>"
+			"Create all the directories for <file path>"
+			"Make folders for <file path>"
+			"Create folders for <file path>"
+			"Make all the folders for <file path>"
+			"Create all the folders for <file path>"
+		]
+		fn: (v)=>
+			dir = path.dirname(v("file path"))
+			throw new Error "Not implemented (needs an npm module)"
 	
 	new Pattern
 		match: [

@@ -1,6 +1,8 @@
 
 Operator = require "./Operator"
 
+# TODO: this should be a library
+
 module.exports = [
 	
 	new Operator
