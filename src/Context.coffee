@@ -2,7 +2,6 @@
 tokenize = require "./tokenize"
 Pattern = require "./Pattern"
 {stringify_tokens} = Token = require "./Token"
-default_operators = require "./default-operators"
 find_closing_token = require "./find-closing-token"
 
 module.exports =
@@ -13,26 +12,17 @@ class Context
 		# a more reusable pattern for passing interfaces and things to a context
 		
 		# TODO: seperate AST parsing from eval
-		# semantics are quite tied to context in the case of natural language
-		# the parser will need access to the context
+		# in the case of natural language, semantics are quite tied to context
+		# so the parser will need access to the context
 		@libraries = [
+			require "./library/operators"
+			require "./library/constants"
 			require "./library/conditionals"
 			require "./library/console"
 			require "./library/eval-js"
 			require "./library/eval-ooplie"
 		]
-		@patterns = [].concat((patterns for {patterns} in @libraries)...)
-		# NOTE: @patterns won't get updated when @libraries are added/removed
-		# and I'll want patterns from supercontexts to be available (hopefully not duplicatedly)
-		# so I'll probably want to collect patterns in something like get_patterns in eval_tokens
-		@operators = (operator for operator in default_operators)
-		@constants = require "./constants"
-		# TODO: constants and operators should be in libraries too
-		@variables = {} # TODO: should be a Map
-		# TODO: block-level scopes
-		# should @supercontext be @superscope?
-		# should contexts be scopes? should scopes be contexts?
-		# also make sure we don't encourage global-like behavior
+		
 		@classes = []
 		@instances = []
 	
@@ -40,7 +30,29 @@ class Context
 		console ?= @console
 		new Context {console, supercontext: @}
 	
+	coalesce_libraries: ->
+		@patterns = []
+		@operators = []
+		@constants = new Map
+		@variables = new Map
+		# TODO: block-level scopes
+		# should @supercontext be @superscope?
+		# should contexts be scopes? should scopes be contexts?
+		# also make sure we don't encourage global-like behavior
+		for lib in @libraries
+			@patterns = @patterns.concat(lib.patterns)
+			@operators = @operators.concat(lib.operators)
+			@constants.set(k, v) for k, v of lib.constants
+		# TODO: collect from supercontexts as well
+	
 	eval: (text)->
+		# TODO: coalesce libs only when @libraries array is modified
+		# using https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+		# and not https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/observe
+		# although, note that that means a modified individual library wouldn't be updated
+		# (until any change to @libraries, not necessarily a removal and addition of the given library)
+		@coalesce_libraries()
+		
 		tokens = tokenize(text)
 		
 		# @eval_tokens(token for token in tokens when token.type isnt "comment")
@@ -108,21 +120,21 @@ class Context
 			else
 				
 				if next_word_tokens.length
-					if next_word_tok_str of @constants
+					if @constants.has(next_word_tok_str)
 						# advance(next_word_tokens.length)
-						return @constants[next_word_tok_str]
+						return @constants.get(next_word_tok_str)
 					
-					if next_word_tok_str of @variables
+					if @variables.has(next_word_tok_str)
 						# advance(next_word_tokens.length)
-						return @variables[next_word_tok_str]
+						return @variables.get(next_word_tok_str)
 				else
-					if tok_str of @constants
-						# advance(next_word_tokens.length)
-						return @constants[tok_str]
+					if @constants.has(tok_str)
+						# advance(next_tokens.length)
+						return @constants.get(tok_str)
 					
-					if tok_str of @variables
-						# advance(next_word_tokens.length)
-						return @variables[tok_str]
+					if @variables.has(tok_str)
+						# advance(next_tokens.length)
+						return @variables.get(tok_str)
 				
 				token = tokens[index]
 				

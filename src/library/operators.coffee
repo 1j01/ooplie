@@ -1,9 +1,12 @@
 
-Operator = require "./Operator"
+Operator = require "../Operator"
+Library = require "../Library"
 
-# TODO: this should be a library
+# Should there be separate libraries for Comparison, Arithmetic?
+# Should Set Operators go in Sets?
+# Maybe we should just have categories.
 
-module.exports = [
+module.exports = new Library "Operators", operators: [
 	
 	new Operator
 		match: [

@@ -11,10 +11,6 @@ document.body.appendChild(con.element);
 // 	"<p>Try entering <code>5 + 5</code> below. Or some faces.</p>"
 // );
 
-// con.log("require: " + (require));
-// con.log("self.Ooplie: " + JSON.stringify(self.Ooplie));
-// con.log("require('ooplie'): " + JSON.stringify(require("ooplie")));
-// con.log("require('ooplie')???");
 var Ooplie = typeof require !== "undefined" ? require("../ooplie") : self.Ooplie;
 
 var context = new Ooplie.Context({console: con});
@@ -54,7 +50,6 @@ var update_parts_menu = function(){
 			var pattern = library.patterns[j];
 			var pattern_el = document.createElement("p");
 			pattern_el.classList.add("pattern");
-			// TODO: mark up variables with <var> tags
 			var matcher = pattern.prefered_matcher;
 			for(var k = 0; k < matcher.length; k++){
 				var segment = matcher[k];
@@ -70,6 +65,43 @@ var update_parts_menu = function(){
 				}
 			}
 			library_content.appendChild(pattern_el);
+		}
+		for(var j = 0; j < library.operators.length; j++){
+			var operator = library.operators[j];
+			var operator_el = document.createElement("div");
+			operator_el.classList.add("operator");
+			
+			if(operator.binary){
+				var var_el = document.createElement("var");
+				var_el.textContent = "a";
+				operator_el.appendChild(var_el);
+				operator_el.appendChild(document.createTextNode(" "));
+			}
+			
+			var matcher = operator.prefered_matcher;
+			var segment = matcher[0];
+			operator_el.appendChild(document.createTextNode(segment.value));
+			
+			operator_el.appendChild(document.createTextNode(" "));
+			
+			var var_el = document.createElement("var");
+			var_el.textContent = "b";
+			operator_el.appendChild(var_el);
+			
+			library_content.appendChild(operator_el);
+		}
+		for(var constant_name in library.constants){
+			// TODO: show e.g. "Archimedes' constant = pi = π = 3.141592653589793"
+			// TODO: fix selection behavior
+			var constant_value = library.constants[constant_name];
+			var constant_el = document.createElement("div");
+			constant_el.classList.add("constant");
+			
+			constant_el.appendChild(document.createTextNode(constant_name));
+			constant_el.appendChild(document.createTextNode(" = "));
+			constant_el.appendChild(document.createTextNode(constant_value));
+			
+			library_content.appendChild(constant_el);
 		}
 		parts_menu.appendChild(library_section);
 	}
@@ -96,7 +128,6 @@ var update_parts_menu = function(){
 	// TODO: fix ugly animations when opening or resizing across the css break point
 };
 // TODO: add extra information about patterns, like alternate phrasings, maybe descriptions?
-// TODO: display constants etc.
 
 var open_parts_menu = function(){
 	parts_menu.style.display = "block";
@@ -165,12 +196,6 @@ addEventListener("keydown", function(e){
 // 	}
 // });
 
-// TODO: use a Library so these commands can show up in the parts menu
-// what should the library be called? "Ooplie Console"?
-// "Console" is already a thing, but should it just be in the same category?
-// context.loadLibrary(new Library());
-// context.libraries.push(new Ooplie.Library());
-
 var set_theme = function(theme){
 	document.body.className = theme;
 	try{
@@ -186,244 +211,249 @@ try{
 	set_theme(localStorage.ooplie_console_theme);
 }catch(e){}
 
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Open the parts menu",
-		"Show the parts menu",
-		"Open parts menu",
-		"Show parts menu"
-	],
-	bad_match: [
-		"Open the parts drawer",
-		"Show the parts drawer",
-		"Open parts drawer",
-		"Show parts drawer"
-	],
-	fn: function(){
-		open_parts_menu();
-	}
-}));
+context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
+	new Ooplie.Pattern({
+		match: [
+			"Open the parts menu",
+			"Show the parts menu",
+			"Open parts menu",
+			"Show parts menu"
+		],
+		bad_match: [
+			"Open the parts drawer",
+			"Show the parts drawer",
+			"Open parts drawer",
+			"Show parts drawer"
+		],
+		fn: function(){
+			open_parts_menu();
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		match: [
+			"Close the parts menu",
+			"Hide the parts menu",
+			"Close parts menu",
+			"Hide parts menu"
+		],
+		bad_match: [
+			"Close the parts drawer",
+			"Hide the parts drawer",
+			"Close parts drawer",
+			"Hide parts drawer"
+		],
+		fn: function(){
+			close_parts_menu();
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		match: [
+			"Toggle the parts menu",
+			"Toggle parts menu"
+		],
+		bad_match: [
+			"Show/hide the parts menu",
+			"Show/hide parts menu",
+			"Toggle the parts drawer",
+			"Show/hide the parts drawer",
+			"Toggle parts drawer",
+			"Show/hide parts drawer"
+		],
+		fn: function(){
+			toggle_parts_menu();
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		match: [
+			"Report an issue with Ooplie",
+			"Report an issue",
+			"Report a bug with Ooplie",
+			"Report a bug",
+			"Open an issue with Ooplie",
+			"Open an issue",
+			"Open an issue report with Ooplie",
+			"Open an issue report",
+			"Open a bug report with Ooplie",
+			"Open a bug report",
+			"File an issue with Ooplie",
+			"File an issue",
+			"File an issue report with Ooplie",
+			"File an issue report",
+			"File a bug with Ooplie",
+			"File a bug",
+			"File a bug report with Ooplie",
+			"File a bug report"
+		],
+		// TODO: maybe_match "report a bug" etc.
+		maybe_match: [
+			"oh man",
+			"wtf",
+			"hey!",
+			"um",
+			"um..."
+		],
+		bad_match: [
+			"That's a bug",
+			"That's not right",
+			"That's weird",
+			"That was weird",
+			"Report a bug on Ooplie",
+			"Report an issue on Ooplie",
+			"Open an issue on Ooplie",
+			"I found a bug",
+			"I think I found a bug",
+			"I think that's a bug"
+		],
+		fn: function(){
+			con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		// TODO: have a command "go to"/"open"
+		// and define constants for "this repo on GitHub" etc.
+		// also constants should be able to have matchers
+		match: [
+			"Go to this repo",
+			"Go to this repo on GitHub",
+			"Go to this repository",
+			"Go to this repository on GitHub",
+		],
+		bad_match: [
+			"Go to GitHub",
+			"Open GitHub",
+			"Open the repo",
+			"Open this repo",
+			"Open the repository",
+			"Open this repository",
+			"Open the repo on GitHub",
+			"Open this repo on GitHub",
+			"Open the repository on GitHub",
+			"Open this repository on GitHub"
+		],
+		fn: function(){
+			con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
+			// TODO: maybe output "Opening <linky link>" and call window.open()
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		match: [
+			"Report an issue with this console",
+			"Report a bug with this console",
+			"Open an issue with this console",
+			"Open an issue report with this console",
+			"Open a bug report with this console",
+			"File an issue with this console",
+			"File an issue report with this console",
+			"File a bug with this console",
+			"File a bug report with this console",
+			
+			"Report an issue with the console",
+			"Report a bug with the console",
+			"Open an issue with the console",
+			"Open an issue report with the console",
+			"Open a bug report with the console",
+			"File an issue with the console",
+			"File an issue report with the console",
+			"File a bug with the console",
+			"File a bug report with the console"
+		],
+		// TODO: maybe_match "report a bug" etc.
+		fn: function(){
+			con.logHTML("<a href='https://github.com/1j01/simple-console/issues/new' target='_blank'>https://github.com/1j01/simple-console/issues/new</a>");
+		}
+	}),
+	
+	new Ooplie.Pattern({
+		match: [
+			"Switch to dark theme",
+			"Switch to the dark theme",
+			"Switch theme to dark",
+			"Switch the theme to dark",
+			"Switch style to dark",
+			"Switch the style to dark",
+			"Switch to dark style",
+			"Switch to dark the style",
+			"Switch to dark mode", // TODO: "Already in dark mode"
+			"Use dark theme",
+			"Use the dark theme",
+			"Use dark mode", // TODO: "Already in dark mode"
+			"Set theme to dark",
+			"Set theme dark",
+			"Set the theme to dark",
+			"Set style to dark",
+			"Set the style to dark",
+			"Choose theme dark",
+			"Choose dark theme"
+		],
+		bad_match: [
+			"Use the dark style",
+			"Use the dark styles",
+			"Use the dark stylesheet",
+			"theme dark",
+			"dark theme",
+			"dark mode"
+		],
+		fn: function(){
+			var previous_theme = get_theme();
+			set_theme("dark");
+			if(previous_theme !== "dark"){
+				con.log("Theme set to dark.");
+			}else{
+				con.log("Already using dark theme.");
+			}
+		}
+	}),
 
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Close the parts menu",
-		"Hide the parts menu",
-		"Close parts menu",
-		"Hide parts menu"
-	],
-	bad_match: [
-		"Close the parts drawer",
-		"Hide the parts drawer",
-		"Close parts drawer",
-		"Hide parts drawer"
-	],
-	fn: function(){
-		close_parts_menu();
-	}
-}));
+	new Ooplie.Pattern({
+		match: [
+			"Switch to light theme",
+			"Switch to the light theme",
+			"Switch theme to light",
+			"Switch the theme to light",
+			"Switch style to light",
+			"Switch the style to light",
+			"Switch to light style",
+			"Switch to light the style",
+			"Switch to light mode", // TODO: "Already in light mode"
+			"Use light theme",
+			"Use light mode", // TODO: "Already in light mode"
+			"Use the light theme",
+			"Set theme to light",
+			"Set theme light",
+			"Set the theme to light",
+			"Set style to light",
+			"Set the style to light",
+			"Choose theme light",
+			"Choose light theme"
+		],
+		bad_match: [
+			"Use the light style",
+			"Use the light styles",
+			"Use the light stylesheet",
+			"theme light",
+			"light theme",
+			"light mode"
+		],
+		fn: function(){
+			var previous_theme = get_theme();
+			set_theme("light");
+			if(previous_theme !== "light"){
+				con.log("Theme set to light.");
+			}else{
+				con.log("Already using light theme.");
+			}
+		}
+	})
 
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Toggle the parts menu",
-		"Toggle parts menu"
-	],
-	bad_match: [
-		"Show/hide the parts menu",
-		"Show/hide parts menu",
-		"Toggle the parts drawer",
-		"Show/hide the parts drawer",
-		"Toggle parts drawer",
-		"Show/hide parts drawer"
-	],
-	fn: function(){
-		toggle_parts_menu();
-	}
-}));
-
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Report an issue with Ooplie",
-		"Report an issue",
-		"Report a bug with Ooplie",
-		"Report a bug",
-		"Open an issue with Ooplie",
-		"Open an issue",
-		"Open an issue report with Ooplie",
-		"Open an issue report",
-		"Open a bug report with Ooplie",
-		"Open a bug report",
-		"File an issue with Ooplie",
-		"File an issue",
-		"File an issue report with Ooplie",
-		"File an issue report",
-		"File a bug with Ooplie",
-		"File a bug",
-		"File a bug report with Ooplie",
-		"File a bug report"
-	],
-	// TODO: maybe_match "report a bug" etc.
-	maybe_match: [
-		"oh man",
-		"wtf",
-		"hey!",
-		"um",
-		"um..."
-	],
-	bad_match: [
-		"That's a bug",
-		"That's not right",
-		"That's weird",
-		"That was weird",
-		"Report a bug on Ooplie",
-		"Report an issue on Ooplie",
-		"Open an issue on Ooplie",
-		"I found a bug",
-		"I think I found a bug",
-		"I think that's a bug"
-	],
-	fn: function(){
-		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
-	}
-}));
-context.patterns.push(new Ooplie.Pattern({
-	// TODO: have a command "go to"/"open"
-	// and define constants for "this repo on GitHub" etc.
-	// also constants should be able to have matchers
-	match: [
-		"Go to this repo",
-		"Go to this repo on GitHub",
-		"Go to this repository",
-		"Go to this repository on GitHub",
-	],
-	bad_match: [
-		"Go to GitHub",
-		"Open GitHub",
-		"Open the repo",
-		"Open this repo",
-		"Open the repository",
-		"Open this repository",
-		"Open the repo on GitHub",
-		"Open this repo on GitHub",
-		"Open the repository on GitHub",
-		"Open this repository on GitHub"
-	],
-	fn: function(){
-		con.logHTML("<a href='https://github.com/1j01/ooplie/issues/new' target='_blank'>https://github.com/1j01/ooplie/issues/new</a>");
-		// TODO: maybe output "Opening <linky link>" and call window.open()
-	}
-}));
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Report an issue with this console",
-		"Report a bug with this console",
-		"Open an issue with this console",
-		"Open an issue report with this console",
-		"Open a bug report with this console",
-		"File an issue with this console",
-		"File an issue report with this console",
-		"File a bug with this console",
-		"File a bug report with this console",
-		
-		"Report an issue with the console",
-		"Report a bug with the console",
-		"Open an issue with the console",
-		"Open an issue report with the console",
-		"Open a bug report with the console",
-		"File an issue with the console",
-		"File an issue report with the console",
-		"File a bug with the console",
-		"File a bug report with the console"
-	],
-	// TODO: maybe_match "report a bug" etc.
-	fn: function(){
-		con.logHTML("<a href='https://github.com/1j01/simple-console/issues/new' target='_blank'>https://github.com/1j01/simple-console/issues/new</a>");
-	}
-}));
+]}));
 
 // TODO: these should be a single command
 // but it would be good to have the actual options appear in the parts menu
-
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Switch to dark theme",
-		"Switch to the dark theme",
-		"Switch theme to dark",
-		"Switch the theme to dark",
-		"Switch style to dark",
-		"Switch the style to dark",
-		"Switch to dark style",
-		"Switch to dark the style",
-		"Switch to dark mode", // TODO: "Already in dark mode"
-		"Use dark theme",
-		"Use the dark theme",
-		"Use dark mode", // TODO: "Already in dark mode"
-		"Set theme to dark",
-		"Set theme dark",
-		"Set the theme to dark",
-		"Set style to dark",
-		"Set the style to dark",
-		"Choose theme dark",
-		"Choose dark theme"
-	],
-	bad_match: [
-		"Use the dark style",
-		"Use the dark styles",
-		"Use the dark stylesheet",
-		"theme dark",
-		"dark theme",
-		"dark mode"
-	],
-	fn: function(){
-		var previous_theme = get_theme();
-		set_theme("dark");
-		if(previous_theme !== "dark"){
-			con.log("Theme set to dark.");
-		}else{
-			con.log("Already using dark theme.");
-		}
-	}
-}));
-
-context.patterns.push(new Ooplie.Pattern({
-	match: [
-		"Switch to light theme",
-		"Switch to the light theme",
-		"Switch theme to light",
-		"Switch the theme to light",
-		"Switch style to light",
-		"Switch the style to light",
-		"Switch to light style",
-		"Switch to light the style",
-		"Switch to light mode", // TODO: "Already in light mode"
-		"Use light theme",
-		"Use light mode", // TODO: "Already in light mode"
-		"Use the light theme",
-		"Set theme to light",
-		"Set theme light",
-		"Set the theme to light",
-		"Set style to light",
-		"Set the style to light",
-		"Choose theme light",
-		"Choose light theme"
-	],
-	bad_match: [
-		"Use the light style",
-		"Use the light styles",
-		"Use the light stylesheet",
-		"theme light",
-		"light theme",
-		"light mode"
-	],
-	fn: function(){
-		var previous_theme = get_theme();
-		set_theme("light");
-		if(previous_theme !== "light"){
-			con.log("Theme set to light.");
-		}else{
-			con.log("Already using light theme.");
-		}
-	}
-}));
 
 // TODO: maybe have a "Toggle dark theme" command
 // and/or "Toggle theme", "Change theme", "Choose a theme"

@@ -30,7 +30,7 @@
 			border: 1px solid rgba(128, 128, 128, 0.5);
 			border-radius: 0.15em;
 		}
-		.pattern var {
+		.parts-menu var {
 			color: #797979;
 		}
 		.parts-menu-button {
@@ -90,12 +90,28 @@
 			outline: 0;
 			background: rgba(128, 128, 128, 0.1);
 		}
-		.pattern {
+		section {
+			width: 100%;
+		}
+		/*.pattern,
+		.constant {
 			margin: 0;
 			padding: 0.5em;
 		}
-		section {
-			width: 100%;
+		.operator {
+			padding: 1em 2em;
+			display: inline-block;
+		}*/
+		.pattern,
+		.operator,
+		.constant {
+			margin: 0;
+			padding: 0.5rem 0.5rem;
+		}
+		.operator,
+		.constant {
+			/* TODO: separators */
+			display: inline-block;
 		}
 	</style>
 	<script src="lib/simple-console.js"></script>
