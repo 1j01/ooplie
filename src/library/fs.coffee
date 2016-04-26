@@ -268,4 +268,7 @@ module.exports = new Library "File System", patterns: [
 				.filter (fname)->
 					fs.statSync(fname).isDirectory()
 	
+	# TODO: "go up one level", "go up 5 folders"
+	# "To go up N levels, go up N times"
+	
 ]

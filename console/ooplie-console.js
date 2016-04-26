@@ -233,8 +233,14 @@ addEventListener("keydown", function(e){
 // 	}
 // });
 
+var meta_theme_color = document.createElement("meta");
+meta_theme_color.setAttribute("name", "theme-color");
+document.head.appendChild(meta_theme_color);
+
 var set_theme = function(theme){
 	document.body.className = theme;
+	var theme_color = getComputedStyle(document.body).backgroundColor;
+	meta_theme_color.setAttribute("content", theme_color);
 	try{
 		localStorage.ooplie_console_theme = theme;
 	}catch(e){}
@@ -425,13 +431,13 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Set style to dark",
 			"Set the style to dark",
 			"Choose theme dark",
-			"Choose dark theme"
+			"Choose dark theme",
+			"theme dark"
 		],
 		bad_match: [
 			"Use the dark style",
 			"Use the dark styles",
 			"Use the dark stylesheet",
-			"theme dark",
 			"dark theme",
 			"dark mode"
 		],
@@ -466,13 +472,13 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Set style to light",
 			"Set the style to light",
 			"Choose theme light",
-			"Choose light theme"
+			"Choose light theme",
+			"theme light"
 		],
 		bad_match: [
 			"Use the light style",
 			"Use the light styles",
 			"Use the light stylesheet",
-			"theme light",
 			"light theme",
 			"light mode"
 		],
