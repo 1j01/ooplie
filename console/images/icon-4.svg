@@ -16,10 +16,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="icon.svg"
-   inkscape:export-filename="C:\Users\Isaiah\!!Projects\ooplie\console\images\icon-4.png"
-   inkscape:export-xdpi="144"
-   inkscape:export-ydpi="144">
+   sodipodi:docname="icon-4.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -86,8 +83,7 @@
        height="226.77901"
        x="-0.0037987777"
        y="825.58685"
-       rx="25"
-       ry="25" />
+       rx="10" />
     <circle
        style="opacity:1;fill:#323232;fill-opacity:1;stroke:#ffffff;stroke-width:16;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path4146"

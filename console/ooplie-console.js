@@ -245,7 +245,7 @@ var get_theme = function(){
 };
 
 try{
-	set_theme(localStorage.ooplie_console_theme);
+	set_theme(localStorage.ooplie_console_theme || "light");
 }catch(e){}
 
 context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
