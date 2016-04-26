@@ -109,4 +109,65 @@ module.exports = new Library "Process", patterns: [
 		fn: (v)=>
 			process.title
 	
+	new Pattern
+		match: [
+			"the working directory"
+			"the current directory"
+			"working directory"
+			"current directory"
+		]
+		bad_match: [
+			"the working dir"
+			"the current dir"
+			"working dir"
+			"current dir"
+			"pwd"
+			"cwd"
+		]
+		fn: (v)=>
+			process.cwd()
+	
+	new Pattern
+		match: [
+			"change directory to <path>"
+			"change working directory to <path>"
+			"change current directory to <path>"
+			"set working directory to <path>"
+			"set current directory to <path>"
+			"enter directory <path>"
+			"go to directory <path>"
+			"enter folder <path>"
+			"go to folder <path>"
+		]
+		bad_match: [
+			"enter dir <path>"
+			"go to dir <path>"
+			"change working dir to <path>"
+			"change current dir to <path>"
+			"cd into <path>"
+			"cd to <path>"
+			"cd <path>"
+			"chdir into <path>"
+			"chdir to <path>"
+			"chdir <path>"
+			"set directory to <path>"
+			"change dir to <path>"
+			"set cwd to <path>"
+		]
+		fn: (v)=>
+			process.chdir(v("path"))
+	
+	new Pattern
+		match: [
+			"go up"
+			"go out of this folder"
+			"exit folder"
+			"exit this folder"
+		]
+		bad_match: [
+			"cd .."
+		]
+		fn: (v)=>
+			process.chdir("..")
+	
 ]

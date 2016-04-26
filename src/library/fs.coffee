@@ -179,8 +179,8 @@ module.exports = new Library "File System", patterns: [
 			"standard out"
 		]
 		fn: (v)=>
-			# process.stdout # fd 1
-			1
+			# process.stdout # stream
+			1 # file descriptor
 	
 	new Pattern
 		match: [
@@ -188,8 +188,8 @@ module.exports = new Library "File System", patterns: [
 			"standard in"
 		]
 		fn: (v)=>
-			# process.stdin # fd 0
-			0
+			# process.stdin # stream
+			0 # file descriptor
 	
 	new Pattern
 		match: [
@@ -204,7 +204,68 @@ module.exports = new Library "File System", patterns: [
 			"std err"
 		]
 		fn: (v)=>
-			# process.stderr # fd 2
-			2
+			# process.stderr # stream
+			2 # file descriptor
+	
+	new Pattern
+		match: [
+			"list directory contents"
+			"list folder contents"
+			"list current directory contents"
+			"list current folder contents"
+			"list contents of the current directory"
+			"list contents of the current folder"
+			"list the contents of the current directory"
+			"list the contents of the current folder"
+			"list files and subdirectories"
+			"list files and directories"
+			# "enum dir contents"
+			# "'numerate d'rectory 'tents"
+			"ls"
+		]
+		bad_match: [
+			"list dir contents"
+			"list current dir contents"
+			"list contents of the current dir"
+			"list the contents of the current dir"
+		]
+		fn: (v)=>
+			directory = "."
+			fs.readdirSync(directory)
+				.map (fname)->
+					path.join(directory, fname)
+	
+	new Pattern
+		match: [
+			"list files"
+			"list files in the current directory"
+			"list the files in the current directory"
+		]
+		fn: (v)=>
+			directory = "."
+			fs.readdirSync(directory)
+				.map (fname)->
+					path.join(directory, fname)
+				.filter (fname)->
+					fs.statSync(fname).isFile()
+	
+	new Pattern
+		match: [
+			"list subdirectories"
+			"list subfolders"
+			"list directories"
+			"list folders"
+			"list folders in the current directory"
+			"list the folders in the current directory"
+			"list folders in the current folder"
+			"list the folders in the current folder"
+		]
+		fn: (v)=>
+			directory = "."
+			fs.readdirSync(directory)
+				.map (fname)->
+					path.join(directory, fname)
+				.filter (fname)->
+					fs.statSync(fname).isDirectory()
 	
 ]

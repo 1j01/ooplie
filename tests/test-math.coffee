@@ -277,6 +277,7 @@ suite "mathematics", ->
 		evaluate("5 plus 6").to(11)
 		evaluate("5 minus 6").to(-1)
 		evaluate("5 times 6").to(5 * 6)
+		evaluate("5 multiplied by 6").to(5 * 6)
 		evaluate("5 divided by 6").to(5 / 6)
 		evaluate("2 to the power of 8").to(2 ** 8)
 	test "basic unary word operators", ->

@@ -1242,6 +1242,44 @@ module.exports = new Library("File System", {
           return 2;
         };
       })(this)
+    }), new Pattern({
+      match: ["list directory contents", "list folder contents", "list current directory contents", "list current folder contents", "list contents of the current directory", "list contents of the current folder", "list the contents of the current directory", "list the contents of the current folder", "list files and subdirectories", "list files and directories", "ls"],
+      bad_match: ["list dir contents", "list current dir contents", "list contents of the current dir", "list the contents of the current dir"],
+      fn: (function(_this) {
+        return function(v) {
+          var directory;
+          directory = ".";
+          return fs.readdirSync(directory).map(function(fname) {
+            return path.join(directory, fname);
+          });
+        };
+      })(this)
+    }), new Pattern({
+      match: ["list files", "list files in the current directory", "list the files in the current directory"],
+      fn: (function(_this) {
+        return function(v) {
+          var directory;
+          directory = ".";
+          return fs.readdirSync(directory).map(function(fname) {
+            return path.join(directory, fname);
+          }).filter(function(fname) {
+            return fs.statSync(fname).isFile();
+          });
+        };
+      })(this)
+    }), new Pattern({
+      match: ["list subdirectories", "list subfolders", "list directories", "list folders", "list folders in the current directory", "list the folders in the current directory", "list folders in the current folder", "list the folders in the current folder"],
+      fn: (function(_this) {
+        return function(v) {
+          var directory;
+          directory = ".";
+          return fs.readdirSync(directory).map(function(fname) {
+            return path.join(directory, fname);
+          }).filter(function(fname) {
+            return fs.statSync(fname).isDirectory();
+          });
+        };
+      })(this)
     })
   ]
 });
@@ -1265,7 +1303,7 @@ module.exports = new Library("Operators", {
         return Math.pow(lhs, rhs);
       }
     }), new Operator({
-      match: ["×", "*", "times"],
+      match: ["×", "*", "times", "multiplied by"],
       bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
       precedence: 2,
       fn: function(lhs, rhs) {
@@ -1413,6 +1451,30 @@ module.exports = new Library("Process", {
       fn: (function(_this) {
         return function(v) {
           return process.title;
+        };
+      })(this)
+    }), new Pattern({
+      match: ["the working directory", "the current directory", "working directory", "current directory"],
+      bad_match: ["the working dir", "the current dir", "working dir", "current dir", "pwd", "cwd"],
+      fn: (function(_this) {
+        return function(v) {
+          return process.cwd();
+        };
+      })(this)
+    }), new Pattern({
+      match: ["change directory to <path>", "change working directory to <path>", "change current directory to <path>", "set working directory to <path>", "set current directory to <path>", "enter directory <path>", "go to directory <path>", "enter folder <path>", "go to folder <path>"],
+      bad_match: ["enter dir <path>", "go to dir <path>", "change working dir to <path>", "change current dir to <path>", "cd into <path>", "cd to <path>", "cd <path>", "chdir into <path>", "chdir to <path>", "chdir <path>", "set directory to <path>", "change dir to <path>", "set cwd to <path>"],
+      fn: (function(_this) {
+        return function(v) {
+          return process.chdir(v("path"));
+        };
+      })(this)
+    }), new Pattern({
+      match: ["go up", "go out of this folder", "exit folder", "exit this folder"],
+      bad_match: ["cd .."],
+      fn: (function(_this) {
+        return function(v) {
+          return process.chdir("..");
         };
       })(this)
     })

@@ -25,6 +25,7 @@ module.exports = new Library "Operators", operators: [
 			"×"
 			"*"
 			"times"
+			"multiplied by"
 		]
 		bad_match: [
 			"✖" # heavy multiplication X
