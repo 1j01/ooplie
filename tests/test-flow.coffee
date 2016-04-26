@@ -38,7 +38,8 @@ suite "control flow", ->
 			# C/JS/etc. ternary style:
 			expect(->
 				evaluate("false ? 1010 : 10101").to(10101)
-			).to.throw("For `false ? 1010: 10101`, use If <condition>, <body>, else <alt body> instead")
+			).to.throw("For `false ? 1010: 10101`, use `If <condition>, <body>, else <alt body>` instead")
+			# TODO: should be "For `false ? 1010 : 10101`, use `If <condition>, <body>, else <alt body>` instead"
 		
 		test "if-else-if", ->
 			evaluate("if 5 then 6 else if 2 then 3 else 7").to(6)
@@ -64,18 +65,19 @@ suite "control flow", ->
 			# unless-then
 			expect(->
 				evaluate("Unless true then 5").to(undefined)
-			).to.throw("For `Unless true then 5`, use Unless <condition>, <body> instead")
+			).to.throw("For `Unless true then 5`, use `Unless <condition>, <body>` instead")
 			# unless-then-else
 			expect(->
 				evaluate("unless 345 then 404 else 999").to(999)
-			).to.throw("For `unless 345 then 404 else 999`, use <body> unless <condition> in which case <alt body> instead")
+			).to.throw("For `unless 345 then 404 else 999`, use `<body> unless <condition> in which case <alt body>` instead")
+			# TODO: should probably recommend `If <condition>, <body>, else <alt body>` instead
 			# unless-else
 			# TODO: we can't match `X unless Y else Z` because it's a bad_match(er)
 			# so even when the pattern is above `X unless Y`, `X unless Y` is matched first
 			# might need to make something like a bad_clear_match(er)
 			# expect(->
 			# 	evaluate("55 unless 5 else 33").to(33)
-			# ).to.throw("For `55 unless 5 else 33`, use <body>, unless <condition> in which case <alt body> instead")
+			# ).to.throw("For `55 unless 5 else 33`, use `<body>, unless <condition> in which case <alt body>` instead")
 		
 		test "as blocks", ->
 			evaluate("""

@@ -114,7 +114,7 @@ class Context
 			else
 				bad_match = find_longest_match(next_tokens, "bad_match")
 				if bad_match?
-					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
+					throw new Error "For `#{tok_str}`, use `#{bad_match.pattern.prefered}` instead"
 			
 			if next_literal_tokens.length
 				if next_literal_tokens.some((token)-> token.type is "string")
