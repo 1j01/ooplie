@@ -1,7 +1,7 @@
 
 var con = new SimpleConsole({
 	handleCommand: handle_command,
-	placeholder: "Enter JavaScript or ASCII emoji",
+	placeholder: "Enter commands or expressions",
 	storageID: "ooplie"
 });
 document.body.appendChild(con.element);
