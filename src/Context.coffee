@@ -73,6 +73,15 @@ class Context
 		advance = (advance_by=1)=>
 			index += advance_by
 		
+		find_longest_match = (tokens, match_fn_type="match")=>
+			longest_match = undefined
+			for pattern in @patterns
+				match = pattern[match_fn_type](tokens)
+				longest_match ?= match
+				if match?.matcher.length > longest_match?.matcher.length
+					longest_match = match
+			longest_match
+		
 		parse_primary = =>
 			# TODO: rename; the first "next" token is the current token; maybe "active"?
 			next_tokens = tokens.slice(index)
@@ -95,19 +104,15 @@ class Context
 			tok_str = stringify_tokens(next_tokens)
 			next_word_tok_str = stringify_tokens(next_word_tokens)
 			
-			for pattern in @patterns
-				match = pattern.match(next_tokens)
-				break if match?
+			match = find_longest_match(next_tokens)
 			
 			if match?
 				get_var_value = (var_name)=>
 					@eval_tokens(match[var_name])
-				returns = pattern.fn(get_var_value, @)
+				returns = match.pattern.fn(get_var_value, @)
 				return returns
 			else
-				for pattern in @patterns
-					bad_match = pattern.bad_match(next_tokens)
-					break if bad_match?
+				bad_match = find_longest_match(next_tokens, "bad_match")
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use #{bad_match.pattern.prefered} instead"
 			

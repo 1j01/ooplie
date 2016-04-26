@@ -4,7 +4,8 @@ Library = require "../Library"
 
 # should we have a Process library and a Child Processes library following node?
 # or should we have a Process libary and a Processes library and have kill <pid> in the latter?
-# we should probably just go with node but we'll see
+# we could mainly just go with node but I don't know
+# the chdir stuff doesn't seem right here
 
 # hack to avoid browserify builtin "process" object
 # FIXME: it still includes the whole shim
@@ -16,7 +17,7 @@ module.exports = new Library "Process", patterns: [
 	# TODO: if it doesn't exist, unless it exists, unless it already exists
 	# unless there's already a file there, in which case...
 	
-	# TODO: "if we're writing to a file"? "whether we're reading to a file"?
+	# TODO: "if we're writing to a file"? "whether we're reading from a file"?
 	
 	# TODO: async! use streams and/or promises
 	

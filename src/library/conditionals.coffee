@@ -4,7 +4,14 @@ Library = require "../Library"
 
 module.exports = new Library "Conditionals", patterns: [
 	
-	# NOTE: If-else has to be above If, otherwise If will be matched first
+	new Pattern
+		match: [
+			"If <condition>, <body>"
+			"If <condition> then <body>"
+			"<body> if <condition>"
+		]
+		fn: (v)=> v("body") if v("condition")
+	
 	new Pattern
 		match: [
 			"If <condition>, <body>, else <alt body>"
@@ -31,11 +38,13 @@ module.exports = new Library "Conditionals", patterns: [
 	
 	new Pattern
 		match: [
-			"If <condition>, <body>"
-			"If <condition> then <body>"
-			"<body> if <condition>"
+			"Unless <condition>, <body>"
+			"<body> unless <condition>"
 		]
-		fn: (v)=> v("body") if v("condition")
+		bad_match: [
+			"Unless <condition> then <body>" # not good English
+		]
+		fn: (v)=> v("body") unless v("condition")
 	
 	new Pattern
 		match: [
@@ -53,17 +62,11 @@ module.exports = new Library "Conditionals", patterns: [
 			"Unless <condition> then <body>, else <alt body>"
 			"Unless <condition> then <body> else <alt body>"
 			"<body> unless <condition> else <alt body>" # psuedo-pythonic ternary
+			"<body> or if <condition> else <alt body>"
+			"<body>, or if <condition>, <alt body>"
+			"<body>, or if <condition> <alt body>"
+			"<body> or if <condition>, <alt body>"
 		]
 		fn: (v)=> unless v("condition") then v("body") else v("alt body")
-	
-	new Pattern
-		match: [
-			"Unless <condition>, <body>"
-			"<body> unless <condition>"
-		]
-		bad_match: [
-			"Unless <condition> then <body>" # not good English
-		]
-		fn: (v)=> v("body") unless v("condition")
 	
 ]

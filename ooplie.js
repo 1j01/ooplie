@@ -400,7 +400,7 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var advance, index, parse_expression, parse_primary, peek;
+    var advance, find_longest_match, index, parse_expression, parse_primary, peek;
     index = 0;
     peek = (function(_this) {
       return function() {
@@ -415,9 +415,30 @@ module.exports = Context = (function() {
         return index += advance_by;
       };
     })(this);
+    find_longest_match = (function(_this) {
+      return function(tokens, match_fn_type) {
+        var j, len, longest_match, match, pattern, ref;
+        if (match_fn_type == null) {
+          match_fn_type = "match";
+        }
+        longest_match = void 0;
+        ref = _this.patterns;
+        for (j = 0, len = ref.length; j < len; j++) {
+          pattern = ref[j];
+          match = pattern[match_fn_type](tokens);
+          if (longest_match == null) {
+            longest_match = match;
+          }
+          if ((match != null ? match.matcher.length : void 0) > (longest_match != null ? longest_match.matcher.length : void 0)) {
+            longest_match = match;
+          }
+        }
+        return longest_match;
+      };
+    })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, len4, len5, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, o, operator, p, pattern, ref, ref1, ref2, ref3, returns, str, tok_str, token;
+        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, operator, ref, ref1, returns, str, tok_str, token;
         next_tokens = tokens.slice(index);
         if (next_tokens.length === 0) {
           return;
@@ -442,29 +463,15 @@ module.exports = Context = (function() {
         }
         tok_str = stringify_tokens(next_tokens);
         next_word_tok_str = stringify_tokens(next_word_tokens);
-        ref1 = _this.patterns;
-        for (m = 0, len2 = ref1.length; m < len2; m++) {
-          pattern = ref1[m];
-          match = pattern.match(next_tokens);
-          if (match != null) {
-            break;
-          }
-        }
+        match = find_longest_match(next_tokens);
         if (match != null) {
           get_var_value = function(var_name) {
             return _this.eval_tokens(match[var_name]);
           };
-          returns = pattern.fn(get_var_value, _this);
+          returns = match.pattern.fn(get_var_value, _this);
           return returns;
         } else {
-          ref2 = _this.patterns;
-          for (n = 0, len3 = ref2.length; n < len3; n++) {
-            pattern = ref2[n];
-            bad_match = pattern.bad_match(next_tokens);
-            if (bad_match != null) {
-              break;
-            }
-          }
+          bad_match = find_longest_match(next_tokens, "bad_match");
           if (bad_match != null) {
             throw new Error("For `" + tok_str + "`, use " + bad_match.pattern.prefered + " instead");
           }
@@ -474,8 +481,8 @@ module.exports = Context = (function() {
             return token.type === "string";
           })) {
             str = "";
-            for (o = 0, len4 = next_tokens.length; o < len4; o++) {
-              token = next_tokens[o];
+            for (m = 0, len2 = next_tokens.length; m < len2; m++) {
+              token = next_tokens[m];
               str += token.value;
             }
             advance(next_literal_tokens.length);
@@ -509,9 +516,9 @@ module.exports = Context = (function() {
             advance(closing_token_index - 1);
             return parse_expression(bracketed_value, 0);
           }
-          ref3 = _this.operators;
-          for (p = 0, len5 = ref3.length; p < len5; p++) {
-            operator = ref3[p];
+          ref1 = _this.operators;
+          for (n = 0, len3 = ref1.length; n < len3; n++) {
+            operator = ref1[n];
             if (!operator.unary) {
               continue;
             }
@@ -820,6 +827,7 @@ module.exports = Pattern = (function() {
     }
     if (matcher_index === matcher.length) {
       variables.pattern = this;
+      variables.matcher = matcher;
       return variables;
     } else {
 
@@ -961,18 +969,6 @@ Library = require("../Library");
 module.exports = new Library("Conditionals", {
   patterns: [
     new Pattern({
-      match: ["If <condition>, <body>, else <alt body>", "If <condition>, <body> else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
-      bad_match: ["if <condition>, then <body>, else <alt body>", "if <condition>, then <body>, else, <alt body>", "if <condition>, <body>, else, <alt body>", "<condition> ? <body> : <alt body>", "unless <condition>, <alt body> else <body>", "unless <condition>, <alt body>, else <body>", "unless <condition> then <alt body>, else <body>", "unless <condition> then <alt body>, else, <body>", "unless <condition>, then <alt body>, else <body>", "unless <condition>, then <alt body>, else, <body>"],
-      fn: (function(_this) {
-        return function(v) {
-          if (v("condition")) {
-            return v("body");
-          } else {
-            return v("alt body");
-          }
-        };
-      })(this)
-    }), new Pattern({
       match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
       fn: (function(_this) {
         return function(v) {
@@ -982,11 +978,11 @@ module.exports = new Library("Conditionals", {
         };
       })(this)
     }), new Pattern({
-      match: ["<body> unless <condition> in which case <alt body>", "<body>, unless <condition> in which case <alt body>", "<body> unless <condition>, in which case <alt body>", "<body>, unless <condition>, in which case <alt body>", "<body> unless <condition> in which case just <alt body>", "<body>, unless <condition> in which case just <alt body>", "<body> unless <condition>, in which case just <alt body>", "<body>, unless <condition>, in which case just <alt body>"],
-      bad_match: ["Unless <condition>, <body>, else <alt body>", "Unless <condition> then <body>, else <alt body>", "Unless <condition> then <body> else <alt body>", "<body> unless <condition> else <alt body>"],
+      match: ["If <condition>, <body>, else <alt body>", "If <condition>, <body> else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
+      bad_match: ["if <condition>, then <body>, else <alt body>", "if <condition>, then <body>, else, <alt body>", "if <condition>, <body>, else, <alt body>", "<condition> ? <body> : <alt body>", "unless <condition>, <alt body> else <body>", "unless <condition>, <alt body>, else <body>", "unless <condition> then <alt body>, else <body>", "unless <condition> then <alt body>, else, <body>", "unless <condition>, then <alt body>, else <body>", "unless <condition>, then <alt body>, else, <body>"],
       fn: (function(_this) {
         return function(v) {
-          if (!v("condition")) {
+          if (v("condition")) {
             return v("body");
           } else {
             return v("alt body");
@@ -1000,6 +996,18 @@ module.exports = new Library("Conditionals", {
         return function(v) {
           if (!v("condition")) {
             return v("body");
+          }
+        };
+      })(this)
+    }), new Pattern({
+      match: ["<body> unless <condition> in which case <alt body>", "<body>, unless <condition> in which case <alt body>", "<body> unless <condition>, in which case <alt body>", "<body>, unless <condition>, in which case <alt body>", "<body> unless <condition> in which case just <alt body>", "<body>, unless <condition> in which case just <alt body>", "<body> unless <condition>, in which case just <alt body>", "<body>, unless <condition>, in which case just <alt body>"],
+      bad_match: ["Unless <condition>, <body>, else <alt body>", "Unless <condition> then <body>, else <alt body>", "Unless <condition> then <body> else <alt body>", "<body> unless <condition> else <alt body>", "<body> or if <condition> else <alt body>", "<body>, or if <condition>, <alt body>", "<body>, or if <condition> <alt body>", "<body> or if <condition>, <alt body>"],
+      fn: (function(_this) {
+        return function(v) {
+          if (!v("condition")) {
+            return v("body");
+          } else {
+            return v("alt body");
           }
         };
       })(this)

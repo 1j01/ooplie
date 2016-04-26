@@ -123,6 +123,7 @@ class Pattern
 		
 		if matcher_index is matcher.length
 			variables.pattern = @
+			variables.matcher = matcher
 			# console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
 			# console.log "got variables", variables
 			# console.log "ended at index", matcher_index, "on", matcher

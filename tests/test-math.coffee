@@ -301,6 +301,7 @@ suite "mathematics", ->
 		evaluate("radical 2").to(Math.sqrt(2))
 		evaluate("the cubic root of 2").to(Math.pow(2, 1/3)) # throw style error
 		evaluate("the cube root of 2").to(Math.pow(2, 1/3))
+		# TODO: 5 of 6? 5 out of 6?
 		# TODO: nth roots
 	test "worded comparisons", ->
 		evaluate("5 equals 5").to(true)
@@ -412,8 +413,9 @@ suite "mathematics", ->
 		evaluate("Pegasus + unicorn = pegacorn").to(true)
 		evaluate("shark + octopus = Sharktopus").to(true)
 		evaluate("shark + tornado = Sharknado").to(true)
+		# I hope I never implement operator overloading
 	test.skip "unit equality", ->
-		# should this be a thing?
+		# should this be a thing? probably not
 		# what if you want a variable s? what about s = sec = second = 2nd?
 		evaluate("s = ms").to(false)
 		evaluate("s = seconds").to(true)
