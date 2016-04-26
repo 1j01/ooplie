@@ -6,7 +6,12 @@ Library = require "../Library"
 # or should we have a Process libary and a Processes library and have kill <pid> in the latter?
 # we should probably just go with node but we'll see
 
-module.exports = new Library "Process(es)", patterns: [
+# hack to avoid browserify builtin "process" object
+# FIXME: it still includes the whole shim
+if window?.global
+	process = window.global.process
+
+module.exports = new Library "Process", patterns: [
 	
 	# TODO: if it doesn't exist, unless it exists, unless it already exists
 	# unless there's already a file there, in which case...

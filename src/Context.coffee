@@ -22,6 +22,11 @@ class Context
 			require "./library/eval-js"
 			require "./library/eval-ooplie"
 		]
+		unless window? and not window.require?
+			@libraries = @libraries.concat [
+				require "./library/fs"
+				require "./library/process"
+			]
 		
 		@classes = []
 		@instances = []

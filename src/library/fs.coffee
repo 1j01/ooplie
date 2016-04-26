@@ -5,6 +5,10 @@ path = require "path"
 Pattern = require "../Pattern"
 Library = require "../Library"
 
+# hack to avoid browserify builtin "fs" module
+if window?.require?
+	fs = window.require "fs"
+
 module.exports = new Library "File System", patterns: [
 	
 	# TODO: async! use streams and/or promises
