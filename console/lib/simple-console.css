@@ -64,6 +64,53 @@
 .simple-console-input-wrapper button:active {
 	opacity: 0.8;
 }
+.simple-console-input-wrapper .popup-menu {
+	position: absolute;
+	right: 0;
+	margin: 0.5em;
+	margin-top: 1.5em;
+	border: 1px solid rgba(128, 128, 128, 0.5);
+	border-radius: 0.2em;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	cursor: default;
+}
+@media (max-width: 52em) {
+	.simple-console-input-wrapper .popup-menu {
+		min-width: 0;
+		left: 0;
+	}
+}
+.popup-menu[aria-hidden="true"] {
+	display: none;
+}
+.popup-menu .menu-item:first-child {
+	border-top-left-radius: 0.2em;
+	border-top-right-radius: 0.2em;
+}
+.popup-menu .menu-item:last-child {
+	border-bottom-left-radius: 0.2em;
+	border-bottom-right-radius: 0.2em;
+}
+.menu-divider {
+	border: 0;
+	border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+	margin: 0.3em 0;
+}
+.popup-menu .menu-item {
+	padding: 0.25rem 0.5rem;
+}
+.popup-menu .menu-item:hover {
+	background: rgba(128, 128, 128, 0.1);
+}
+.popup-menu .menu-item:focus,
+.popup-menu .menu-item:active {
+	background: #4078c0;
+	color: white;
+	outline: 0;
+}
 .simple-console-input-wrapper,
 .entry {
 	padding: 0.25rem 0.5rem;
@@ -88,11 +135,13 @@
 	background: #FFF5F5;
 }
 
-.light {
+.light,
+.light .popup-menu {
 	background: white;
 	color: black;
 }
-.dark {
+.dark,
+.dark .popup-menu {
 	background: black;
 	color: white;
 }

@@ -15,14 +15,12 @@ var Ooplie = typeof require !== "undefined" ? require("../ooplie") : self.Ooplie
 
 var context = new Ooplie.Context({console: con});
 
-var parts_menu_button = document.createElement("button");
+var parts_menu_button = con.addPopupButton(update_parts_menu);
 parts_menu_button.classList.add("parts-menu-button");
-con.input.parentElement.appendChild(parts_menu_button);
 parts_menu_button.setAttribute("title", "Parts menu");
 
-var parts_menu = document.createElement("div");
+var parts_menu = parts_menu_button.popup;
 parts_menu.classList.add("parts-menu");
-con.input.parentElement.appendChild(parts_menu);
 
 parts_menu_button.innerHTML =
 	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92">' +
@@ -33,7 +31,7 @@ parts_menu_button.innerHTML =
 
 var accordion_state = {};
 
-var update_parts_menu = function(){
+function update_parts_menu(){
 	parts_menu.innerHTML = "";
 	
 	for(var i = 0; i < context.libraries.length; i++){
@@ -165,75 +163,17 @@ var update_parts_menu = function(){
 		}
 	}
 	// TODO: fix ugly animations when opening or resizing across the css break point
+
 };
 // TODO: add extra information about patterns, like alternate phrasings, maybe descriptions?
 
-var open_parts_menu = function(){
-	parts_menu.style.display = "block";
-	update_parts_menu();
-	// TODO: scroll menu into view
-};
-
-var close_parts_menu = function(){
-	parts_menu.style.display = "none";
-};
-
-var parts_menu_is_open = function(){
-	return parts_menu.style.display === "block";
-};
-
-var toggle_parts_menu = function(){
-	if(parts_menu_is_open()){
-		close_parts_menu();
-	}else{
-		open_parts_menu();
-	}
-};
-
-close_parts_menu();
-
-parts_menu_button.addEventListener("click", function(e){
-	toggle_parts_menu();
-});
-
-parts_menu_button.addEventListener("keydown", function(e){
-	if(e.keyCode === 40){ // Down
-		if(!parts_menu_is_open()){
-			open_parts_menu();
-		}
-		parts_menu.querySelector("h1").focus();
-	}
-});
-
-// con.input.addEventListener("focus", function(e){
-// 	close_parts_menu();
-// });
-
-// parts_menu.addEventListener("keydown", function(e){
-// 	if(e.keyCode === 38){ // Up
-// 		if(document.activeElement === parts_menu.querySelector("h1")){
-// 			parts_menu_button.focus();
-// 		}
-// 	}
-// });
-
-addEventListener("keydown", function(e){
-	if(parts_menu_is_open()){
-		if(e.keyCode === 27){
-			e.preventDefault();
-			close_parts_menu();
+parts_menu.addEventListener("keydown", function(e){
+	if(e.keyCode === 38){ // Up
+		if(document.activeElement === parts_menu.querySelector("h1")){
+			parts_menu_button.focus();
 		}
 	}
-});
-
-// addEventListener("mousedown", function(e){
-// 	if(parts_menu_is_open()){
-// 		if(!e.target.closest(".parts-menu-button, .parts-menu")){
-// 			e.preventDefault();
-// 			close_parts_menu();
-// 		}
-// 	}
-// });
+}, true);
 
 var meta_theme_color = document.createElement("meta");
 meta_theme_color.setAttribute("name", "theme-color");
@@ -271,7 +211,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Show parts drawer"
 		],
 		fn: function(){
-			open_parts_menu();
+			parts_menu_button.openPopup();
 		}
 	}),
 	
@@ -289,7 +229,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Hide parts drawer"
 		],
 		fn: function(){
-			close_parts_menu();
+			parts_menu_button.closePopup();
 		}
 	}),
 	
@@ -307,7 +247,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Show/hide parts drawer"
 		],
 		fn: function(){
-			toggle_parts_menu();
+			parts_menu_button.togglePopup();
 		}
 	}),
 	
