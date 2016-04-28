@@ -47,6 +47,24 @@ module.exports = new Library "Process", patterns: [
 	
 	new Pattern
 		match: [
+			"Exit with code <code>"
+			"Exit the program with code <code>"
+			"Exit this process with code <code>"
+			"Exit the process with code <code>"
+		]
+		bad_match: [
+			"Exit this program with code <code>"
+			"End this process with code <code>"
+			"Exit process with code <code>"
+			"End process with code <code>"
+			"Exit program with code <code>"
+			"End program with code <code>"
+		]
+		fn: (v)=>
+			process.exit(v("code"))
+	
+	new Pattern
+		match: [
 			"Kill process <pid>"
 			"End process <pid>"
 		]
