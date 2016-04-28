@@ -24,10 +24,12 @@ var parts_menu = document.createElement("div");
 parts_menu.classList.add("parts-menu");
 con.input.parentElement.appendChild(parts_menu);
 
-var parts_menu_icon = document.createElement("img");
-parts_menu_icon.classList.add("parts-menu-button");
-parts_menu_button.appendChild(parts_menu_icon);
-parts_menu_icon.src = "images/parts.svg";
+parts_menu_button.innerHTML =
+	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92">' +
+		'<rect width="91.96" height="51.79" x=".02" y="25.6" rx="4" fill="currentColor"/>' +
+		'<rect width="26.43" height="21.43" x="53.94" y="14.61" rx="4" fill="currentColor"/>' +
+		'<rect width="26.43" height="21.43" x="11.62" y="14.61" rx="4" fill="currentColor"/>' +
+	'</svg>';
 
 var accordion_state = {};
 
