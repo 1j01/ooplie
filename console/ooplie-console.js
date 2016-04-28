@@ -167,14 +167,6 @@ function update_parts_menu(){
 };
 // TODO: add extra information about patterns, like alternate phrasings, maybe descriptions?
 
-parts_menu.addEventListener("keydown", function(e){
-	if(e.keyCode === 38){ // Up
-		if(document.activeElement === parts_menu.querySelector("h1")){
-			parts_menu_button.focus();
-		}
-	}
-}, true);
-
 var meta_theme_color = document.createElement("meta");
 meta_theme_color.setAttribute("name", "theme-color");
 document.head.appendChild(meta_theme_color);
