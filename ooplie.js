@@ -907,6 +907,10 @@ module.exports = Token = (function() {
 
 
 },{}],9:[function(require,module,exports){
+var stringify_tokens;
+
+stringify_tokens = require("./Token").stringify_tokens;
+
 module.exports = function(tokens, start_index) {
   var closing_bracket, ended, level, lookahead_index, lookahead_token, opening_bracket, opening_token;
   opening_token = tokens[start_index];
@@ -945,20 +949,20 @@ module.exports = function(tokens, start_index) {
       }
     } else {
       if (opening_token.type === "punctuation") {
-        if (opening_token) {
-          throw new Error("Missing ending parenthesis in `" + tok_str + "`");
+        if (opening_token.value === "(") {
+          throw new Error("Missing closing parenthesis in `" + (stringify_tokens(tokens)) + "`");
         } else {
-          throw new Error("Missing ending bracket in `" + tok_str + "`");
+          throw new Error("Missing closing bracket in `" + (stringify_tokens(tokens)) + "`");
         }
       } else {
-        throw new Error("Missing ending... dedent? in `" + tok_str + "`? " + (JSON.stringify(next_tokens)));
+        throw new Error("Missing closing... dedent? in `" + (stringify_tokens(tokens)) + "`? " + (JSON.stringify(tokens)));
       }
     }
   }
 };
 
 
-},{}],10:[function(require,module,exports){
+},{"./Token":8}],10:[function(require,module,exports){
 var Library, Pattern;
 
 Pattern = require("../Pattern");

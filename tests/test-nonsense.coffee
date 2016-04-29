@@ -45,22 +45,31 @@ suite "nonsense", ->
 			context.eval('"derp"^2')
 		).to.throw("type mismatch")
 	
-	test.skip "unexpected end of input", ->
+	test "missing closing bracket", ->
 		expect(->
-			context.eval('3 tho')
-		).to.throw("3 tho?")
+			context.eval('foo(')
+		).to.throw("Missing closing parenthesis")
 		expect(->
 			context.eval('3(')
-		).to.throw("missing ending parenthesis")
+		).to.throw("Missing closing parenthesis")
+		expect(->
+			context.eval('3 tho {[])')
+		).to.throw("Missing closing bracket")
+	
+	test.skip "missing opening bracket", ->
 		expect(->
 			context.eval('3}')
-		).to.throw("unexpected ending curly bracket")
+		).to.throw("unexpected closing curly bracket")
+	
+	test.skip "trailing backslash", ->
 		expect(->
 			context.eval('3\\')
 		).to.throw("backslash what?")
+	
+	test.skip "tho?", ->
 		expect(->
-			context.eval('3|')
-		).to.throw("what is this pipe you speak of?")
+			context.eval('3 tho')
+		).to.throw("3 tho?")
 	
 	test "missing right operand", ->
 		expect(->
@@ -98,6 +107,9 @@ suite "nonsense", ->
 		expect(->
 			context.eval('5 ! 2')
 		).to.throw("is this a binary operator I don't know about?")
+		expect(->
+			context.eval('3|')
+		).to.throw("what is this pipe you speak of?")
 	
 	test.skip "incrementing number literals", ->
 		expect(->

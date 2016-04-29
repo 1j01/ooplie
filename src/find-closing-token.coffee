@@ -1,4 +1,6 @@
 
+{stringify_tokens} = require "./Token"
+
 module.exports = (tokens, start_index)->
 	opening_token = tokens[start_index]
 	lookahead_index = start_index
@@ -25,10 +27,10 @@ module.exports = (tokens, start_index)->
 				return lookahead_index
 		else
 			if opening_token.type is "punctuation"
-				if opening_token
-					throw new Error "Missing ending parenthesis in `#{tok_str}`"
+				if opening_token.value is "("
+					throw new Error "Missing closing parenthesis in `#{stringify_tokens(tokens)}`"
 				else
-					throw new Error "Missing ending bracket in `#{tok_str}`"
+					throw new Error "Missing closing bracket in `#{stringify_tokens(tokens)}`"
 			else
 				# console.error "wtf", next_tokens, tokens
-				throw new Error "Missing ending... dedent? in `#{tok_str}`? #{JSON.stringify next_tokens}"
+				throw new Error "Missing closing... dedent? in `#{stringify_tokens(tokens)}`? #{JSON.stringify tokens}"
