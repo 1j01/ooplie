@@ -345,6 +345,13 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 		}
 	}),
 	
+	// TODO: switching to light/dark should use a single command
+	// but it would be good to have the actual options appear in the parts menu
+
+	// TODO: maybe have a "Toggle dark theme" command
+	// and/or "Toggle theme", "Change theme", "Choose a theme"
+	// (maybe more themes but whatever)
+
 	new Ooplie.Pattern({
 		match: [
 			"Switch to dark theme",
@@ -355,10 +362,10 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Switch the style to dark",
 			"Switch to dark style",
 			"Switch to dark the style",
-			"Switch to dark mode", // TODO: "Already in dark mode"
+			"Switch to dark mode", // TODO: "Already in dark mode"?
 			"Use dark theme",
 			"Use the dark theme",
-			"Use dark mode", // TODO: "Already in dark mode"
+			"Use dark mode", // TODO: "Already in dark mode"?
 			"Set theme to dark",
 			"Set theme dark",
 			"Set the theme to dark",
@@ -396,9 +403,9 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 			"Switch the style to light",
 			"Switch to light style",
 			"Switch to light the style",
-			"Switch to light mode", // TODO: "Already in light mode"
+			"Switch to light mode", // TODO: "Already in light mode"?
 			"Use light theme",
-			"Use light mode", // TODO: "Already in light mode"
+			"Use light mode", // TODO: "Already in light mode"?
 			"Use the light theme",
 			"Set theme to light",
 			"Set theme light",
@@ -428,13 +435,6 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 	})
 
 ]}));
-
-// TODO: these should be a single command
-// but it would be good to have the actual options appear in the parts menu
-
-// TODO: maybe have a "Toggle dark theme" command
-// and/or "Toggle theme", "Change theme", "Choose a theme"
-// (maybe more themes but whatever)
 
 function handle_command(command){
 	// Conversational trivialities
@@ -471,7 +471,8 @@ function handle_command(command){
 		if(err){
 			con.error(err);
 		}else if(result !== undefined){
-			con.log(result).classList.add("result");
+			con.log(result);
+			con.getLastEntry().classList.add("result");
 		}
 	}
 };
