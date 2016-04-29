@@ -119,8 +119,8 @@ class Context
 			if next_literal_tokens.length
 				if next_literal_tokens.some((token)-> token.type is "string")
 					str = ""
-					str += token.value for token in next_tokens
-					advance(next_literal_tokens.length)
+					str += token.value for token in next_literal_tokens
+					# advance(next_literal_tokens.length)
 					return str
 				else if next_literal_tokens.length > 1
 					# TODO: row/column numbers in errors
@@ -160,7 +160,6 @@ class Context
 					if matcher
 						advance(matcher.length)
 						if index is tokens.length
-							# throw new Error "unary operator at end of expression (missing right operand)"
 							throw new Error "missing right operand for `#{operator.prefered}`"
 						
 						following_value = parse_primary()

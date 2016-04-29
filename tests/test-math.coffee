@@ -90,6 +90,8 @@ suite "mathematics", ->
 			evaluate("false = false").to(true)
 			evaluate("true = true").to(true)
 			evaluate("true = false").to(false)
+			evaluate("'5' = '5'").to(true)
+			evaluate("'5' = 5").to(false)
 			# TODO: bad_match operators
 			# expect(->
 			# 	evaluate("5 == 5").to(true)

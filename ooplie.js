@@ -481,11 +481,10 @@ module.exports = Context = (function() {
             return token.type === "string";
           })) {
             str = "";
-            for (m = 0, len2 = next_tokens.length; m < len2; m++) {
-              token = next_tokens[m];
+            for (m = 0, len2 = next_literal_tokens.length; m < len2; m++) {
+              token = next_literal_tokens[m];
               str += token.value;
             }
-            advance(next_literal_tokens.length);
             return str;
           } else if (next_literal_tokens.length > 1) {
             throw new Error("Consecutive numbers, " + next_literal_tokens[0].value + " and " + next_literal_tokens[1].value);
