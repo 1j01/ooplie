@@ -54,7 +54,10 @@ suite "nonsense", ->
 		).to.throw("Missing closing parenthesis")
 		expect(->
 			context.eval('3 tho {[])')
-		).to.throw("Missing closing bracket")
+		).to.throw("Missing closing curly bracket")
+		expect(->
+			context.eval('3 tho ()()[{}')
+		).to.throw("Missing closing square bracket")
 	
 	test.skip "missing opening bracket", ->
 		expect(->

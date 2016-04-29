@@ -27,10 +27,11 @@ module.exports = (tokens, start_index)->
 				return lookahead_index
 		else
 			if opening_token.type is "punctuation"
-				if opening_token.value is "("
-					throw new Error "Missing closing parenthesis in `#{stringify_tokens(tokens)}`"
-				else
-					throw new Error "Missing closing bracket in `#{stringify_tokens(tokens)}`"
+				bracket_name = switch opening_token.value
+					when "(" then "parenthesis"
+					when "[" then "square bracket"
+					when "{" then "curly bracket"
+				throw new Error "Missing closing #{bracket_name} in `#{stringify_tokens(tokens)}`"
 			else
 				# console.error "wtf", next_tokens, tokens
 				throw new Error "Missing closing... dedent? in `#{stringify_tokens(tokens)}`? #{JSON.stringify tokens}"

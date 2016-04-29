@@ -912,7 +912,7 @@ var stringify_tokens;
 stringify_tokens = require("./Token").stringify_tokens;
 
 module.exports = function(tokens, start_index) {
-  var closing_bracket, ended, level, lookahead_index, lookahead_token, opening_bracket, opening_token;
+  var bracket_name, closing_bracket, ended, level, lookahead_index, lookahead_token, opening_bracket, opening_token;
   opening_token = tokens[start_index];
   lookahead_index = start_index;
   level = 1;
@@ -949,11 +949,17 @@ module.exports = function(tokens, start_index) {
       }
     } else {
       if (opening_token.type === "punctuation") {
-        if (opening_token.value === "(") {
-          throw new Error("Missing closing parenthesis in `" + (stringify_tokens(tokens)) + "`");
-        } else {
-          throw new Error("Missing closing bracket in `" + (stringify_tokens(tokens)) + "`");
-        }
+        bracket_name = (function() {
+          switch (opening_token.value) {
+            case "(":
+              return "parenthesis";
+            case "[":
+              return "square bracket";
+            case "{":
+              return "curly bracket";
+          }
+        })();
+        throw new Error("Missing closing " + bracket_name + " in `" + (stringify_tokens(tokens)) + "`");
       } else {
         throw new Error("Missing closing... dedent? in `" + (stringify_tokens(tokens)) + "`? " + (JSON.stringify(tokens)));
       }
