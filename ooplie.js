@@ -512,7 +512,7 @@ module.exports = Context = (function() {
             closing_token_index = find_closing_token(tokens, index);
             bracketed_tokens = tokens.slice(index + 1, closing_token_index);
             bracketed_value = _this.eval_tokens(bracketed_tokens);
-            advance(closing_token_index - 1);
+            index = closing_token_index;
             return parse_expression(bracketed_value, 0);
           }
           ref1 = _this.operators;

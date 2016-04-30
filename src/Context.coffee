@@ -85,6 +85,7 @@ class Context
 		parse_primary = =>
 			# TODO: rename; the first "next" token is the current token; maybe "active"?
 			next_tokens = tokens.slice(index)
+			# console.log "parse_primary", stringify_tokens(next_tokens)
 			return if next_tokens.length is 0
 			
 			# NOTE: in the future there will be other kinds of literals
@@ -151,9 +152,11 @@ class Context
 				if token.type is "punctuation" and token.value is "(" or token.type is "indent"
 					closing_token_index = find_closing_token tokens, index
 					bracketed_tokens = tokens.slice(index + 1, closing_token_index)
+					# console.log bracketed_tokens, closing_token_index, tokens
 					bracketed_value = @eval_tokens(bracketed_tokens)
-					advance(closing_token_index - 1)
+					index = closing_token_index
 					return parse_expression(bracketed_value, 0)
+					# return bracketed_value
 				
 				for operator in @operators when operator.unary
 					matcher = operator.match(tokens, index)
@@ -171,6 +174,7 @@ class Context
 				throw new Error "I don't understand `#{tok_str}`"
 		
 		parse_expression = (lhs, min_precedence)=>
+			# console.log "parse_expression", lhs, min_precedence, tokens, index
 			match_operator = =>
 				for operator in @operators
 					matcher = operator.match(tokens, index)
