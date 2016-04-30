@@ -400,21 +400,8 @@ module.exports = Context = (function() {
   };
 
   Context.prototype.eval_tokens = function(tokens) {
-    var advance, find_longest_match, index, parse_expression, parse_primary, peek;
+    var find_longest_match, index, parse_expression, parse_primary;
     index = 0;
-    peek = (function(_this) {
-      return function() {
-        return tokens[index + 1];
-      };
-    })(this);
-    advance = (function(_this) {
-      return function(advance_by) {
-        if (advance_by == null) {
-          advance_by = 1;
-        }
-        return index += advance_by;
-      };
-    })(this);
     find_longest_match = (function(_this) {
       return function(tokens, match_fn_type) {
         var j, len, longest_match, match, pattern, ref;
@@ -523,7 +510,7 @@ module.exports = Context = (function() {
             }
             matcher = operator.match(tokens, index);
             if (matcher) {
-              advance(matcher.length);
+              index += matcher.length;
               if (index === tokens.length) {
                 throw new Error("missing right operand for `" + operator.prefered + "`");
               }
@@ -545,12 +532,12 @@ module.exports = Context = (function() {
             operator = ref[j];
             matcher = operator.match(tokens, index);
             if (matcher != null) {
-              advance(matcher.length);
+              index += matcher.length;
               return operator;
             }
           }
         };
-        advance();
+        index += 1;
         lookahead_operator = match_operator();
         while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
           operator = lookahead_operator;
@@ -558,15 +545,15 @@ module.exports = Context = (function() {
             throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
           }
           rhs = parse_primary();
-          advance();
+          index += 1;
           lookahead_operator = match_operator();
           while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
             if (lookahead_operator.binary && (tokens[index] == null)) {
               throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
             }
-            advance(-2);
+            index -= 2;
             rhs = parse_expression(rhs, lookahead_operator.precedence);
-            advance(2);
+            index += 2;
             lookahead_operator = match_operator();
           }
           lhs = operator.fn(lhs, rhs);

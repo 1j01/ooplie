@@ -68,10 +68,6 @@ class Context
 	
 	eval_tokens: (tokens)->
 		index = 0
-		peek = =>
-			tokens[index + 1]
-		advance = (advance_by=1)=>
-			index += advance_by
 		
 		find_longest_match = (tokens, match_fn_type="match")=>
 			longest_match = undefined
@@ -121,7 +117,7 @@ class Context
 				if next_literal_tokens.some((token)-> token.type is "string")
 					str = ""
 					str += token.value for token in next_literal_tokens
-					# advance(next_literal_tokens.length)
+					# index += next_literal_tokens.length
 					return str
 				else if next_literal_tokens.length > 1
 					# TODO: row/column numbers in errors
@@ -132,19 +128,19 @@ class Context
 				
 				if next_word_tokens.length
 					if @constants.has(next_word_tok_str)
-						# advance(next_word_tokens.length)
+						# index += next_word_tokens.length
 						return @constants.get(next_word_tok_str)
 					
 					if @variables.has(next_word_tok_str)
-						# advance(next_word_tokens.length)
+						# index += next_word_tokens.length
 						return @variables.get(next_word_tok_str)
 				else
 					if @constants.has(tok_str)
-						# advance(next_tokens.length)
+						# index += next_tokens.length
 						return @constants.get(tok_str)
 					
 					if @variables.has(tok_str)
-						# advance(next_tokens.length)
+						# index += next_tokens.length
 						return @variables.get(tok_str)
 				
 				token = tokens[index]
@@ -161,7 +157,7 @@ class Context
 				for operator in @operators when operator.unary
 					matcher = operator.match(tokens, index)
 					if matcher
-						advance(matcher.length)
+						index += matcher.length
 						if index is tokens.length
 							throw new Error "missing right operand for `#{operator.prefered}`"
 						
@@ -179,10 +175,10 @@ class Context
 				for operator in @operators
 					matcher = operator.match(tokens, index)
 					if matcher?
-						advance(matcher.length)
+						index += matcher.length
 						return operator
 			
-			advance()
+			index += 1
 			lookahead_operator = match_operator()
 			
 			while lookahead_operator?.binary and lookahead_operator.precedence >= min_precedence
@@ -190,7 +186,7 @@ class Context
 				if lookahead_operator.binary and not tokens[index]?
 					throw new Error "missing right operand for `#{lookahead_operator.prefered}`"
 				rhs = parse_primary()
-				advance()
+				index += 1
 				lookahead_operator = match_operator()
 				while (
 					(lookahead_operator?.binary and lookahead_operator.precedence > operator.precedence) or
@@ -198,16 +194,16 @@ class Context
 				)
 					if lookahead_operator.binary and not tokens[index]?
 						throw new Error "missing right operand for `#{lookahead_operator.prefered}`"
-					advance(-2)
+					index -= 2
 					rhs = parse_expression(rhs, lookahead_operator.precedence)
-					advance(2)
+					index += 2
 					lookahead_operator = match_operator()
 				lhs = operator.fn(lhs, rhs)
 			if lookahead_operator?.unary
 				throw new Error "unary operator at end of expression? (missing right operand?)" # TODO/FIXME: terrible error message
-			# if peek() and not lookahead_operator?
+			# if tokens[index + 1] and not lookahead_operator?
 			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
-			# if peek()
+			# if tokens[index + 1]
 			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			return lhs
 		
