@@ -7,18 +7,20 @@ Ooplie is a ~~[multi-paradigm][]~~ (currently rather [imperative][]) programming
 
 <!-- https://en.wikipedia.org/wiki/Controlled_natural_language -->
 
-So far you can output text, eval JS, and eval Ooplie code from within Ooplie,
-write expressions with worded operators, unicode operators, or ASCII operators, and
-write trivial (read: useless because there are no variables yet) conditionals.
+So far you can output text, evaluate JS, and evaluate Ooplie code from within Ooplie,
+write expressions with worded operators, Unicode operators, or ASCII operators,
+write trivial (read: useless because there are no variables yet) conditionals,
+and read and write text files.
+
+Ooplie runs in [Node.js][] and in the browser.
 
 There's [a nice little console][console] where you can try it out so far.
 It has a Parts menu where you can see the available commands and expressions.
 Each command has multiple synonyms, often many.
 Everything is organized into libraries, and yes, conditionals are defined in a library.
-You can run the console as a desktop app with `cd console && npm i && npm start`.
-In the future, this will give you access to additional libraries for file system manipulation etc.
-
-Ooplie runs in [Node.js][] and in the browser.
+To access libraries for File System manipulation etc. you need to install the console as a desktop app.
+To do so, clone the repository, open a terminal/command prompt in `console/` and run `npm i`.
+To run the console app, do `npm start`.
 
 ## Inspiration
 
@@ -58,15 +60,15 @@ http://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-i
 
 ## Motivation
 
-I just want see what it would be like to program in English to be honest.
+I want see what it would be like to program in English.
 
 I don't think this is the be-all and end-all of programming paradigms.
 Unless a future of realtime cross-translated collaborative structured document editing is realized, it's probably not going to be better than a more syntactical programming language for international collaboration on software projects.
-High expectations of lingual [disambiguation][] and common sense mean it will never feel smart enough without some machine learning and huge amounts of data.
+High expectations of lingual [disambiguation][] and common sense mean it will never feel smart enough without machine learning and huge amounts of data.
 That's not very distributable, so [a compiler would][Programming with Natural Language Is Actually Going to Work] probably work better.
 But then you miss certain possiblities afforded by a dynamic interpreter.
 
-Someone's gotta do it.
+**TL;DR:** Someone's gotta do it.
 
 
 ## Roadmap
@@ -158,10 +160,18 @@ and could be included as a plugin in web-based code editors like [Atom][].
 
 ### Dev
 
-With [Node.js][], run `npm i` to install.
+Fork the repository on GitHub, and
+with [Node.js][] run `npm install` in the project directory.
 
-Open [`test.html`][tests] (maybe with a [live-server][])
-and/or run `npm test`
+Run `npm test` to run the tests.
+You can also open [`test.html`][tests] (maybe with a [live-server][]) to test Ooplie in a browser,
+but note that only a subset of the tests are run.
+The File System module can't be tested in the browser, for instance.
+
+Before committing, run `npm run prepublish` to compile `ooplie.js`,
+which is included in the repository for [GitHub Pages][] usage.
+
+If you've been running tests in a browser, be sure to run `npm test` at least once before committing.
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
@@ -184,3 +194,4 @@ and/or run `npm test`
 [Toward a better programming]: http://www.chris-granger.com/2014/03/27/toward-a-better-programming/
 [EVE]: http://eve-lang.com/
 [Peek Definition]: https://msdn.microsoft.com/en-us/library/dn160178.aspx
+[GitHub Pages]: https://pages.github.com/

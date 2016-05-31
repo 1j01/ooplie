@@ -1140,7 +1140,7 @@ module.exports = new Library("File System", {
       bad_match: ["Make dir <dir>", "Create dir <dir>", "mkdir <dir>"],
       fn: (function(_this) {
         return function(v) {
-          return fs.mkdir(v("dir"));
+          return fs.mkdirSync(v("dir"));
         };
       })(this)
     }), new Pattern({
@@ -1161,7 +1161,15 @@ module.exports = new Library("File System", {
         };
       })(this)
     }), new Pattern({
-      match: ["Write <data> to file <file>", "Write <data> to <file>", "Write <file> with content <data>"],
+      match: ["Remove directory <dir>", "Delete directory <dir>", "Remove folder <dir>", "Delete folder <dir>"],
+      bad_match: ["Unlink directory <dir>", "Unlink folder <dir>", "Unlink dir <dir>", "Unlink <dir>", "rmdir <dir>"],
+      fn: (function(_this) {
+        return function(v) {
+          return fs.rmdirSync(v("dir"));
+        };
+      })(this)
+    }), new Pattern({
+      match: ["Write <data> to file <file>", "Write <data> to <file>", "Write file <file> with content <data>", "Write <file> with content <data>", "Write to <file>: <data>", "Write to file <file>: <data>", "Write <file>: <data>"],
       fn: (function(_this) {
         return function(v) {
           return fs.writeFileSync(v("file"), v("data"));

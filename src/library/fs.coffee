@@ -14,13 +14,14 @@ module.exports = new Library "File System", patterns: [
 	# TODO: async! use streams and/or promises
 	
 	# TODO: probably should take an object-oriented approach, i.e.
-	# 	output the file's contents and delete the file
+	# 	output the file's contents and delete it # (it = the file)
 	# once we have some OOP facilities
 	
 	# TODO: if it doesn't exist, unless it exists, unless it already exists
-	# unless there's already a file there, in which case...
+	# unless there's already a file there, [in which case]...
 	
-	# TODO: "if we're writing to a file"? "whether we're reading to a file"?
+	# TODO: "if we're writing to a file"? "whether we're reading from a file"?
+	# "if we're [already] [currently] writing to 'foo.txt'"?
 	
 	# TODO: globbing (how?)
 	
@@ -37,7 +38,7 @@ module.exports = new Library "File System", patterns: [
 			"mkdir <dir>"
 		]
 		fn: (v)=>
-			fs.mkdir(v("dir"))
+			fs.mkdirSync(v("dir"))
 	
 	new Pattern
 		match: [
@@ -78,9 +79,30 @@ module.exports = new Library "File System", patterns: [
 	
 	new Pattern
 		match: [
+			"Remove directory <dir>"
+			"Delete directory <dir>"
+			"Remove folder <dir>"
+			"Delete folder <dir>"
+		]
+		bad_match: [
+			"Unlink directory <dir>"
+			"Unlink folder <dir>"
+			"Unlink dir <dir>"
+			"Unlink <dir>"
+			"rmdir <dir>"
+		]
+		fn: (v)=>
+			fs.rmdirSync(v("dir"))
+	
+	new Pattern
+		match: [
 			"Write <data> to file <file>"
 			"Write <data> to <file>"
+			"Write file <file> with content <data>"
 			"Write <file> with content <data>"
+			"Write to <file>: <data>"
+			"Write to file <file>: <data>"
+			"Write <file>: <data>"
 		]
 		fn: (v)=>
 			fs.writeFileSync v("file"), v("data")
