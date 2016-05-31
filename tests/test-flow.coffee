@@ -2,7 +2,35 @@
 {expect} = require?("chai") ? chai
 {Context} = require?("../src/ooplie.coffee") ? Ooplie
 
-context = new Context
+# TODO: DRY mock console
+
+log_to_actual_console = (stuff)-> console.log stuff...
+
+mock_console =
+	log: log_to_actual_console
+
+context = new Context console: mock_console
+
+expect_output = (output, fn)->
+	gotten_outputs = []
+	mock_console.log = (text)->
+		gotten_outputs.push text
+	fn()
+	mock_console.log = log_to_actual_console
+	if Array.isArray(output)
+		unless JSON.stringify(gotten_outputs) is JSON.stringify(output)
+			if gotten_outputs.length > 0
+				throw new Error "Expected console outputs #{JSON.stringify(output)} from #{fn}, instead got outputs #{JSON.stringify(gotten_outputs)}"
+			else
+				throw new Error "Expected console outputs #{JSON.stringify(output)} from #{fn} but got no output"
+	else
+		unless output in gotten_outputs
+			if gotten_outputs.length > 1
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}, instead got outputs #{JSON.stringify(gotten_outputs)}"
+			else if gotten_outputs.length is 1
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}, instead got output #{JSON.stringify(gotten_outputs[0])}"
+			else
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} but got no output"
 
 evaluate = (expression)->
 	result = context.eval(expression)
@@ -12,7 +40,33 @@ evaluate = (expression)->
 
 suite "control flow", ->
 	
-	test "multiple statements"
+	test "multiple statements", ->
+		expect_output ["hello", "world"], ->
+			context.eval("""
+				print "hello"
+				print "world"
+			""")
+	
+	test.skip "multiple statements and an expression", ->
+		expect_output ["hello", "world"], ->
+			evaluate("""
+				print "hello"
+				print "world"
+				5
+			""").to(5)
+	
+	test.skip "statement with an expression, followed by an expression", ->
+		expect_output 4, ->
+			evaluate("""
+				print 2 + 2
+				5
+			""").to(5)
+	
+	test.skip "multiple expressions", ->
+		evaluate("""
+			1 + 1
+			2 + 2
+		""").to(4)
 	
 	suite "conditionals", ->
 		

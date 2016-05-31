@@ -2,6 +2,8 @@
 {expect} = require?("chai") ? chai
 {Context} = require?("../src/ooplie.coffee") ? Ooplie
 
+# TODO: DRY mock console
+
 log_to_actual_console = (stuff)-> console.log stuff...
 
 mock_console =
@@ -16,13 +18,17 @@ expect_output = (output, fn)->
 	fn()
 	mock_console.log = log_to_actual_console
 	if Array.isArray(output)
-		throw new Error "TODO: expect an exact array of outputs"
+		unless JSON.stringify(gotten_outputs) is JSON.stringify(output)
+			if gotten_outputs.length > 0
+				throw new Error "Expected console outputs #{JSON.stringify(output)} from #{fn}, instead got outputs #{JSON.stringify(gotten_outputs)}"
+			else
+				throw new Error "Expected console outputs #{JSON.stringify(output)} from #{fn} but got no output"
 	else
 		unless output in gotten_outputs
 			if gotten_outputs.length > 1
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got outputs #{JSON.stringify(gotten_outputs)})"
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}, instead got outputs #{JSON.stringify(gotten_outputs)}"
 			else if gotten_outputs.length is 1
-				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} (instead got output #{JSON.stringify(gotten_outputs[0])})"
+				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn}, instead got output #{JSON.stringify(gotten_outputs[0])}"
 			else
 				throw new Error "Expected console output #{JSON.stringify(output)} from #{fn} but got no output"
 

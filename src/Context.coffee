@@ -1,6 +1,7 @@
 
 tokenize = require "./tokenize"
 Pattern = require "./Pattern"
+# Operator = require "./Operator"
 {stringify_tokens} = Token = require "./Token"
 find_closing_token = require "./find-closing-token"
 
@@ -60,8 +61,8 @@ class Context
 		
 		tokens = tokenize(text)
 		
-		# @eval_tokens(token for token in tokens when token.type isnt "comment")
-		@eval_tokens(token for token in tokens when token.type not in ["newline", "comment"])
+		@eval_tokens(token for token in tokens when token.type isnt "comment")
+		# @eval_tokens(token for token in tokens when token.type not in ["comment"])
 		
 		# eval is syncronous, but could return Promises for asyncronous operations
 		# a block of async statements should probably return a single Promise that wraps all the Promises of its statements
@@ -78,30 +79,50 @@ class Context
 					longest_match = match
 			longest_match
 		
+		# if token.type is "punctuation" and token.value is "(" or token.type is "indent"
+		# 	closing_token_index = find_closing_token tokens, index
+
 		parse_primary = =>
-			# TODO: rename; the first "next" token is the current token; maybe "active"?
-			next_tokens = tokens.slice(index)
-			# console.log "parse_primary", stringify_tokens(next_tokens)
-			return if next_tokens.length is 0
+			parse_tokens = []
+			for token, i in tokens.slice(index)
+				if token.type is "newline"
+					prev_token = tokens[i - 1]
+					next_token = tokens[i + 1]
+					if prev_token? and prev_token.type not in ["newline", "dedent"] # isnt "newline"
+						# unless next_token.type is "indent" # or prev_token.type is "dedent"
+						unless next_token?.type in ["indent", "dedent"]
+							break
+				else
+					parse_tokens.push(token)
+			# console.log "parse_primary", stringify_tokens(parse_tokens)
+			return if parse_tokens.length is 0
 			
 			# NOTE: in the future there will be other kinds of literals
 			next_literal_tokens = []
-			for token, i in next_tokens
+			# for token, i in parse_tokens when token.type isnt "newline"
+			for token, i in parse_tokens
 				if token.type in ["string", "number"]
 					next_literal_tokens.push(token)
+				# else if token.type is "newline"
+				# 	prev_token = next_literal_tokens[next_literal_tokens.length - 1] (um, this wouldn't work)
+				# 	break if prev_token? and prev_token.type isnt "newline"
 				else
 					break
 			next_word_tokens = []
-			for token, i in next_tokens
+			# for token, i in parse_tokens when token.type isnt "newline"
+			for token, i in parse_tokens
 				if token.type is "word"
 					next_word_tokens.push(token)
+				# else if token.type is "newline"
+				# 	prev_token = next_word_tokens[next_word_tokens.length - 1] (um, this wouldn't work)
+				# 	break if prev_token? and prev_token.type isnt "newline"
 				else
 					break
 			
-			tok_str = stringify_tokens(next_tokens)
+			tok_str = stringify_tokens(parse_tokens)
 			next_word_tok_str = stringify_tokens(next_word_tokens)
 			
-			match = find_longest_match(next_tokens)
+			match = find_longest_match(parse_tokens)
 			
 			if match?
 				get_var_value = (var_name)=>
@@ -109,10 +130,11 @@ class Context
 				returns = match.pattern.fn(get_var_value, @)
 				return returns
 			else
-				bad_match = find_longest_match(next_tokens, "bad_match")
+				bad_match = find_longest_match(parse_tokens, "bad_match")
 				if bad_match?
 					throw new Error "For `#{tok_str}`, use `#{bad_match.pattern.prefered}` instead"
 			
+			# console.log next_literal_tokens, parse_tokens
 			if next_literal_tokens.length
 				if next_literal_tokens.some((token)-> token.type is "string")
 					str = ""
@@ -136,11 +158,11 @@ class Context
 						return @variables.get(next_word_tok_str)
 				else
 					if @constants.has(tok_str)
-						# index += next_tokens.length
+						# index += parse_tokens.length
 						return @constants.get(tok_str)
 					
 					if @variables.has(tok_str)
-						# index += next_tokens.length
+						# index += parse_tokens.length
 						return @variables.get(tok_str)
 				
 				token = tokens[index]
@@ -166,12 +188,28 @@ class Context
 						# following_value = parse_expression(parse_primary(), 0)
 						return operator.fn(following_value)
 				
-				# throw new Error "I don't understand `#{JSON.stringify next_tokens}`"
+				# throw new Error "I don't understand `#{JSON.stringify parse_tokens}`"
 				throw new Error "I don't understand `#{tok_str}`"
+		
+		# newline_operator = new Operator
+		# 	match: [
+		# 		"\n"
+		# 		"\r\n"
+		# 	]
+		# 	bad_match: [
+		# 		"\r"
+		# 	]
+		# 	precedence: 0
+		# 	# right_associative: yes
+		# 	fn: (lhs, rhs)-> lhs; rhs
 		
 		parse_expression = (lhs, min_precedence)=>
 			# console.log "parse_expression", lhs, min_precedence, tokens, index
 			match_operator = =>
+				# console.log tokens[index]?.type, tokens[index + 1]?.type
+				# if tokens[index]?.type is "newline" and tokens[index + 1]? and tokens[index + 1].type isnt "dedent"
+				# 	return newline_operator
+					
 				for operator in @operators
 					matcher = operator.match(tokens, index)
 					if matcher?
@@ -205,6 +243,18 @@ class Context
 			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
 			# if tokens[index + 1]
 			# 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
+			# console.log "tokens[index + 1]", tokens[index + 1]
+			if tokens[index + 1]?.type is "newline"
+				anything_substantial_after_newline = no
+				for i in [index + 1 .. tokens.length - 1]
+					# console.log i, tokens.length, tokens[i]
+					unless tokens[i].type in ["newline", "comment", "indent", "dedent"]
+						# console.log "substantial:", tokens[i]
+						anything_substantial_after_newline = yes
+				# console.log "anything_substantial_after_newline:", anything_substantial_after_newline
+				if anything_substantial_after_newline
+					index += 1
+					return parse_expression(parse_primary(), 0)
 			return lhs
 		
 		parse_expression(parse_primary(), 0)

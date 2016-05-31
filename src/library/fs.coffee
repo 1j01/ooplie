@@ -172,7 +172,7 @@ module.exports = new Library "File System", patterns: [
 			fs.readFileSync v("file")
 			# TODO: export variable "the buffer" and maybe also "the file's contents"
 			# "buffer contents"?
-			# "...as a buffer named Jerry"
+			# "...as buffer A", "as buffer 1", "as the initial memory buffer"...
 	
 	new Pattern
 		match: [

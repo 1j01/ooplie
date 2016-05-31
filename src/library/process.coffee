@@ -98,9 +98,13 @@ module.exports = new Library "Process", patterns: [
 		match: [
 			"current memory usage"
 			"this process's memory usage"
+			"process memory usage"
 			"memory usage of this process"
 			"memory usage"
 			# "How much memory is this process using?"
+		]
+		bad_match: [
+			"process memory"
 		]
 		fn: (v)=>
 			# TODO: return a number with a unit

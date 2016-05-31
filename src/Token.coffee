@@ -21,6 +21,8 @@ class Token
 				str += " #{JSON.stringify(token.value)}"
 			else if token.type is "comment"
 				str += "##{token.value}"
+			else if token.type is "newline"
+				str += "\n"
 			else
 				str += " #{token.value}"
 		str.trim()

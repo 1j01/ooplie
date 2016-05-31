@@ -387,11 +387,11 @@ module.exports = Context = (function() {
     this.coalesce_libraries();
     tokens = tokenize(text);
     return this.eval_tokens((function() {
-      var j, len, ref, results;
+      var j, len, results;
       results = [];
       for (j = 0, len = tokens.length; j < len; j++) {
         token = tokens[j];
-        if ((ref = token.type) !== "newline" && ref !== "comment") {
+        if (token.type !== "comment") {
           results.push(token);
         }
       }
@@ -425,32 +425,47 @@ module.exports = Context = (function() {
     })(this);
     parse_primary = (function(_this) {
       return function() {
-        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_tokens, next_word_tok_str, next_word_tokens, operator, ref, ref1, returns, str, tok_str, token;
-        next_tokens = tokens.slice(index);
-        if (next_tokens.length === 0) {
+        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, len4, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, o, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, returns, str, tok_str, token;
+        parse_tokens = [];
+        ref = tokens.slice(index);
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
+          token = ref[i];
+          if (token.type === "newline") {
+            prev_token = tokens[i - 1];
+            next_token = tokens[i + 1];
+            if ((prev_token != null) && ((ref1 = prev_token.type) !== "newline" && ref1 !== "dedent")) {
+              if ((ref2 = next_token != null ? next_token.type : void 0) !== "indent" && ref2 !== "dedent") {
+                break;
+              }
+            }
+          } else {
+            parse_tokens.push(token);
+          }
+        }
+        if (parse_tokens.length === 0) {
           return;
         }
         next_literal_tokens = [];
-        for (i = j = 0, len = next_tokens.length; j < len; i = ++j) {
-          token = next_tokens[i];
-          if ((ref = token.type) === "string" || ref === "number") {
+        for (i = l = 0, len1 = parse_tokens.length; l < len1; i = ++l) {
+          token = parse_tokens[i];
+          if ((ref3 = token.type) === "string" || ref3 === "number") {
             next_literal_tokens.push(token);
           } else {
             break;
           }
         }
         next_word_tokens = [];
-        for (i = l = 0, len1 = next_tokens.length; l < len1; i = ++l) {
-          token = next_tokens[i];
+        for (i = m = 0, len2 = parse_tokens.length; m < len2; i = ++m) {
+          token = parse_tokens[i];
           if (token.type === "word") {
             next_word_tokens.push(token);
           } else {
             break;
           }
         }
-        tok_str = stringify_tokens(next_tokens);
+        tok_str = stringify_tokens(parse_tokens);
         next_word_tok_str = stringify_tokens(next_word_tokens);
-        match = find_longest_match(next_tokens);
+        match = find_longest_match(parse_tokens);
         if (match != null) {
           get_var_value = function(var_name) {
             return _this.eval_tokens(match[var_name]);
@@ -458,7 +473,7 @@ module.exports = Context = (function() {
           returns = match.pattern.fn(get_var_value, _this);
           return returns;
         } else {
-          bad_match = find_longest_match(next_tokens, "bad_match");
+          bad_match = find_longest_match(parse_tokens, "bad_match");
           if (bad_match != null) {
             throw new Error("For `" + tok_str + "`, use `" + bad_match.pattern.prefered + "` instead");
           }
@@ -468,8 +483,8 @@ module.exports = Context = (function() {
             return token.type === "string";
           })) {
             str = "";
-            for (m = 0, len2 = next_literal_tokens.length; m < len2; m++) {
-              token = next_literal_tokens[m];
+            for (n = 0, len3 = next_literal_tokens.length; n < len3; n++) {
+              token = next_literal_tokens[n];
               str += token.value;
             }
             return str;
@@ -502,9 +517,9 @@ module.exports = Context = (function() {
             index = closing_token_index;
             return parse_expression(bracketed_value, 0);
           }
-          ref1 = _this.operators;
-          for (n = 0, len3 = ref1.length; n < len3; n++) {
-            operator = ref1[n];
+          ref4 = _this.operators;
+          for (o = 0, len4 = ref4.length; o < len4; o++) {
+            operator = ref4[o];
             if (!operator.unary) {
               continue;
             }
@@ -524,7 +539,7 @@ module.exports = Context = (function() {
     })(this);
     parse_expression = (function(_this) {
       return function(lhs, min_precedence) {
-        var lookahead_operator, match_operator, operator, rhs;
+        var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
         match_operator = function() {
           var j, len, matcher, operator, ref;
           ref = _this.operators;
@@ -560,6 +575,18 @@ module.exports = Context = (function() {
         }
         if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
           throw new Error("unary operator at end of expression? (missing right operand?)");
+        }
+        if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "newline") {
+          anything_substantial_after_newline = false;
+          for (i = j = ref1 = index + 1, ref2 = tokens.length - 1; ref1 <= ref2 ? j <= ref2 : j >= ref2; i = ref1 <= ref2 ? ++j : --j) {
+            if ((ref3 = tokens[i].type) !== "newline" && ref3 !== "comment" && ref3 !== "indent" && ref3 !== "dedent") {
+              anything_substantial_after_newline = true;
+            }
+          }
+          if (anything_substantial_after_newline) {
+            index += 1;
+            return parse_expression(parse_primary(), 0);
+          }
         }
         return lhs;
       };
@@ -881,6 +908,8 @@ module.exports = Token = (function() {
         str += " " + (JSON.stringify(token.value));
       } else if (token.type === "comment") {
         str += "#" + token.value;
+      } else if (token.type === "newline") {
+        str += "\n";
       } else {
         str += " " + token.value;
       }
@@ -1478,7 +1507,8 @@ module.exports = new Library("Process", {
         };
       })(this)
     }), new Pattern({
-      match: ["current memory usage", "this process's memory usage", "memory usage of this process", "memory usage"],
+      match: ["current memory usage", "this process's memory usage", "process memory usage", "memory usage of this process", "memory usage"],
+      bad_match: ["process memory"],
       fn: (function(_this) {
         return function(v) {
           return process.memoryUsage();
