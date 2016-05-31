@@ -1176,11 +1176,31 @@ module.exports = new Library("File System", {
         };
       })(this)
     }), new Pattern({
-      match: ["Append <data> to <file>", "Write <data> to the end of <file>"],
-      bad_match: ["Append <data> to the end of <file>"],
+      match: ["Append <data> to file <file>", "Append <data> to <file>", "Write <data> to the end of <file>"],
+      bad_match: ["Append <data> to the end of <file>", "Prepend <data> to the end of <file>"],
       fn: (function(_this) {
         return function(v) {
           return fs.appendFileSync(v("file"), v("data"));
+        };
+      })(this)
+    }), new Pattern({
+      match: ["Prepend <data> to file <file>", "Prepend <data> to <file>", "Write <data> to the beginning of <file>"],
+      bad_match: ["Prepend <data> to the beginning of <file>", "Append <data> to the beginning of <file>"],
+      fn: (function(_this) {
+        return function(v) {
+          var e, error, existing_data, file_path, prepend_data;
+          file_path = v("file");
+          prepend_data = v("data");
+          try {
+            existing_data = fs.readFileSync(file_path, "utf8");
+          } catch (error) {
+            e = error;
+            if (e.code !== "ENOENT") {
+              throw e;
+            }
+            existing_data = "";
+          }
+          return fs.writeFileSync(file_path, prepend_data + existing_data);
         };
       })(this)
     }), new Pattern({
