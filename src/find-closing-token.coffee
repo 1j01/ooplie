@@ -23,7 +23,6 @@ module.exports = (tokens, start_index)->
 			ended = level is 0
 			
 			if ended
-				# bracketed_tokens = tokens.slice(token_index + 1, lookahead_index)
 				return lookahead_index
 		else
 			if opening_token.type is "punctuation"
@@ -33,5 +32,4 @@ module.exports = (tokens, start_index)->
 					when "{" then "curly bracket"
 				throw new Error "Missing closing #{bracket_name} in `#{stringify_tokens(tokens)}`"
 			else
-				# console.error "wtf", next_tokens, tokens
 				throw new Error "Missing closing... dedent? in `#{stringify_tokens(tokens)}`? #{JSON.stringify tokens}"
