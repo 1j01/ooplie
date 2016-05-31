@@ -173,7 +173,16 @@ module.exports = new Library "File System", patterns: [
 			# TODO: export variable "the buffer" and maybe also "the file's contents"
 			# "buffer contents"?
 			# "...as a buffer named Jerry"
-			
+	
+	new Pattern
+		match: [
+			"Delete file <file>"
+			"Delete <file>"
+			"Remove file <file>"
+			"Remove <file>"
+		]
+		fn: (v)=>
+			fs.unlinkSync v("file")
 	
 	new Pattern
 		match: [

@@ -1219,6 +1219,13 @@ module.exports = new Library("File System", {
         };
       })(this)
     }), new Pattern({
+      match: ["Delete file <file>", "Delete <file>", "Remove file <file>", "Remove <file>"],
+      fn: (function(_this) {
+        return function(v) {
+          return fs.unlinkSync(v("file"));
+        };
+      })(this)
+    }), new Pattern({
       match: ["we have permission to read from <file>", "we have permission to read <file>", "I have permission to read from <file>", "I have permission to read <file>", "we can read from <file>", "we can read <file>", "I can read from <file>", "I can read <file>"],
       fn: (function(_this) {
         return function(v) {

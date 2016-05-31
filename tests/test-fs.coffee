@@ -12,11 +12,11 @@ evaluate = (expression)->
 	{to}
 
 suite "file system", ->
+	try
+		fs.mkdirSync("temp")
+	catch e
+		throw e unless e.code is "EEXIST"
 	test "creating directories", ->
-		try
-			fs.mkdirSync("temp")
-		catch e
-			throw e unless e.code is "EEXIST"
 		try
 			fs.rmdirSync("temp/tempdir")
 		catch e
@@ -59,5 +59,17 @@ suite "file system", ->
 		fs.writeFileSync('temp/prepending.txt', "world")
 		context.eval("prepend 'hello ' to file 'temp/prepending.txt'")
 		expect(fs.readFileSync('temp/prepending.txt', 'utf8')).to.equal("hello world")
+	test "removing files", ->
+		fs.writeFileSync('temp/removal.txt', "goodbye world")
+		fs.writeFileSync('temp/removal2.txt', "goodbye")
+		context.eval("remove file 'temp/removal.txt'")
+		context.eval("delete file 'temp/removal2.txt'")
+		try
+			if fs.statSync("temp/removal.txt")
+				throw new Error "temp/removal.txt still exists"
+			if fs.statSync("temp/removal2.txt")
+				throw new Error "temp/removal2.txt still exists"
+		catch e
+			throw e unless e.code is "ENOENT"
 	test "testing file permissions"
 	test "writing to stdout/stderr"
