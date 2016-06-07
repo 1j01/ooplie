@@ -43,6 +43,9 @@
     "web"
   ],
   "main": "ooplie.js",
+  "bin": {
+    "ooplie": "./bin/ooplie-cli.js"
+  },
   "scripts": {
     "prepublish": "browserify -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone Ooplie",
     "develop-not-working": "watchify -v -t coffeeify --extension=\".coffee\" ./src/ooplie.coffee -o ooplie.js --standalone Ooplie",
@@ -70,5 +73,8 @@
     "watch-run": "^1.2.4",
     "watchify": "^3.7.0",
     "watchy": "^0.6.6"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0"
   }
 }
