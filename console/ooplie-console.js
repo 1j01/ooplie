@@ -268,6 +268,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 		maybe_match: [
 			"oh man",
 			"wtf",
+			"wut",
 			"hey!",
 			"um",
 			"um..."
@@ -436,7 +437,7 @@ context.libraries.push(new Ooplie.Library("Ooplie Console", {patterns: [
 
 ]}));
 
-function handle_command(command){
+function handle_command(input){
 	// Conversational trivialities
 	var log_emoji = function(face, rotate_direction){
 		// top notch emotional mirroring
@@ -448,23 +449,45 @@ function handle_command(command){
 		span.innerText = face.replace(">", "〉").replace("<", "〈");
 		con.log(span);
 	};
-	if(command.match(/^((Well|So|Um|Uh),? )?(Hi|Hello|Hey|Greetings|Hola)/i)){
-		con.log((command.match(/^[A-Z]/) ? "Hello" : "hello") + (command.match(/\.|!/) ? "." : ""));
-	}else if(command.match(/^((Well|So|Um|Uh),? )?(What'?s up|Sup)/i)){
-		con.log((command.match(/^[A-Z]/) ? "Not much" : "not much") + (command.match(/\?|!/) ? "." : ""));
-	}else if(command.match(/^(>?[:;8X]-?[()O03PCDS])$/i)){
-		log_emoji(command, +1);
-	}else if(command.match(/^([D()O0C]-?[:;8X]<?)$/i)){
-		log_emoji(command, -1);
-	}else if(command.match(/^<3$/i)){
+	var user_used_upper_case = input.match(/\s*^[A-Z]/);
+	var maybe_use_title_case = function(str){
+		if(user_used_upper_case){
+			return str.charAt(0).toUpperCase() + str.slice(1);
+		}else{
+			return str;
+		}
+	};
+	var choose_from = function(arr){
+		return arr[~~(Math.random() * arr.length)];
+	};
+	var stripped_input = input.replace(/^\s*((Okay|Well|Uh|Um|So),? )*/i, ""); // input_sans_basic_discourse_markers
+	if(input.match(/^((Okay|Well|Uh|Um|So|Yo|Hey),? )*(What'?s up|Sup|What up|Whaddup|What?'?s goin.? on)/i)){
+		con.log(maybe_use_title_case("not much") + (user_used_upper_case ? "." : ""));
+	}else if(stripped_input.match(/(How'?s? ?it hangin|How('?re| a) (you|u) doin)/i)){
+		con.log(maybe_use_title_case(choose_from(["pretty good", "swell", "10/10 tbh"])));
+	}else if(stripped_input.match(/^(Hi|Hello|Hey|Greetings|Hola|Yo)/i)){
+		con.log(maybe_use_title_case(choose_from(["hello", "hi"])) + (input.match(/\.|!/) ? "!" : ""));
+	}else if(stripped_input.match(/^(bye|good.?bye|fare.?well|too?-?da?-?le?-?oo|so long)/i)){
+		con.log(maybe_use_title_case(choose_from(["goodbye", "bye", "farewell", "toodaloo, my sweet and deerest aquatence person"])) + (input.match(/\.|!/) ? "!" : ""));
+	}else if(stripped_input.match(/^(nice|cool|sweet|awesome|neat)[\.!]*$/i)){
+		con.log(maybe_use_title_case(input.match(/nice/i) ? "noice" : stripped_input) + (input.match(/\.|!/) ? "!" : ""));
+	}else if(stripped_input.match(/^So[\.!]*$/i)){
+		con.log(maybe_use_title_case("so..."));
+	}else if(input.match(/^\s*((Well|Uh|Um),? )*(okay|'?kay|k|ok)(,? then)?[\.!]*$/i)){
+		con.log(input.replace(/^\s*((Well|Uh|Um),? )*/i, ""));
+	}else if(input.match(/^(>?[:;8X]-?[()O03PCDS])$/i)){
+		log_emoji(input, +1);
+	}else if(input.match(/^([D()O0C]-?[:;8X]<?)$/i)){
+		log_emoji(input, -1);
+	}else if(input.match(/^<3$/i)){
 		con.log("❤");
-	// Unhelp
-	}else if(command.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
+	// Help
+	}else if(input.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
 		con.log("Open the parts menu to see commands and expressions you can use. Note that there are often many synoynms for a command.");
 	}else{
 		var err;
 		try{
-			var result = context.eval(command);
+			var result = context.eval(input);
 		}catch(error){
 			err = error;
 		}
@@ -475,4 +498,4 @@ function handle_command(command){
 			con.getLastEntry().classList.add("result");
 		}
 	}
-};
+}

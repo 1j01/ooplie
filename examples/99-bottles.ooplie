@@ -1,0 +1,15 @@
+
+N = 99
+Loop:
+	Say N " bottle(s) of beer on the wall,"
+	Say N " bottle(s) of beer."
+	Say "Take one down, pass it around,"
+	Subtract one from N (or "Take one away from N", or "Decrement N by 1")
+	Say N "bottle(s) of beer on the wall." unless there are no more bottles
+	in which case say "No more bottles of beer on the wall. No more bottles of beer. 
+	Go to the store and buy some more, 99 bottles of beer on the wall."
+
+Ahem, there are no more bottles when N is 0 because N is the number of bottles.
+N is the number of bottles! N is the number of bottles.
+
+FIXME: bottle(s)
