@@ -1,26 +1,24 @@
 
 # Ooplie
 
-Ooplie is a ~~[multi-paradigm][]~~ (currently rather [imperative][]) programming system where you write in English.
-
-<!-- An NLP system? https://en.wikipedia.org/wiki/Natural_language_programming seems to have a somewhat narrow definition, and https://en.wikipedia.org/wiki/Natural_language_processing is rather broad -->
-
-<!-- https://en.wikipedia.org/wiki/Controlled_natural_language -->
-
-So far you can output text, evaluate JS, and evaluate Ooplie code from within Ooplie,
-write expressions with worded operators, Unicode operators, or ASCII operators,
-write trivial (read: useless because there are no variables yet) conditionals,
-and read and write text files.
-
-Ooplie runs in [Node.js][] and in the browser.
+Ooplie is a programming system where you write in English.
+It runs in [Node.js][] and in the browser.
 
 There's [a nice little console][console] where you can try it out so far.
 It has a Parts menu where you can see the available commands and expressions.
 Each command has multiple synonyms, often many.
 Everything is organized into libraries, and yes, conditionals are defined in a library.
 To access libraries for File System manipulation etc. you need to install the console as a desktop app.
-To do so, clone the repository, open a terminal/command prompt in `console/` and run `npm i`.
+To do so, clone the repository, open a terminal/command prompt in `console/` and run `npm install`.
 To run the console app, do `npm start`.
+
+<!-- https://en.wikipedia.org/wiki/Controlled_natural_language -->
+
+So far Ooplie is completely [imperative][], and you can't do much with it.
+You can output text, evaluate JS, and evaluate Ooplie code,
+write mathematical expressions with worded operators, Unicode operators, or ASCII operators,
+write trivial (read: useless because there are no variables yet) conditionals,
+and read and write text files.
 
 ## Inspiration
 
@@ -76,15 +74,12 @@ But then you miss certain possiblities afforded by a dynamic interpreter.
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
 Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)
 
+Ooplie will need some better [natural language processing][].
+
 Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
 File system support and other things should be implemented this way.
 How the interop should work is not entirely decided.
-(Translating modules into other spoken languages should be possible, theoretically.
-There are some [opinions][Why are programming languages in English?] about programming in other languages, at least from people who can speak English,
-but that's a significant selection bias and I feel like the attitude may be different when it comes to programming in natural language,
-especially when you just want to tell the computer to do something,
-as opposed to potentially collaborating internationally on a project.)
 
 After that, more complex control flow and mathematics can be added,
 and various modules can be developed.
@@ -167,11 +162,10 @@ Run `npm test` to run the tests.
 You can also open [`test.html`][tests] (maybe with a [live-server][]) to test Ooplie in a browser,
 but note that only a subset of the tests are run.
 The File System module can't be tested in the browser, for instance.
+If you've been running tests in a browser, be sure to run `npm test` at least once before committing.
 
 Before committing, run `npm run prepublish` to compile `ooplie.js`,
 which is included in the repository for [GitHub Pages][] usage.
-
-If you've been running tests in a browser, be sure to run `npm test` at least once before committing.
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
@@ -179,9 +173,9 @@ If you've been running tests in a browser, be sure to run `npm test` at least on
 [abstraction]: https://en.wikipedia.org/wiki/Abstraction_(computer_science) "Abstraction (computer science) - Wikipedia"
 [code folding]: https://en.wikipedia.org/wiki/Code_folding "Code folding - Wikipedia"
 [IP levels of detail]: https://en.wikipedia.org/wiki/Intentional_programming#Levels_of_detail "\"Levels of detail\" in Intentional programming - Wikipedia"
+[natural language processing]: https://en.wikipedia.org/wiki/Natural_language_processing
 [disambiguation]: https://en.wikipedia.org/wiki/Word-sense_disambiguation "Word-sense disambiguation - Wikipedia"
 [Programming with Natural Language Is Actually Going to Work]: http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
-[Why are programming languages in English?]: https://www.reddit.com/r/explainlikeimfive/comments/1ugrcl/eli5_why_are_programming_languages_in_english/
 [console]: http://1j01.github.io/ooplie/console/
 [tests]: ./test.html
 [npm]: https://www.npmjs.com/
