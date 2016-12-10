@@ -111,7 +111,7 @@ I'd add a dynamic underline to `Every N seconds` / `After N seconds` representin
 This might warrant some controls to toggle or dim the underlines as they could be distracting.
 <!-- I've never gotten [Light Table][]'s live connection features to work on a real project, but they look cool. -->
 
-![Execution underlines](./execution-underlines.gif)
+![Execution underlines](./images/execution-underlines.gif)
 
 ([Execution underlines CSS animation on multifiddle](http://multifiddle.ml/#execution-underlines))
 
@@ -141,7 +141,7 @@ After 5 more seconds, say "reached 10 seconds mark"
 
 Dragging the line could change the control flow, updating the code to reflect the changes.
 
-![Control flow indication mockup](./control-flow-indication-mockup.png)
+![Control flow indication mockup](./images/control-flow-indication-mockup.png)
 
 
 The IDE could support visual mathematical equation/expression editing, and resources like images could be dragged and dropped and used directly in expressions.
