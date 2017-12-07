@@ -22,12 +22,18 @@ parts_menu_button.setAttribute("title", "Parts menu");
 var parts_menu = parts_menu_button.popup;
 parts_menu.classList.add("parts-menu");
 
-parts_menu_button.innerHTML =
-	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92">' +
+var get_parts_menu_icon_svg_markup = function update_parts_menu(unescaped_style){
+	// TODO: do this in a simpler way with React or whatever
+	// var view_box = inline ? ("0 14.61 92 "+(92 - 14.61)) : "0 0 92 92";
+	// return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + view_box + '" style="height: 1em;">' +
+	return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92"'+ (unescaped_style ? ' style="' + unescaped_style + '"' : '') + '>' +
 		'<rect width="91.96" height="51.79" x=".02" y="25.6" rx="4" fill="currentColor"/>' +
 		'<rect width="26.43" height="21.43" x="53.94" y="14.61" rx="4" fill="currentColor"/>' +
 		'<rect width="26.43" height="21.43" x="11.62" y="14.61" rx="4" fill="currentColor"/>' +
 	'</svg>';
+};
+	
+parts_menu_button.innerHTML = get_parts_menu_icon_svg_markup();
 
 var accordion_state = {};
 
@@ -483,7 +489,16 @@ function handle_command(input){
 		con.log("❤");
 	// Help
 	}else if(input.match(/^(!*\?+!*|(please |plz )?(((I )?(want|need)[sz]?|display|show( me)?|view) )?(the |some )?help|^(gimme|give me|lend me) ((the |some )?)help| a hand( here)?)/i)){ // overly comprehensive, much?
-		con.log("Open the parts menu to see commands and expressions you can use. Note that there are often many synoynms for a command.");
+		con.logHTML(
+			"Open the <b>" + get_parts_menu_icon_svg_markup("height: 1em; margin-bottom: -0.1em; margin-right: 0.2em") + "parts menu</b> " +
+			"to see commands and expressions you can use. " +
+			"Note that there are often many synoynms for a command."
+			// synonyms AKA alternate syntaxes, to give a synonym
+			// so a command for listing command synonyms might have synonyms
+			// "List synonyms for X"
+			// "Show alternate syntaxes for X"
+			// "Enumerate patterns for command X"
+		);
 	}else{
 		var err;
 		try{
