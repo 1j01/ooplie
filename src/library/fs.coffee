@@ -20,8 +20,7 @@ module.exports = new Library "File System", patterns: [
 	# TODO: if it doesn't exist, unless it exists, unless it already exists
 	# unless there's already a file there, [in which case]...
 	
-	# TODO: "if we're writing to a file"? "whether we're reading from a file"?
-	# "if we're [already] [currently] writing to 'foo.txt'"?
+	# TODO (maybe): "{if/whether} we're [already] [currently] {writing to/reading from} {a file/'foo.txt'}"?
 	
 	# TODO: globbing (how?)
 	
