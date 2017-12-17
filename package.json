@@ -54,7 +54,7 @@
     "develop-slow": "npm run prepublish && rerun-script",
     "develop-also-broken": "npm-watch",
     "develop-also-does-not-work": "watchy -w src -- npm run prepublish",
-    "test": "mocha --compilers coffee:coffee-script/register --ui tdd tests/"
+    "test": "mocha --compilers coffee:coffeescript/register --ui tdd tests/"
   },
   "watches": {
     "prepublish": "**/*.coffee"
@@ -65,8 +65,8 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "chai": "^3.5.0",
-    "coffee-script": "^1.10.0",
-    "coffeeify": "^2.0.1",
+    "coffeeify": "^3.0.1",
+    "coffeescript": "^2.1.0",
     "mocha": "^2.4.5",
     "npm-watch": "0.0.1",
     "rerun-script": "^0.6.0",

@@ -328,14 +328,24 @@ tokenize = require("./tokenize");
 
 Pattern = require("./Pattern");
 
-stringify_tokens = (Token = require("./Token")).stringify_tokens;
+({stringify_tokens} = Token = require("./Token"));
 
 find_closing_token = require("./find-closing-token");
 
-module.exports = Context = (function() {
-  function Context(arg) {
-    var ref;
-    ref = arg != null ? arg : {}, this.console = ref.console, this.supercontext = ref.supercontext;
+module.exports = Context = class Context {
+  constructor({
+      console: console1,
+      supercontext: supercontext
+    } = {}) {
+    this.console = console1;
+    this.supercontext = supercontext;
+    // TODO: further decouple from console somehow?
+    // console IO is exceedingly common, but it might be good to establish
+    // a more reusable pattern for passing interfaces and things to a context
+
+    // TODO: seperate AST parsing from eval
+    // in the case of natural language, semantics are quite tied to context
+    // so the parser will need access to the context
     this.libraries = [require("./library/operators"), require("./library/constants"), require("./library/conditionals"), require("./library/console"), require("./library/eval-js"), require("./library/eval-ooplie")];
     if (!((typeof window !== "undefined" && window !== null) && (window.require == null))) {
       this.libraries = this.libraries.concat([require("./library/fs"), require("./library/process")]);
@@ -344,25 +354,27 @@ module.exports = Context = (function() {
     this.instances = [];
   }
 
-  Context.prototype.subcontext = function(arg) {
-    var console;
-    console = (arg != null ? arg : {}).console;
+  subcontext({console} = {}) {
     if (console == null) {
       console = this.console;
     }
     return new Context({
-      console: console,
+      console,
       supercontext: this
     });
-  };
+  }
 
-  Context.prototype.coalesce_libraries = function() {
+  coalesce_libraries() {
     var j, k, len, lib, ref, results, v;
     this.patterns = [];
     this.operators = [];
     this.constants = new Map;
     this.variables = new Map;
     ref = this.libraries;
+    // TODO: block-level scopes
+    // should @supercontext be @superscope?
+    // should contexts be scopes? should scopes be contexts?
+    // also make sure we don't encourage global-like behavior
     results = [];
     for (j = 0, len = ref.length; j < len; j++) {
       lib = ref[j];
@@ -380,10 +392,16 @@ module.exports = Context = (function() {
       }).call(this));
     }
     return results;
-  };
+  }
 
-  Context.prototype["eval"] = function(text) {
+  // TODO: collect from supercontexts as well
+  eval(text) {
     var token, tokens;
+    // TODO: coalesce libs only when @libraries array is modified
+    // using https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+    // and not https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/observe
+    // although, note that that means a modified individual library wouldn't be updated
+    // (until any change to @libraries, not necessarily a removal and addition of the given library)
     this.coalesce_libraries();
     tokens = tokenize(text);
     return this.eval_tokens((function() {
@@ -397,215 +415,221 @@ module.exports = Context = (function() {
       }
       return results;
     })());
-  };
+  }
 
-  Context.prototype.eval_tokens = function(tokens) {
+  
+  // eval is syncronous, but could return Promises for asyncronous operations
+  // a block of async statements should probably return a single Promise that wraps all the Promises of its statements
+  eval_tokens(tokens) {
     var find_longest_match, index, parse_expression, parse_primary;
     index = 0;
-    find_longest_match = (function(_this) {
-      return function(tokens, match_fn_type) {
-        var j, len, longest_match, match, pattern, ref;
-        if (match_fn_type == null) {
-          match_fn_type = "match";
+    find_longest_match = (tokens, match_fn_type = "match") => {
+      var j, len, longest_match, match, pattern, ref;
+      longest_match = void 0;
+      ref = this.patterns;
+      for (j = 0, len = ref.length; j < len; j++) {
+        pattern = ref[j];
+        match = pattern[match_fn_type](tokens);
+        if (longest_match == null) {
+          longest_match = match;
         }
-        longest_match = void 0;
-        ref = _this.patterns;
-        for (j = 0, len = ref.length; j < len; j++) {
-          pattern = ref[j];
-          match = pattern[match_fn_type](tokens);
-          if (longest_match == null) {
-            longest_match = match;
-          }
-          if ((match != null ? match.matcher.length : void 0) > (longest_match != null ? longest_match.matcher.length : void 0)) {
-            longest_match = match;
-          }
+        if ((match != null ? match.matcher.length : void 0) > (longest_match != null ? longest_match.matcher.length : void 0)) {
+          longest_match = match;
         }
-        return longest_match;
-      };
-    })(this);
-    parse_primary = (function(_this) {
-      return function() {
-        var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, len4, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, o, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, returns, str, tok_str, token;
-        parse_tokens = [];
-        ref = tokens.slice(index);
-        for (i = j = 0, len = ref.length; j < len; i = ++j) {
-          token = ref[i];
-          if (token.type === "newline") {
-            prev_token = tokens[i - 1];
-            next_token = tokens[i + 1];
-            if ((prev_token != null) && ((ref1 = prev_token.type) !== "newline" && ref1 !== "dedent")) {
-              if ((ref2 = next_token != null ? next_token.type : void 0) !== "indent" && ref2 !== "dedent") {
-                break;
-              }
+      }
+      return longest_match;
+    };
+    parse_primary = () => {
+      var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, len4, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, o, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, returns, str, tok_str, token;
+      parse_tokens = [];
+      ref = tokens.slice(index);
+      for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        token = ref[i];
+        if (token.type === "newline") {
+          prev_token = tokens[i - 1];
+          next_token = tokens[i + 1];
+          if ((prev_token != null) && ((ref1 = prev_token.type) !== "newline" && ref1 !== "dedent")) {
+            if ((ref2 = next_token != null ? next_token.type : void 0) !== "indent" && ref2 !== "dedent") {
+              break;
             }
-          } else {
-            parse_tokens.push(token);
-          }
-        }
-        if (parse_tokens.length === 0) {
-          return;
-        }
-        next_literal_tokens = [];
-        for (i = l = 0, len1 = parse_tokens.length; l < len1; i = ++l) {
-          token = parse_tokens[i];
-          if ((ref3 = token.type) === "string" || ref3 === "number") {
-            next_literal_tokens.push(token);
-          } else {
-            break;
-          }
-        }
-        next_word_tokens = [];
-        for (i = m = 0, len2 = parse_tokens.length; m < len2; i = ++m) {
-          token = parse_tokens[i];
-          if (token.type === "word") {
-            next_word_tokens.push(token);
-          } else {
-            break;
-          }
-        }
-        tok_str = stringify_tokens(parse_tokens);
-        next_word_tok_str = stringify_tokens(next_word_tokens);
-        match = find_longest_match(parse_tokens);
-        if (match != null) {
-          get_var_value = function(var_name) {
-            return _this.eval_tokens(match[var_name]);
-          };
-          returns = match.pattern.fn(get_var_value, _this);
-          return returns;
-        } else {
-          bad_match = find_longest_match(parse_tokens, "bad_match");
-          if (bad_match != null) {
-            throw new Error("For `" + tok_str + "`, use `" + bad_match.pattern.prefered + "` instead");
-          }
-        }
-        if (next_literal_tokens.length) {
-          if (next_literal_tokens.some(function(token) {
-            return token.type === "string";
-          })) {
-            str = "";
-            for (n = 0, len3 = next_literal_tokens.length; n < len3; n++) {
-              token = next_literal_tokens[n];
-              str += token.value;
-            }
-            return str;
-          } else if (next_literal_tokens.length > 1) {
-            throw new Error("Consecutive numbers, " + next_literal_tokens[0].value + " and " + next_literal_tokens[1].value);
-          } else {
-            return next_literal_tokens[0].value;
           }
         } else {
-          if (next_word_tokens.length) {
-            if (_this.constants.has(next_word_tok_str)) {
-              return _this.constants.get(next_word_tok_str);
-            }
-            if (_this.variables.has(next_word_tok_str)) {
-              return _this.variables.get(next_word_tok_str);
-            }
-          } else {
-            if (_this.constants.has(tok_str)) {
-              return _this.constants.get(tok_str);
-            }
-            if (_this.variables.has(tok_str)) {
-              return _this.variables.get(tok_str);
-            }
-          }
-          token = tokens[index];
-          if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
-            closing_token_index = find_closing_token(tokens, index);
-            bracketed_tokens = tokens.slice(index + 1, closing_token_index);
-            bracketed_value = _this.eval_tokens(bracketed_tokens);
-            index = closing_token_index;
-            return parse_expression(bracketed_value, 0);
-          }
-          ref4 = _this.operators;
-          for (o = 0, len4 = ref4.length; o < len4; o++) {
-            operator = ref4[o];
-            if (!operator.unary) {
-              continue;
-            }
-            matcher = operator.match(tokens, index);
-            if (matcher) {
-              index += matcher.length;
-              if (index === tokens.length) {
-                throw new Error("missing right operand for `" + operator.prefered + "`");
-              }
-              following_value = parse_primary();
-              return operator.fn(following_value);
-            }
-          }
-          throw new Error("I don't understand `" + tok_str + "`");
+          parse_tokens.push(token);
         }
-      };
-    })(this);
-    parse_expression = (function(_this) {
-      return function(lhs, min_precedence) {
-        var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
-        match_operator = function() {
-          var j, len, matcher, operator, ref;
-          ref = _this.operators;
-          for (j = 0, len = ref.length; j < len; j++) {
-            operator = ref[j];
-            matcher = operator.match(tokens, index);
-            if (matcher != null) {
-              index += matcher.length;
-              return operator;
-            }
-          }
+      }
+      if (parse_tokens.length === 0) {
+        return;
+      }
+      
+      // NOTE: in the future there will be other kinds of literals
+      next_literal_tokens = [];
+      for (i = l = 0, len1 = parse_tokens.length; l < len1; i = ++l) {
+        token = parse_tokens[i];
+        if ((ref3 = token.type) === "string" || ref3 === "number") {
+          next_literal_tokens.push(token);
+        } else {
+          break;
+        }
+      }
+      next_word_tokens = [];
+      for (i = m = 0, len2 = parse_tokens.length; m < len2; i = ++m) {
+        token = parse_tokens[i];
+        if (token.type === "word") {
+          next_word_tokens.push(token);
+        } else {
+          break;
+        }
+      }
+      tok_str = stringify_tokens(parse_tokens);
+      next_word_tok_str = stringify_tokens(next_word_tokens);
+      match = find_longest_match(parse_tokens);
+      if (match != null) {
+        get_var_value = (var_name) => {
+          return this.eval_tokens(match[var_name]);
         };
+        returns = match.pattern.fn(get_var_value, this);
+        return returns;
+      } else {
+        bad_match = find_longest_match(parse_tokens, "bad_match");
+        if (bad_match != null) {
+          throw new Error(`For \`${tok_str}\`, use \`${bad_match.pattern.prefered}\` instead`);
+        }
+      }
+      if (next_literal_tokens.length) {
+        if (next_literal_tokens.some(function(token) {
+          return token.type === "string";
+        })) {
+          str = "";
+          for (n = 0, len3 = next_literal_tokens.length; n < len3; n++) {
+            token = next_literal_tokens[n];
+            str += token.value;
+          }
+          return str;
+        } else if (next_literal_tokens.length > 1) {
+          // TODO: row/column numbers in errors
+          throw new Error(`Consecutive numbers, ${next_literal_tokens[0].value} and ${next_literal_tokens[1].value}`);
+        } else {
+          return next_literal_tokens[0].value;
+        }
+      } else {
+        if (next_word_tokens.length) {
+          if (this.constants.has(next_word_tok_str)) {
+            return this.constants.get(next_word_tok_str);
+          }
+          if (this.variables.has(next_word_tok_str)) {
+            return this.variables.get(next_word_tok_str);
+          }
+        } else {
+          if (this.constants.has(tok_str)) {
+            return this.constants.get(tok_str);
+          }
+          if (this.variables.has(tok_str)) {
+            return this.variables.get(tok_str);
+          }
+        }
+        token = tokens[index];
+        if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
+          closing_token_index = find_closing_token(tokens, index);
+          bracketed_tokens = tokens.slice(index + 1, closing_token_index);
+          bracketed_value = this.eval_tokens(bracketed_tokens);
+          index = closing_token_index;
+          return parse_expression(bracketed_value, 0);
+        }
+        ref4 = this.operators;
+        for (o = 0, len4 = ref4.length; o < len4; o++) {
+          operator = ref4[o];
+          if (!operator.unary) {
+            continue;
+          }
+          matcher = operator.match(tokens, index);
+          if (matcher) {
+            index += matcher.length;
+            if (index === tokens.length) {
+              throw new Error(`missing right operand for \`${operator.prefered}\``);
+            }
+            following_value = parse_primary();
+            return operator.fn(following_value);
+          }
+        }
+        throw new Error(`I don't understand \`${tok_str}\``);
+      }
+    };
+    parse_expression = (lhs, min_precedence) => {
+      var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
+      // console.log "parse_expression", lhs, min_precedence, tokens, index
+      match_operator = () => {
+        var j, len, matcher, operator, ref;
+        ref = this.operators;
+        for (j = 0, len = ref.length; j < len; j++) {
+          operator = ref[j];
+          matcher = operator.match(tokens, index);
+          if (matcher != null) {
+            index += matcher.length;
+            return operator;
+          }
+        }
+      };
+      index += 1;
+      lookahead_operator = match_operator();
+      while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
+        operator = lookahead_operator;
+        if (lookahead_operator.binary && (tokens[index] == null)) {
+          throw new Error(`missing right operand for \`${lookahead_operator.prefered}\``);
+        }
+        rhs = parse_primary();
         index += 1;
         lookahead_operator = match_operator();
-        while ((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence >= min_precedence) {
-          operator = lookahead_operator;
+        while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
           if (lookahead_operator.binary && (tokens[index] == null)) {
-            throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
+            throw new Error(`missing right operand for \`${lookahead_operator.prefered}\``);
           }
-          rhs = parse_primary();
-          index += 1;
+          index -= 2;
+          rhs = parse_expression(rhs, lookahead_operator.precedence);
+          index += 2;
           lookahead_operator = match_operator();
-          while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
-            if (lookahead_operator.binary && (tokens[index] == null)) {
-              throw new Error("missing right operand for `" + lookahead_operator.prefered + "`");
-            }
-            index -= 2;
-            rhs = parse_expression(rhs, lookahead_operator.precedence);
-            index += 2;
-            lookahead_operator = match_operator();
-          }
-          lhs = operator.fn(lhs, rhs);
         }
-        if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
-          throw new Error("unary operator at end of expression? (missing right operand?)");
-        }
-        if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "newline") {
-          anything_substantial_after_newline = false;
-          for (i = j = ref1 = index + 1, ref2 = tokens.length - 1; ref1 <= ref2 ? j <= ref2 : j >= ref2; i = ref1 <= ref2 ? ++j : --j) {
-            if ((ref3 = tokens[i].type) !== "newline" && ref3 !== "comment" && ref3 !== "indent" && ref3 !== "dedent") {
-              anything_substantial_after_newline = true;
-            }
-          }
-          if (anything_substantial_after_newline) {
-            index += 1;
-            return parse_expression(parse_primary(), 0);
+        lhs = operator.fn(lhs, rhs);
+      }
+      if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
+        throw new Error("unary operator at end of expression? (missing right operand?)"); // TODO/FIXME: terrible error message
+      }
+      // if tokens[index + 1] and not lookahead_operator?
+      // 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
+      // if tokens[index + 1]
+      // 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
+      if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "newline") {
+        anything_substantial_after_newline = false;
+        for (i = j = ref1 = index + 1, ref2 = tokens.length - 1; ref1 <= ref2 ? j <= ref2 : j >= ref2; i = ref1 <= ref2 ? ++j : --j) {
+          if ((ref3 = tokens[i].type) !== "newline" && ref3 !== "comment" && ref3 !== "indent" && ref3 !== "dedent") {
+            anything_substantial_after_newline = true;
           }
         }
-        return lhs;
-      };
-    })(this);
+        if (anything_substantial_after_newline) {
+          index += 1;
+          return parse_expression(parse_primary(), 0);
+        }
+      }
+      return lhs;
+    };
     return parse_expression(parse_primary(), 0);
-  };
+  }
 
-  return Context;
-
-})();
+};
 
 
 },{"./Pattern":7,"./Token":8,"./find-closing-token":9,"./library/conditionals":10,"./library/console":11,"./library/constants":12,"./library/eval-js":13,"./library/eval-ooplie":14,"./library/fs":15,"./library/operators":16,"./library/process":17,"./tokenize":19}],5:[function(require,module,exports){
 var Library;
 
-module.exports = Library = (function() {
-  function Library(name, arg) {
+module.exports = Library = class Library {
+  constructor(name, {
+      patterns: patterns,
+      operators: operators,
+      constants: constants
+    }) {
     this.name = name;
-    this.patterns = arg.patterns, this.operators = arg.operators, this.constants = arg.constants;
+    this.patterns = patterns;
+    this.operators = operators;
+    this.constants = constants;
     if (this.patterns == null) {
       this.patterns = [];
     }
@@ -617,28 +641,21 @@ module.exports = Library = (function() {
     }
   }
 
-  return Library;
-
-})();
+};
 
 
 },{}],6:[function(require,module,exports){
-var Operator, Pattern,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+var Operator, Pattern;
 
 Pattern = require("./Pattern");
 
-module.exports = Operator = (function(superClass) {
-  extend(Operator, superClass);
-
-  function Operator(arg) {
-    var binary, right_associative, unary;
-    this.precedence = arg.precedence, right_associative = arg.right_associative, binary = arg.binary, unary = arg.unary;
-    Operator.__super__.constructor.apply(this, arguments);
-    if (this.precedence == null) {
+module.exports = Operator = class Operator extends Pattern {
+  constructor({match, bad_match, fn, precedence, right_associative, binary, unary}) {
+    super({match, bad_match, fn});
+    if (precedence == null) {
       throw new Error("Operator constructor requires {precedence}");
     }
+    this.precedence = precedence;
     this.right_associative = right_associative != null ? right_associative : false;
     if (binary != null) {
       this.unary = !binary;
@@ -652,7 +669,7 @@ module.exports = Operator = (function(superClass) {
     }
   }
 
-  Operator.prototype.match = function(tokens, index) {
+  match(tokens, index) {
     var i, j, len, len1, matcher, matching, ref, segment, segment_index, token;
     ref = this.matchers;
     for (i = 0, len = ref.length; i < len; i++) {
@@ -670,24 +687,22 @@ module.exports = Operator = (function(superClass) {
         return matcher;
       }
     }
-  };
+  }
 
-  Operator.prototype.bad_match = function() {
+  bad_match() {
     throw new Error("Not implemented!");
-  };
+  }
 
-  return Operator;
-
-})(Pattern);
+};
 
 
 },{"./Pattern":7}],7:[function(require,module,exports){
 var Pattern, find_closing_token, stringify_matcher, stringify_tokens, tokenize,
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  indexOf = [].indexOf;
 
 tokenize = require("./tokenize");
 
-stringify_tokens = require("./Token").stringify_tokens;
+({stringify_tokens} = require("./Token"));
 
 find_closing_token = require("./find-closing-token");
 
@@ -695,10 +710,31 @@ stringify_matcher = function(matcher) {
   return matcher.join(" ");
 };
 
-module.exports = Pattern = (function() {
-  function Pattern(arg) {
-    var bad_match, match, parse_matchers;
-    match = arg.match, bad_match = arg.bad_match, this.fn = arg.fn;
+module.exports = Pattern = class Pattern {
+  constructor({
+      match,
+      bad_match,
+      fn: fn
+    }) {
+    var parse_matchers;
+    this.fn = fn;
+    // TODO: also allow [optional phrase segments]
+    // and maybe (either|or|groups)
+    // TODO: try longer matchers first
+    // TODO: backtracking, for e.g.
+    // 	what to do = "todo items"
+    // 	write what to do to "./todo.txt"
+
+    // should it be possible to have an "action" and a "fn"?
+    // like fn if it's in an expression but action if it's a statement?
+    // is that even a distinction that can be made?
+    // probably not
+    // besides, things like eval and even conditionals can be either or both
+    // how will `=` work?
+    // 	a = b
+    // 	if a = b, ...
+
+    // @fn = action ? fn
     parse_matchers = function(matcher_defs) {
       var current_variable_name, def, i, index, j, len, len1, ref, results, segments, token, tokens, variable_names_used;
       results = [];
@@ -713,7 +749,7 @@ module.exports = Pattern = (function() {
           if (token.type === "punctuation") {
             if (token.value === "<") {
               if (current_variable_name != null) {
-                throw new Error("Unexpected `<` within variable name in pattern `" + def + "`");
+                throw new Error(`Unexpected \`<\` within variable name in pattern \`${def}\``);
               } else if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "word") {
                 current_variable_name = "";
               } else {
@@ -728,17 +764,17 @@ module.exports = Pattern = (function() {
             } else if (token.value === ">") {
               if (current_variable_name != null) {
                 if (indexOf.call(variable_names_used, current_variable_name) >= 0) {
-                  throw new Error("Variable name `" + current_variable_name + "` used twice in pattern `" + def + "`");
+                  throw new Error(`Variable name \`${current_variable_name}\` used twice in pattern \`${def}\``);
                 }
                 if (current_variable_name === "pattern") {
-                  throw new Error("Reserved pattern variable `pattern` used in pattern `" + def + "`");
+                  throw new Error(`Reserved pattern variable \`pattern\` used in pattern \`${def}\``);
                 }
                 variable_names_used.push(current_variable_name);
                 segments.push({
                   type: "variable",
                   name: current_variable_name,
                   toString: function() {
-                    return "<" + this.name + ">";
+                    return `<${this.name}>`;
                   }
                 });
                 current_variable_name = null;
@@ -779,6 +815,7 @@ module.exports = Pattern = (function() {
             }
           }
         }
+        // TODO: DRY
         results.push(segments);
       }
       return results;
@@ -789,7 +826,7 @@ module.exports = Pattern = (function() {
     this.prefered_matcher = this.matchers[0];
   }
 
-  Pattern.prototype.match_with = function(tokens, matcher) {
+  match_with(tokens, matcher) {
     var bracketed_tokens, closing_token_index, current_variable_tokens, matcher_index, next_segment, ref, ref1, ref2, segment, token, token_index, token_matches, variables;
     variables = {};
     current_variable_tokens = null;
@@ -804,6 +841,7 @@ module.exports = Pattern = (function() {
       if (segment == null) {
         return;
       }
+      // console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "(ended)"
       if (segment.type === "variable") {
         if (token.type === "newline" && ((ref = (ref1 = tokens[token_index + 1]) != null ? ref1.type : void 0) === "indent" || ref === "dedent")) {
           token_index += 1;
@@ -812,8 +850,8 @@ module.exports = Pattern = (function() {
         if (variables[segment.name] != null) {
           next_segment = matcher[matcher_index + 1];
           if ((next_segment != null) && token_matches(token, next_segment)) {
-            matcher_index += 1;
-            continue;
+            matcher_index += 1; // end of the variable
+            continue; // do not pass go, do not increment token_index
           } else {
             variables[segment.name].push(token);
           }
@@ -833,6 +871,7 @@ module.exports = Pattern = (function() {
           return;
         }
       }
+      // console.log "failed to match", stringify_tokens(tokens), "against", stringify_matcher(matcher), "at", matcher_index, segment, "vs", token
       token_index += 1;
     }
     if (variables[segment.name] != null) {
@@ -841,13 +880,19 @@ module.exports = Pattern = (function() {
     if (matcher_index === matcher.length) {
       variables.pattern = this;
       variables.matcher = matcher;
+      // console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
+      // console.log "got variables", variables
+      // console.log "ended at index", matcher_index, "on", matcher
       return variables;
     } else {
 
     }
-  };
+  }
 
-  Pattern.prototype.match = function(tokens) {
+  // console.log "almost matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
+  // console.log "got variables", variables
+  // console.log "but ended at index", matcher_index, "on", matcher
+  match(tokens) {
     var i, len, match, matcher, ref;
     ref = this.matchers;
     for (i = 0, len = ref.length; i < len; i++) {
@@ -857,9 +902,9 @@ module.exports = Pattern = (function() {
         return match;
       }
     }
-  };
+  }
 
-  Pattern.prototype.bad_match = function(tokens) {
+  bad_match(tokens) {
     var i, len, match, matcher, ref;
     ref = this.bad_matchers;
     for (i = 0, len = ref.length; i < len; i++) {
@@ -869,32 +914,44 @@ module.exports = Pattern = (function() {
         return match;
       }
     }
-  };
+  }
 
-  Pattern.prototype.match_near = function() {};
+  match_near() {}
 
-  return Pattern;
+};
 
-})();
+// for matcher in @matchers
+// 	match = @match_with(tokens, matcher, near: true)
+// return best match if any
+
+// TODO: find near-matches (i.e. differing case, typos, differing gramatical structure if possible)
+// differing case is obviously usually not a problem whereas typos would be more likely to be incorrectly detected
+// so differing case should probably run it and maybe suggest the proper capitalization (if it can without being wrong in context)
+// whereas typos and grammar differences (with similarity algorithms applied to letters and words respectively)
+// should be more of a "Did you mean?" type of deal, and should only show up if nothing else matches
+// in fact the text similarity algorithm(s) shouldn't run unless no patterns match normally
 
 
 },{"./Token":8,"./find-closing-token":9,"./tokenize":19}],8:[function(require,module,exports){
 var Token;
 
-module.exports = Token = (function() {
-  function Token(type, col, row, value) {
+module.exports = Token = class Token {
+  constructor(type, col, row, value) {
     this.type = type;
     this.col = col;
     this.row = row;
     this.value = value;
   }
 
-  Token.prototype.toString = function() {
+  // TODO: @pos = {first_line, first_column, last_line, last_column}
+  // instead of @col and @row
+  toString() {
     return Token.stringify_tokens(this);
-  };
+  }
 
-  Token.stringify_tokens = function(tokens) {
+  static stringify_tokens(tokens) {
     var i, len, ref, str, token;
+    // @TODO: output token (with whitespace) as they were in the source
     str = "";
     for (i = 0, len = tokens.length; i < len; i++) {
       token = tokens[i];
@@ -902,30 +959,28 @@ module.exports = Token = (function() {
         if ((ref = token.value) === "," || ref === "." || ref === ";" || ref === ":") {
           str += token.value;
         } else {
-          str += " " + token.value;
+          str += ` ${token.value}`;
         }
       } else if (token.type === "string") {
-        str += " " + (JSON.stringify(token.value));
+        str += ` ${JSON.stringify(token.value)}`;
       } else if (token.type === "comment") {
-        str += "#" + token.value;
+        str += `#${token.value}`;
       } else if (token.type === "newline") {
         str += "\n";
       } else {
-        str += " " + token.value;
+        str += ` ${token.value}`;
       }
     }
     return str.trim();
-  };
+  }
 
-  return Token;
-
-})();
+};
 
 
 },{}],9:[function(require,module,exports){
 var stringify_tokens;
 
-stringify_tokens = require("./Token").stringify_tokens;
+({stringify_tokens} = require("./Token"));
 
 module.exports = function(tokens, start_index) {
   var bracket_name, closing_bracket, ended, level, lookahead_index, lookahead_token, opening_bracket, opening_token;
@@ -933,6 +988,7 @@ module.exports = function(tokens, start_index) {
   lookahead_index = start_index;
   level = 1;
   while (true) {
+    // TODO: <> maybe handle XML/HTML
     lookahead_index += 1;
     lookahead_token = tokens[lookahead_index];
     if (lookahead_token != null) {
@@ -975,9 +1031,9 @@ module.exports = function(tokens, start_index) {
               return "curly bracket";
           }
         })();
-        throw new Error("Missing closing " + bracket_name + " in `" + (stringify_tokens(tokens)) + "`");
+        throw new Error(`Missing closing ${bracket_name} in \`${stringify_tokens(tokens)}\``);
       } else {
-        throw new Error("Missing closing... dedent? in `" + (stringify_tokens(tokens)) + "`? " + (JSON.stringify(tokens)));
+        throw new Error(`Missing closing... dedent? in \`${stringify_tokens(tokens)}\`? ${JSON.stringify(tokens)}`);
       }
     }
   }
@@ -994,48 +1050,81 @@ Library = require("../Library");
 module.exports = new Library("Conditionals", {
   patterns: [
     new Pattern({
-      match: ["If <condition>, <body>", "If <condition> then <body>", "<body> if <condition>"],
-      fn: (function(_this) {
-        return function(v) {
-          if (v("condition")) {
-            return v("body");
-          }
-        };
-      })(this)
-    }), new Pattern({
-      match: ["If <condition>, <body>, else <alt body>", "If <condition>, <body> else <alt body>", "If <condition> then <body>, else <alt body>", "If <condition> then <body> else <alt body>", "<body> if <condition> else <alt body>"],
-      bad_match: ["if <condition>, then <body>, else <alt body>", "if <condition>, then <body>, else, <alt body>", "if <condition>, <body>, else, <alt body>", "<condition> ? <body> : <alt body>", "unless <condition>, <alt body> else <body>", "unless <condition>, <alt body>, else <body>", "unless <condition> then <alt body>, else <body>", "unless <condition> then <alt body>, else, <body>", "unless <condition>, then <alt body>, else <body>", "unless <condition>, then <alt body>, else, <body>"],
-      fn: (function(_this) {
-        return function(v) {
-          if (v("condition")) {
-            return v("body");
-          } else {
-            return v("alt body");
-          }
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Unless <condition>, <body>", "<body> unless <condition>"],
-      bad_match: ["Unless <condition> then <body>"],
-      fn: (function(_this) {
-        return function(v) {
-          if (!v("condition")) {
-            return v("body");
-          }
-        };
-      })(this)
-    }), new Pattern({
-      match: ["<body> unless <condition> in which case <alt body>", "<body>, unless <condition> in which case <alt body>", "<body> unless <condition>, in which case <alt body>", "<body>, unless <condition>, in which case <alt body>", "<body> unless <condition> in which case just <alt body>", "<body>, unless <condition> in which case just <alt body>", "<body> unless <condition>, in which case just <alt body>", "<body>, unless <condition>, in which case just <alt body>"],
-      bad_match: ["Unless <condition>, <body>, else <alt body>", "Unless <condition> then <body>, else <alt body>", "Unless <condition> then <body> else <alt body>", "<body> unless <condition> else <alt body>", "<body> or if <condition> else <alt body>", "<body>, or if <condition>, <alt body>", "<body>, or if <condition> <alt body>", "<body> or if <condition>, <alt body>"],
-      fn: (function(_this) {
-        return function(v) {
-          if (!v("condition")) {
-            return v("body");
-          } else {
-            return v("alt body");
-          }
-        };
-      })(this)
+      match: ["If <condition>, <body>",
+    "If <condition> then <body>",
+    "<body> if <condition>"],
+      fn: (v) => {
+        if (v("condition")) {
+          return v("body");
+        }
+      }
+    }),
+    new Pattern({
+      match: [
+        "If <condition>, <body>, else <alt body>",
+        "If <condition>, <body> else <alt body>",
+        "If <condition> then <body>, else <alt body>",
+        "If <condition> then <body> else <alt body>",
+        "<body> if <condition> else <alt body>" // pythonic ternary
+      ],
+      bad_match: [
+        "if <condition>, then <body>, else <alt body>",
+        "if <condition>, then <body>, else, <alt body>",
+        "if <condition>, <body>, else, <alt body>",
+        // and other things; also this might be sort of arbitrary
+        // comma misplacement should really be handled dynamically by the near-match system
+        "<condition> ? <body> : <alt body>",
+        "unless <condition>, <alt body> else <body>",
+        "unless <condition>, <alt body>, else <body>",
+        "unless <condition> then <alt body>, else <body>",
+        "unless <condition> then <alt body>, else, <body>",
+        "unless <condition>, then <alt body>, else <body>",
+        "unless <condition>, then <alt body>, else, <body>"
+      ],
+      fn: (v) => {
+        if (v("condition")) {
+          return v("body");
+        } else {
+          return v("alt body");
+        }
+      }
+    }),
+    new Pattern({
+      match: ["Unless <condition>, <body>",
+    "<body> unless <condition>"],
+      bad_match: ["Unless <condition> then <body>"], // not good English
+      fn: (v) => {
+        if (!v("condition")) {
+          return v("body");
+        }
+      }
+    }),
+    new Pattern({
+      match: ["<body> unless <condition> in which case <alt body>",
+    "<body>, unless <condition> in which case <alt body>",
+    "<body> unless <condition>, in which case <alt body>",
+    "<body>, unless <condition>, in which case <alt body>",
+    "<body> unless <condition> in which case just <alt body>",
+    "<body>, unless <condition> in which case just <alt body>",
+    "<body> unless <condition>, in which case just <alt body>",
+    "<body>, unless <condition>, in which case just <alt body>"],
+      bad_match: [
+        "Unless <condition>, <body>, else <alt body>",
+        "Unless <condition> then <body>, else <alt body>",
+        "Unless <condition> then <body> else <alt body>",
+        "<body> unless <condition> else <alt body>", // psuedo-pythonic ternary
+        "<body> or if <condition> else <alt body>",
+        "<body>, or if <condition>, <alt body>",
+        "<body>, or if <condition> <alt body>",
+        "<body> or if <condition>, <alt body>"
+      ],
+      fn: (v) => {
+        if (!v("condition")) {
+          return v("body");
+        } else {
+          return v("alt body");
+        }
+      }
     })
   ]
 });
@@ -1051,21 +1140,41 @@ Library = require("../Library");
 module.exports = new Library("Console", {
   patterns: [
     new Pattern({
-      match: ["Output <text>", "Output <text> to the console", "Log <text>", "Log <text> to the console", "Print <text>", "Print <text> to the console", "Say <text>"],
-      bad_match: ["puts <text>", "println <text>", "print line <text>", "printf <text>", "console.log <text>", "writeln <text>", "output <text> to the terminal", "log <text> to the terminal", "print <text> to the terminal"],
-      fn: (function(_this) {
-        return function(v, context) {
-          context.console.log(v("text"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Clear the console", "Clear console"],
-      bad_match: ["Clear the terminal", "Clear terminal", "clear", "cls", "clr"],
-      fn: (function(_this) {
-        return function(v, context) {
-          context.console.clear();
-        };
-      })(this)
+      match: ["Output <text>",
+    "Output <text> to the console",
+    "Log <text>",
+    "Log <text> to the console",
+    "Print <text>",
+    "Print <text> to the console",
+    "Say <text>"],
+      bad_match: [
+        "puts <text>",
+        "println <text>",
+        "print line <text>", // you can only output one or more lines
+        "printf <text>",
+        "console.log <text>",
+        "writeln <text>",
+        "output <text> to the terminal",
+        "log <text> to the terminal",
+        "print <text> to the terminal"
+      ],
+      fn: (v,
+    context) => {
+        context.console.log(v("text"));
+      }
+    }),
+    new Pattern({
+      match: ["Clear the console",
+    "Clear console"],
+      bad_match: ["Clear the terminal",
+    "Clear terminal",
+    "clear",
+    "cls",
+    "clr"],
+      fn: (v,
+    context) => {
+        context.console.clear();
+      }
     })
   ]
 });
@@ -1085,8 +1194,8 @@ module.exports = new Library("Constants", {
     "no": false,
     "off": false,
     "null": null,
-    "infinity": Infinity,
-    "∞": Infinity,
+    "infinity": 2e308,
+    "∞": 2e308,
     "pi": Math.PI,
     "π": Math.PI,
     "tau": Math.PI * 2,
@@ -1111,15 +1220,34 @@ Library = require("../Library");
 module.exports = new Library("JavaScript Eval", {
   patterns: [
     new Pattern({
-      match: ["Run JS <text>", "Run JavaScript <text>", "Run <text> as JS", "Run <text> as JavaScript", "Execute JS <text>", "Execute JavaScript <text>", "Execute <text> as JS", "Execute <text> as JavaScript", "Eval JS <text>", "Eval JavaScript <text>", "Eval <text> as JS", "Eval <text> as JavaScript"],
-      bad_match: ["Eval <text>", "Run <text>", "Execute <text>", "JavaScript <text>", "JS <text>"],
-      fn: (function(_this) {
-        return function(v, context) {
-          var console;
-          console = context.console;
-          return eval(v("text"));
-        };
-      })(this)
+      match: ["Run JS <text>",
+    "Run JavaScript <text>",
+    "Run <text> as JS",
+    "Run <text> as JavaScript",
+    "Execute JS <text>",
+    "Execute JavaScript <text>",
+    "Execute <text> as JS",
+    "Execute <text> as JavaScript",
+    "Eval JS <text>",
+    "Eval JavaScript <text>",
+    "Eval <text> as JS",
+    "Eval <text> as JavaScript"],
+      bad_match: [
+        // TODO: these two should be maybe_matches
+        // and eval-ooplie should have them defined as well
+        // and it should ask you to disambiguate between them
+        "Eval <text>", // as what? (should the error message say something like "as what?"?)
+        "Run <text>", // ditto
+        "Execute <text>", // ditto
+        "JavaScript <text>", // not sure JavaScript is a verb
+        "JS <text>" // ditto
+      ],
+      fn: (v,
+    context) => {
+        var console;
+        ({console} = context); // bring context's console into scope as "console"
+        return eval(v("text"));
+      }
     })
   ]
 });
@@ -1135,13 +1263,55 @@ Library = require("../Library");
 module.exports = new Library("Ooplie Eval", {
   patterns: [
     new Pattern({
-      match: ["Interpret <text> as English", "Run <text> as English", "Execute <text> as English", "Eval <text> as English", "Interpret <text> as Ooplie code", "Run <text> as Ooplie code", "Execute <text> as Ooplie code", "Eval <text> as Ooplie code", "Run code <text> with Ooplie", "Eval code <text> with Ooplie", "Execute code <text> with Ooplie", "Interpret code <text> with Ooplie", "Run Ooplie code <text>", "Eval Ooplie code <text>", "Execute Ooplie code <text>", "Interpret Ooplie code <text>", "Run English <text>", "Eval English <text>", "Execute English <text>", "Interpret <text> with Ooplie", "Run <text> with Ooplie", "Eval <text> with Ooplie", "Execute <text> with Ooplie"],
-      bad_match: ["Run Ooplie <text>", "Eval Ooplie <text>", "Execute Ooplie <text>", "Interpret Ooplie <text>", "Run <text> as Ooplie", "Run code <text> as Ooplie", "Execute <text> as Ooplie", "Execute <text> as Ooplie", "Eval <text> as Ooplie", "Eval code <text> as Ooplie", "Run code <text> as English", "Run English code <text>", "Eval English code <text>", "Execute English code <text>", "Interpret English code <text>", "Run English code <text>", "Eval <text> as English code", "Execute English code <text>", "Interpret <text> as English code", "Make Ooplie Interpret <text>", "Have Ooplie Interpret <text>", "Let Ooplie Interpret <text>"],
-      fn: (function(_this) {
-        return function(v, context) {
-          return context["eval"](v("text"));
-        };
-      })(this)
+      match: ["Interpret <text> as English",
+    "Run <text> as English",
+    "Execute <text> as English",
+    "Eval <text> as English",
+    "Interpret <text> as Ooplie code",
+    "Run <text> as Ooplie code",
+    "Execute <text> as Ooplie code",
+    "Eval <text> as Ooplie code",
+    "Run code <text> with Ooplie",
+    "Eval code <text> with Ooplie",
+    "Execute code <text> with Ooplie",
+    "Interpret code <text> with Ooplie",
+    "Run Ooplie code <text>",
+    "Eval Ooplie code <text>",
+    "Execute Ooplie code <text>",
+    "Interpret Ooplie code <text>",
+    "Run English <text>",
+    "Eval English <text>",
+    "Execute English <text>",
+    "Interpret <text> with Ooplie",
+    "Run <text> with Ooplie",
+    "Eval <text> with Ooplie",
+    "Execute <text> with Ooplie"],
+      bad_match: ["Run Ooplie <text>",
+    "Eval Ooplie <text>",
+    "Execute Ooplie <text>",
+    "Interpret Ooplie <text>",
+    "Run <text> as Ooplie",
+    "Run code <text> as Ooplie",
+    "Execute <text> as Ooplie",
+    "Execute <text> as Ooplie",
+    "Eval <text> as Ooplie",
+    "Eval code <text> as Ooplie",
+    "Run code <text> as English",
+    "Run English code <text>",
+    "Eval English code <text>",
+    "Execute English code <text>",
+    "Interpret English code <text>",
+    "Run English code <text>",
+    "Eval <text> as English code",
+    "Execute English code <text>",
+    "Interpret <text> as English code",
+    "Make Ooplie Interpret <text>",
+    "Have Ooplie Interpret <text>",
+    "Let Ooplie Interpret <text>"],
+      fn: (v,
+    context) => {
+        return context.eval(v("text"));
+      }
     })
   ]
 });
@@ -1158,199 +1328,330 @@ Pattern = require("../Pattern");
 
 Library = require("../Library");
 
+// hack to avoid browserify builtin "fs" module
 if ((typeof window !== "undefined" && window !== null ? window.require : void 0) != null) {
   fs = window.require("fs");
 }
 
 module.exports = new Library("File System", {
   patterns: [
+    
+    // TODO: async! use streams and/or promises
+
+    // TODO: probably should take an object-oriented approach, i.e.
+    // 	output the file's contents and delete it # (it = the file)
+    // once we have some OOP facilities
+
+    // TODO: if it doesn't exist, unless it exists, unless it already exists
+    // unless there's already a file there, [in which case]...
+
+    // TODO (maybe): "{if/whether} we're [already] [currently] {writing to/reading from} {a file/'foo.txt'}"?
+
+    // TODO: globbing (how?)
     new Pattern({
-      match: ["Make directory <dir>", "Create directory <dir>", "Make folder <dir>", "Create folder <dir>"],
-      bad_match: ["Make dir <dir>", "Create dir <dir>", "mkdir <dir>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.mkdirSync(v("dir"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Make directories <dir>", "Create directories <dir>", "Make folders <dir>", "Create folders <dir>"],
-      bad_match: ["Make directories recursively <dir>", "Create directories recursively <dir>", "Make dirs recursively <dir>", "Create dirs recursively <dir>", "Make dirs <dir>", "Create dirs <dir>", "Make path <dir>", "Create path <dir>", "mkdirp <dir>", "mkdirs <dir>"],
-      fn: (function(_this) {
-        return function(v) {
-          throw new Error("Not implemented (needs an npm module)");
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Make directories for <file path>", "Create directories <file path>", "Make all the directories for <file path>", "Create all the directories for <file path>", "Make folders for <file path>", "Create folders for <file path>", "Make all the folders for <file path>", "Create all the folders for <file path>"],
-      fn: (function(_this) {
-        return function(v) {
-          var dir;
-          dir = path.dirname(v("file path"));
-          throw new Error("Not implemented (needs an npm module)");
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Remove directory <dir>", "Delete directory <dir>", "Remove folder <dir>", "Delete folder <dir>"],
-      bad_match: ["Unlink directory <dir>", "Unlink folder <dir>", "Unlink dir <dir>", "Unlink <dir>", "rmdir <dir>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.rmdirSync(v("dir"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Write <data> to file <file>", "Write <data> to <file>", "Write file <file> with content <data>", "Write <file> with content <data>", "Write to <file>: <data>", "Write to file <file>: <data>", "Write <file>: <data>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.writeFileSync(v("file"), v("data"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Append <data> to file <file>", "Append <data> to <file>", "Write <data> to the end of <file>"],
-      bad_match: ["Append <data> to the end of <file>", "Prepend <data> to the end of <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.appendFileSync(v("file"), v("data"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Prepend <data> to file <file>", "Prepend <data> to <file>", "Write <data> to the beginning of <file>"],
-      bad_match: ["Prepend <data> to the beginning of <file>", "Append <data> to the beginning of <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          var e, error, existing_data, file_path, prepend_data;
-          file_path = v("file");
-          prepend_data = v("data");
-          try {
-            existing_data = fs.readFileSync(file_path, "utf8");
-          } catch (error) {
-            e = error;
-            if (e.code !== "ENOENT") {
-              throw e;
-            }
-            existing_data = "";
+      match: ["Make directory <dir>",
+    "Create directory <dir>",
+    "Make folder <dir>",
+    "Create folder <dir>"],
+      bad_match: ["Make dir <dir>",
+    "Create dir <dir>",
+    "mkdir <dir>"],
+      fn: (v) => {
+        return fs.mkdirSync(v("dir"));
+      }
+    }),
+    new Pattern({
+      match: ["Make directories <dir>",
+    "Create directories <dir>",
+    "Make folders <dir>",
+    "Create folders <dir>"],
+      bad_match: ["Make directories recursively <dir>",
+    "Create directories recursively <dir>",
+    "Make dirs recursively <dir>",
+    "Create dirs recursively <dir>",
+    "Make dirs <dir>",
+    "Create dirs <dir>",
+    "Make path <dir>",
+    "Create path <dir>",
+    "mkdirp <dir>",
+    "mkdirs <dir>"],
+      fn: (v) => {
+        throw new Error("Not implemented (needs an npm module)");
+      }
+    }),
+    new Pattern({
+      match: ["Make directories for <file path>",
+    "Create directories <file path>",
+    "Make all the directories for <file path>",
+    "Create all the directories for <file path>",
+    "Make folders for <file path>",
+    "Create folders for <file path>",
+    "Make all the folders for <file path>",
+    "Create all the folders for <file path>"],
+      fn: (v) => {
+        var dir;
+        dir = path.dirname(v("file path"));
+        throw new Error("Not implemented (needs an npm module)");
+      }
+    }),
+    new Pattern({
+      match: ["Remove directory <dir>",
+    "Delete directory <dir>",
+    "Remove folder <dir>",
+    "Delete folder <dir>"],
+      bad_match: ["Unlink directory <dir>",
+    "Unlink folder <dir>",
+    "Unlink dir <dir>",
+    "Unlink <dir>",
+    "rmdir <dir>"],
+      fn: (v) => {
+        return fs.rmdirSync(v("dir"));
+      }
+    }),
+    new Pattern({
+      match: ["Write <data> to file <file>",
+    "Write <data> to <file>",
+    "Write file <file> with content <data>",
+    "Write <file> with content <data>",
+    "Write to <file>: <data>",
+    "Write to file <file>: <data>",
+    "Write <file>: <data>"],
+      fn: (v) => {
+        return fs.writeFileSync(v("file"),
+    v("data"));
+      }
+    }),
+    new Pattern({
+      match: ["Append <data> to file <file>",
+    "Append <data> to <file>",
+    "Write <data> to the end of <file>"],
+      bad_match: ["Append <data> to the end of <file>",
+    "Prepend <data> to the end of <file>"],
+      fn: (v) => {
+        return fs.appendFileSync(v("file"),
+    v("data"));
+      }
+    }),
+    new Pattern({
+      match: ["Prepend <data> to file <file>",
+    "Prepend <data> to <file>",
+    "Write <data> to the beginning of <file>"],
+      bad_match: ["Prepend <data> to the beginning of <file>",
+    "Append <data> to the beginning of <file>"],
+      fn: (v) => {
+        var e,
+    existing_data,
+    file_path,
+    prepend_data;
+        file_path = v("file");
+        prepend_data = v("data");
+        try {
+          existing_data = fs.readFileSync(file_path,
+    "utf8");
+        } catch (error) {
+          e = error;
+          if (e.code !== "ENOENT") {
+            throw e;
           }
-          return fs.writeFileSync(file_path, prepend_data + existing_data);
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Read from <file>", "Read file <file>", "Read <data> from <file>", "Read <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.readFileSync(v("file"), "utf8");
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Read from <file> as a buffer", "Read file <file> as a buffer", "Read <file> as a buffer"],
-      bad_match: ["Read from <file> as buffer", "Read file <file> as buffer", "Read <file> as buffer"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.readFileSync(v("file"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Delete file <file>", "Delete <file>", "Remove file <file>", "Remove <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          return fs.unlinkSync(v("file"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["we have permission to read from <file>", "we have permission to read <file>", "I have permission to read from <file>", "I have permission to read <file>", "we can read from <file>", "we can read <file>", "I can read from <file>", "I can read <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          var e, error;
-          try {
-            fs.accessSync(v("file"), fs.R_OK);
-          } catch (error) {
-            e = error;
-            if (e.code !== "EPERM") {
-              throw e;
-            }
-            return false;
+          existing_data = "";
+        }
+        return fs.writeFileSync(file_path,
+    prepend_data + existing_data);
+      }
+    }),
+    new Pattern({
+      match: ["Read from <file>",
+    "Read file <file>",
+    "Read <data> from <file>",
+    "Read <file>"],
+      fn: (v) => {
+        return fs.readFileSync(v("file"),
+    "utf8");
+      }
+    }),
+    // TODO: export variable data
+    // if you say "Read JSON from data.json",
+    // 	it should define a variable called "JSON"
+    // otherwise
+    // 	it should define a variable called "data" and/or "the file's contents"
+    new Pattern({
+      match: [
+        "Read from <file> as a buffer",
+        "Read file <file> as a buffer",
+        // "Read <data> from <file> as a buffer"
+        // TODO: match the above first but prefer this variation:
+        "Read <file> as a buffer"
+      ],
+      bad_match: ["Read from <file> as buffer",
+    "Read file <file> as buffer",
+    "Read <file> as buffer"],
+      fn: (v) => {
+        return fs.readFileSync(v("file"));
+      }
+    }),
+    // TODO: export variable "the buffer" and maybe also "the file's contents"
+    // "buffer contents"?
+    // "...as buffer A", "as buffer 1", "as the initial memory buffer"...
+    new Pattern({
+      match: ["Delete file <file>",
+    "Delete <file>",
+    "Remove file <file>",
+    "Remove <file>"],
+      fn: (v) => {
+        return fs.unlinkSync(v("file"));
+      }
+    }),
+    new Pattern({
+      match: ["we have permission to read from <file>",
+    "we have permission to read <file>",
+    "I have permission to read from <file>",
+    "I have permission to read <file>",
+    "we can read from <file>",
+    "we can read <file>",
+    "I can read from <file>",
+    "I can read <file>"],
+      // "Do (we|I) have permission to read [from] <file>?"
+      fn: (v) => {
+        var e;
+        try {
+          // fs.access v("file"), fs.R_OK, (err)->
+          fs.accessSync(v("file"),
+    fs.R_OK);
+        } catch (error) {
+          e = error;
+          if (e.code !== "EPERM") {
+            throw e;
           }
-          return true;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["we have permission to write to <file>", "we have permission to write <file>", "I have permission to write to <file>", "I have permission to write <file>", "we can write to <file>", "we can write <file>", "I can write to <file>", "I can write <file>"],
-      fn: (function(_this) {
-        return function(v) {
-          var e, error;
-          try {
-            fs.accessSync(v("file"), fs.W_OK);
-          } catch (error) {
-            e = error;
-            if (e.code !== "EPERM") {
-              throw e;
-            }
-            return false;
+          return false;
+        }
+        return true;
+      }
+    }),
+    new Pattern({
+      match: ["we have permission to write to <file>",
+    "we have permission to write <file>",
+    "I have permission to write to <file>",
+    "I have permission to write <file>",
+    "we can write to <file>",
+    "we can write <file>",
+    "I can write to <file>",
+    "I can write <file>"],
+      // "Do (we|I) have permission to write [to] <file>?"
+      fn: (v) => {
+        var e;
+        try {
+          // fs.access v("file"), fs.W_OK, (err)->
+          fs.accessSync(v("file"),
+    fs.W_OK);
+        } catch (error) {
+          e = error;
+          if (e.code !== "EPERM") {
+            throw e;
           }
-          return true;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["stdout", "standard out"],
-      fn: (function(_this) {
-        return function(v) {
-          return 1;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["stdin", "standard in"],
-      fn: (function(_this) {
-        return function(v) {
-          return 0;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["stderr", "standard error"],
-      bad_match: ["standarderror", "standard err", "std error", "stderror", "std err"],
-      fn: (function(_this) {
-        return function(v) {
-          return 2;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["list directory contents", "list folder contents", "list current directory contents", "list current folder contents", "list contents of the current directory", "list contents of the current folder", "list the contents of the current directory", "list the contents of the current folder", "list files and subdirectories", "list files and directories", "ls"],
-      bad_match: ["list dir contents", "list current dir contents", "list contents of the current dir", "list the contents of the current dir"],
-      fn: (function(_this) {
-        return function(v) {
-          var directory;
-          directory = ".";
-          return fs.readdirSync(directory).map(function(fname) {
-            return path.join(directory, fname);
-          });
-        };
-      })(this)
-    }), new Pattern({
-      match: ["list files", "list files in the current directory", "list the files in the current directory"],
-      fn: (function(_this) {
-        return function(v) {
-          var directory;
-          directory = ".";
-          return fs.readdirSync(directory).map(function(fname) {
-            return path.join(directory, fname);
-          }).filter(function(fname) {
-            return fs.statSync(fname).isFile();
-          });
-        };
-      })(this)
-    }), new Pattern({
-      match: ["list subdirectories", "list subfolders", "list directories", "list folders", "list folders in the current directory", "list the folders in the current directory", "list folders in the current folder", "list the folders in the current folder"],
-      fn: (function(_this) {
-        return function(v) {
-          var directory;
-          directory = ".";
-          return fs.readdirSync(directory).map(function(fname) {
-            return path.join(directory, fname);
-          }).filter(function(fname) {
-            return fs.statSync(fname).isDirectory();
-          });
-        };
-      })(this)
+          return false;
+        }
+        return true;
+      }
+    }),
+    new Pattern({
+      match: ["stdout",
+    "standard out"],
+      fn: (v) => {
+        // process.stdout # stream
+        return 1; // file descriptor
+      }
+    }),
+    new Pattern({
+      match: ["stdin",
+    "standard in"],
+      fn: (v) => {
+        // process.stdin # stream
+        return 0; // file descriptor
+      }
+    }),
+    new Pattern({
+      match: ["stderr",
+    "standard error"],
+      bad_match: ["standarderror",
+    "standard err",
+    "std error",
+    "stderror",
+    "std err"],
+      fn: (v) => {
+        // process.stderr # stream
+        return 2; // file descriptor
+      }
+    }),
+    new Pattern({
+      match: [
+        "list directory contents",
+        "list folder contents",
+        "list current directory contents",
+        "list current folder contents",
+        "list contents of the current directory",
+        "list contents of the current folder",
+        "list the contents of the current directory",
+        "list the contents of the current folder",
+        "list files and subdirectories",
+        "list files and directories",
+        // "enum dir contents"
+        // "'numerate d'rectory 'tents"
+        "ls"
+      ],
+      bad_match: ["list dir contents",
+    "list current dir contents",
+    "list contents of the current dir",
+    "list the contents of the current dir"],
+      fn: (v) => {
+        var directory;
+        directory = ".";
+        return fs.readdirSync(directory).map(function(fname) {
+          return path.join(directory,
+    fname);
+        });
+      }
+    }),
+    new Pattern({
+      match: ["list files",
+    "list files in the current directory",
+    "list the files in the current directory"],
+      fn: (v) => {
+        var directory;
+        directory = ".";
+        return fs.readdirSync(directory).map(function(fname) {
+          return path.join(directory,
+    fname);
+        }).filter(function(fname) {
+          return fs.statSync(fname).isFile();
+        });
+      }
+    }),
+    new Pattern({
+      match: ["list subdirectories",
+    "list subfolders",
+    "list directories",
+    "list folders",
+    "list folders in the current directory",
+    "list the folders in the current directory",
+    "list folders in the current folder",
+    "list the folders in the current folder"],
+      fn: (v) => {
+        var directory;
+        directory = ".";
+        return fs.readdirSync(directory).map(function(fname) {
+          return path.join(directory,
+    fname);
+        }).filter(function(fname) {
+          return fs.statSync(fname).isDirectory();
+        });
+      }
     })
   ]
 });
+
+
+// TODO: "go up one level", "go up 5 folders"
+// "To go up N levels, go up N times"
 
 
 },{"../Library":5,"../Pattern":7,"fs":1,"path":2}],16:[function(require,module,exports){
@@ -1360,45 +1661,94 @@ Operator = require("../Operator");
 
 Library = require("../Library");
 
+// Should there be separate libraries for Comparison, Arithmetic?
+// Should Set Operators go in Sets?
+// Maybe we should just have categories.
 module.exports = new Library("Operators", {
   operators: [
     new Operator({
-      match: ["^", "to the power of"],
+      match: ["^",
+    "to the power of"],
       bad_match: ["**"],
       precedence: 3,
       right_associative: true,
-      fn: function(lhs, rhs) {
-        return Math.pow(lhs, rhs);
+      fn: function(lhs,
+    rhs) {
+        return Math.pow(lhs,
+    rhs);
       }
-    }), new Operator({
-      match: ["×", "*", "times", "multiplied by"],
-      bad_match: ["✖", "⨉", "⨯", "∗", "⋅", "∙", "•", "✗", "✘"],
+    }),
+    new Operator({
+      match: ["×",
+    "*",
+    "times",
+    "multiplied by"],
+      bad_match: [
+        "✖", // heavy multiplication X
+        "⨉", // n-ary times operator
+        "⨯", // vector or cross-product
+        "∗", // asterisk operator
+        "⋅", // dot operator
+        "∙", // bullet operator
+        "•", // bullet (are you kidding me?)
+        "✗", // ballot
+        "✘" // heavy ballot
+      ],
       precedence: 2,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs * rhs;
       }
-    }), new Operator({
-      match: ["÷", "/", "∕", "divided by"],
-      bad_match: ["／", "⁄"],
+    }),
+    new Operator({
+      match: [
+        "÷", // obelus
+        "/", // slash
+        "∕", // division slash
+        "divided by"
+      ],
+      bad_match: [
+        "／", // fullwidth solidus
+        "⁄" // fraction slash
+      ],
       precedence: 2,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs / rhs;
       }
-    }), new Operator({
-      match: ["+", "plus"],
-      bad_match: ["＋", "﬩"],
+    }),
+    new Operator({
+      match: ["+",
+    "plus"],
+      bad_match: [
+        "＋", // fullwidth plus
+        "﬩" // Hebrew alternative plus sign (only English is supported, plus + is the internationally standard plus symbol) 
+      ],
       precedence: 1,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs + rhs;
       }
-    }), new Operator({
-      match: ["−", "-", "minus"],
+    }),
+    new Operator({
+      match: [
+        "−", // minus
+        "-", // hyphen-minus
+        "minus"
+      ],
       precedence: 1,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs - rhs;
       }
-    }), new Operator({
-      match: ["−", "-", "negative", "the opposite of"],
+    }),
+    new Operator({
+      match: [
+        "−", // minus
+        "-", // hyphen-minus
+        "negative",
+        "the opposite of"
+      ],
       bad_match: ["minus"],
       precedence: 1,
       right_associative: true,
@@ -1406,8 +1756,10 @@ module.exports = new Library("Operators", {
       fn: function(rhs) {
         return -rhs;
       }
-    }), new Operator({
-      match: ["+", "positive"],
+    }),
+    new Operator({
+      match: ["+",
+    "positive"],
       bad_match: ["plus"],
       precedence: 1,
       right_associative: true,
@@ -1415,44 +1767,87 @@ module.exports = new Library("Operators", {
       fn: function(rhs) {
         return +rhs;
       }
-    }), new Operator({
-      match: ["≥", ">=", "is greater than or equal to"],
+    }),
+    new Operator({
+      match: ["≥",
+    ">=",
+    "is greater than or equal to"],
       bad_match: ["is more than or equal to"],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs >= rhs;
       }
-    }), new Operator({
-      match: ["≤", "<=", "is less than or equal to"],
+    }),
+    new Operator({
+      match: ["≤",
+    "<=",
+    "is less than or equal to"],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs <= rhs;
       }
-    }), new Operator({
-      match: [">", "is greater than"],
+    }),
+    new Operator({
+      match: [">",
+    "is greater than"],
       bad_match: ["is more than"],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs > rhs;
       }
-    }), new Operator({
-      match: ["<", "is less than"],
+    }),
+    new Operator({
+      match: ["<",
+    "is less than"],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs < rhs;
       }
-    }), new Operator({
-      match: ["≠", "!=", "does not equal", "is not equal to", "isn't", "is not"],
-      bad_match: ["isnt", "isnt equal to", "isn't equal to"],
+    }),
+    new Operator({
+      match: ["≠",
+    "!=",
+    "does not equal",
+    "is not equal to",
+    "isn't",
+    "is not"],
+      bad_match: [
+        "isnt", // this isn't CoffeeScript, you can actually punctuate contractions
+        "isnt equal to", // ditto
+        "isn't equal to" // this sounds slightly silly to me
+      ],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
         return lhs !== rhs;
       }
-    }), new Operator({
-      match: ["=", "equals", "is equal to", "is"],
-      bad_match: ["==", "==="],
+    }),
+    new Operator({
+      match: ["=",
+    "equals",
+    "is equal to",
+    "is"],
+      bad_match: ["==",
+    "==="],
       precedence: 0,
-      fn: function(lhs, rhs) {
+      fn: function(lhs,
+    rhs) {
+        // if a.every((token)-> token.type is "word")
+        // 	name = a.join(" ")
+        // 	value = @eval_tokens(b)
+        // 	if @constants.has(name)
+        // 		unless @constants.get(name) is value
+        // 			throw new Error "#{name} is already defined as #{@constants.get(name)} (which does not equal #{value})"
+        // 	else if @constants.has(name)
+        // 		unless @constants.get(name) is value
+        // 			throw new Error "#{name} is already defined as #{@variables.get(name)} (which does not equal #{value})"
+        // 	else
+        // 		@variables.set(name, value)
+        // else
         return lhs === rhs;
       }
     })
@@ -1467,93 +1862,165 @@ Pattern = require("../Pattern");
 
 Library = require("../Library");
 
+// should we have a Process library and a Child Processes library following node?
+// or should we have a Process libary and a Processes library and have kill <pid> in the latter?
+// we could mainly just go with node but I don't know
+// the chdir stuff doesn't seem right here
+
+// hack to avoid browserify builtin "process" object
+// FIXME: it still includes the whole shim
 if (typeof window !== "undefined" && window !== null ? window.global : void 0) {
   process = window.global.process;
 }
 
 module.exports = new Library("Process", {
   patterns: [
+    
+    // TODO: if it doesn't exist, unless it exists, unless it already exists
+    // unless there's already a file there, in which case...
+
+    // TODO: "if we're writing to a file"? "whether we're reading from a file"?
+
+    // TODO: async! use streams and/or promises
+
+    // TODO: probably should take an object-oriented approach, i.e.
+    // 	output the file's contents and delete the file
+    // once we have some OOP facilities
+
+    // TODO: globbing (how?)
     new Pattern({
-      match: ["Exit the program", "Exit this process", "Exit the process", "Exit"],
-      bad_match: ["Exit this program", "End this process", "Exit process", "End process", "Exit program", "End program"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.exit();
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Exit with code <code>", "Exit the program with code <code>", "Exit this process with code <code>", "Exit the process with code <code>"],
-      bad_match: ["Exit this program with code <code>", "End this process with code <code>", "Exit process with code <code>", "End process with code <code>", "Exit program with code <code>", "End program with code <code>"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.exit(v("code"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Kill process <pid>", "End process <pid>"],
-      maybe_match: ["Kill <pid>", "End <pid>"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.kill(v("pid"));
-        };
-      })(this)
-    }), new Pattern({
+      match: ["Exit the program",
+    "Exit this process",
+    "Exit the process",
+    "Exit"],
+      bad_match: ["Exit this program",
+    "End this process",
+    "Exit process",
+    "End process",
+    "Exit program",
+    "End program"],
+      fn: (v) => {
+        return process.exit();
+      }
+    }),
+    new Pattern({
+      match: ["Exit with code <code>",
+    "Exit the program with code <code>",
+    "Exit this process with code <code>",
+    "Exit the process with code <code>"],
+      bad_match: ["Exit this program with code <code>",
+    "End this process with code <code>",
+    "Exit process with code <code>",
+    "End process with code <code>",
+    "Exit program with code <code>",
+    "End program with code <code>"],
+      fn: (v) => {
+        return process.exit(v("code"));
+      }
+    }),
+    new Pattern({
+      match: ["Kill process <pid>",
+    "End process <pid>"],
+      // depends whether it's an integer
+      // TODO: facilitate distinguishing this
+      // possibly with a... type system!?
+      maybe_match: ["Kill <pid>",
+    "End <pid>"],
+      fn: (v) => {
+        return process.kill(v("pid"));
+      }
+    }),
+    new Pattern({
       match: ["command-line arguments"],
-      bad_match: ["command line arguments", "arguments from the command-line", "argv"],
-      maybe_match: ["arguments", "args"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.argv;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["current memory usage", "this process's memory usage", "process memory usage", "memory usage of this process", "memory usage"],
+      bad_match: ["command line arguments",
+    "arguments from the command-line",
+    "argv"],
+      maybe_match: ["arguments",
+    "args"],
+      fn: (v) => {
+        return process.argv;
+      }
+    }),
+    new Pattern({
+      match: ["current memory usage",
+    "this process's memory usage",
+    "process memory usage",
+    "memory usage of this process",
+    "memory usage"],
+      // "How much memory is this process using?"
       bad_match: ["process memory"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.memoryUsage();
-        };
-      })(this)
-    }), new Pattern({
-      match: ["Set the process's title to <text>", "Name the process <text>"],
+      fn: (v) => {
+        // TODO: return a number with a unit
+        return process.memoryUsage();
+      }
+    }),
+    new Pattern({
+      match: ["Set the process's title to <text>",
+    "Name the process <text>"],
       bad_match: ["Call the process <text>"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.title = v("text");
-        };
-      })(this)
-    }), new Pattern({
-      match: ["the process's title", "the name of the process"],
+      fn: (v) => {
+        return process.title = v("text");
+      }
+    }),
+    new Pattern({
+      match: ["the process's title",
+    "the name of the process"],
       bad_match: ["the process title"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.title;
-        };
-      })(this)
-    }), new Pattern({
-      match: ["the working directory", "the current directory", "working directory", "current directory"],
-      bad_match: ["the working dir", "the current dir", "working dir", "current dir", "pwd", "cwd"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.cwd();
-        };
-      })(this)
-    }), new Pattern({
-      match: ["change directory to <path>", "change working directory to <path>", "change current directory to <path>", "set working directory to <path>", "set current directory to <path>", "enter directory <path>", "go to directory <path>", "enter folder <path>", "go to folder <path>"],
-      bad_match: ["enter dir <path>", "go to dir <path>", "change working dir to <path>", "change current dir to <path>", "cd into <path>", "cd to <path>", "cd <path>", "chdir into <path>", "chdir to <path>", "chdir <path>", "set directory to <path>", "change dir to <path>", "set cwd to <path>"],
-      fn: (function(_this) {
-        return function(v) {
-          return process.chdir(v("path"));
-        };
-      })(this)
-    }), new Pattern({
-      match: ["go up", "go out of this folder", "exit folder", "exit this folder"],
+      fn: (v) => {
+        return process.title;
+      }
+    }),
+    new Pattern({
+      match: ["the working directory",
+    "the current directory",
+    "working directory",
+    "current directory"],
+      bad_match: ["the working dir",
+    "the current dir",
+    "working dir",
+    "current dir",
+    "pwd",
+    "cwd"],
+      fn: (v) => {
+        return process.cwd();
+      }
+    }),
+    new Pattern({
+      match: ["change directory to <path>",
+    "change working directory to <path>",
+    "change current directory to <path>",
+    "set working directory to <path>",
+    "set current directory to <path>",
+    "enter directory <path>",
+    "go to directory <path>",
+    "enter folder <path>",
+    "go to folder <path>"],
+      bad_match: ["enter dir <path>",
+    "go to dir <path>",
+    "change working dir to <path>",
+    "change current dir to <path>",
+    "cd into <path>",
+    "cd to <path>",
+    "cd <path>",
+    "chdir into <path>",
+    "chdir to <path>",
+    "chdir <path>",
+    "set directory to <path>",
+    "change dir to <path>",
+    "set cwd to <path>"],
+      fn: (v) => {
+        return process.chdir(v("path"));
+      }
+    }),
+    new Pattern({
+      match: ["go up",
+    "go out of this folder",
+    "exit folder",
+    "exit this folder"],
       bad_match: ["cd .."],
-      fn: (function(_this) {
-        return function(v) {
-          return process.chdir("..");
-        };
-      })(this)
+      fn: (v) => {
+        return process.chdir("..");
+      }
     })
   ]
 });
@@ -1574,14 +2041,7 @@ Token = require('./Token');
 
 tokenize = require('./tokenize');
 
-module.exports = {
-  Context: Context,
-  Library: Library,
-  Pattern: Pattern,
-  Operator: Operator,
-  Token: Token,
-  tokenize: tokenize
-};
+module.exports = {Context, Library, Pattern, Operator, Token, tokenize};
 
 
 },{"./Context":4,"./Library":5,"./Operator":6,"./Pattern":7,"./Token":8,"./tokenize":19}],19:[function(require,module,exports){
@@ -1611,7 +2071,7 @@ check_indentation = function(source) {
                 return JSON.stringify(indentation[column_index]);
             }
           })();
-          throw new Error("Mixed indentation between lines " + line_index + " and " + (line_index + 1) + " at column " + (column_index + 1));
+          throw new Error(`Mixed indentation between lines ${line_index} and ${line_index + 1} at column ${column_index + 1}`);
         }
       }
     }
@@ -1725,7 +2185,7 @@ module.exports = function(source) {
             current_token_string += '"';
             break;
           default:
-            throw new Error("Unknown backslash escape \\" + char + " (Do you need to escape the backslash?)");
+            throw new Error(`Unknown backslash escape \\${char} (Do you need to escape the backslash?)`);
         }
         previous_was_escape = true;
       } else if (char === quote_char) {
@@ -1741,7 +2201,9 @@ module.exports = function(source) {
         }
         string_first_newline_found = true;
       } else if (char.match(/[\t\ ]/)) {
+        // TODO: support spaces
         match = source.slice(0, i + 1).match(/\n([\t\ ]*)$/);
+        // console.log {source, row, col, match}
         if (match != null) {
           string_indent_level = match[1].length;
           if (string_indent_level > indent_level + 1) {
@@ -1779,6 +2241,8 @@ module.exports = function(source) {
         next_type = "word";
       } else if (char === "'") {
         if (current_type === "word" && next_char.match(/[a-z]/i)) {
+          // e.g. it's, isn't, doesn't, shouldn't etc.
+          // (but not e.g. 'tis or fightin', sadly)
           next_type = "word";
         } else {
           start_string(char);
@@ -1788,6 +2252,10 @@ module.exports = function(source) {
       } else if (char.match(/\s/)) {
         next_type = null;
       } else {
+        // else if char.match(/[,!?@#$%^&*\(\)\[\]\{\}<>\/\|\\\-+=~:;]/)
+        // 	next_type = "punctuation"
+        // else
+        // 	next_type = "unknown"
         next_type = "punctuation";
       }
       if (next_type !== current_type) {
@@ -1810,7 +2278,7 @@ module.exports = function(source) {
     }
   }
   if (current_type === "string") {
-    throw new Error("Missing end quote (" + quote_char + ") for string at row " + row + ", column " + col);
+    throw new Error(`Missing end quote (${quote_char}) for string at row ${row}, column ${col}`);
   }
   finish_token();
   handle_indentation(i, row, col);

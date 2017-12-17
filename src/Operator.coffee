@@ -3,9 +3,10 @@ Pattern = require "./Pattern"
 
 module.exports =
 class Operator extends Pattern
-	constructor: ({@precedence, right_associative, binary, unary})->
-		super
-		throw new Error "Operator constructor requires {precedence}" unless @precedence?
+	constructor: ({match, bad_match, fn, precedence, right_associative, binary, unary})->
+		super({match, bad_match, fn})
+		throw new Error "Operator constructor requires {precedence}" unless precedence?
+		@precedence = precedence
 		@right_associative = right_associative ? false
 		if binary?
 			@unary = not binary
