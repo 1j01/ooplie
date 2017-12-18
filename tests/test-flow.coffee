@@ -216,6 +216,94 @@ suite "control flow", ->
 			evaluate("If there are no towers then 1 else 0").to(1)
 			evaluate("Are there no towers?").to(true)
 	
+	suite "switch statement", ->
+		
+		test.skip "single lines", ->
+			evaluate("If true is... true: 5, false: 0").to(5)
+			evaluate("If false is... true: 5, false: 0").to(0)
+			evaluate("If 5 is... true: 5, false: 0").to(undefined)
+			# if-is-else:
+			evaluate("If 5 is... true: 5, false: 0, else: 3").to(3)
+			evaluate("If 5 is... true: 5, false: 0, otherwise: 3").to(3)
+		
+		test.skip "natural", ->
+			evaluate("If foo is a, then x, b then y, or c then z").to()
+			evaluate("If foo is five, then do x, but if it's six then do y. If it's seven do z. Otherwise, do w").to()
+			evaluate("If foo is five, do x; if it's six do y, and if it's seven do z; else, do w").to()
+			evaluate("""
+				If foo happens to be five by some weird chance, do x I guess, but otherwise, y'know, just..
+				if it's exactly six do y, and if pertains to seven do z (u kno the drill); and of course, don't forget,
+				if it's none of the above, do w. always do w, in that case. just a fyi protip, fwiw, jsyk btw
+			""").to()
+		
+		test.skip "blocks", ->
+			evaluate("""
+				If true is...
+					true:
+						1.1
+					false:
+						0.1
+				Else
+					0.5
+			""").to(1.1)
+			evaluate("""
+				If false is...
+					true,
+						1.1
+					false,
+						0.1
+				Otherwise
+					0.5
+			""").to(0.1)
+			evaluate("""
+				If "foo" is...
+					true,
+						1.1
+					false,
+						0.1
+				Otherwise
+					0.5
+			""").to(0.5)
+			evaluate("""
+				If false is...
+					true:  1.1
+					false: 0.1
+					Otherwise:
+						0.5
+			""").to(0.1)
+			evaluate("""
+				If "foo" is...
+					true:  1.1
+					false: 0.1
+					Otherwise, 0.5
+			""").to(0.5)
+		
+		test.skip "literal switch", ->
+			expect(->
+				evaluate("Switch true, true: 1, false: 0").to(1)
+			).to.throw("For `Switch <switch value>, ...`, use `If <switch value> is... <switch option>: <result>` instead")
+			expect(->
+				evaluate("Switch based on true... true: 1, false: 0").to(1)
+			).to.throw("For `Switch based on <switch value>, ...`, use `If <switch value> is... <switch value option>: <option result>` instead")
+			expect(->
+				evaluate("""
+					Switch true
+						case true: 1
+						case false: 0
+				""").to(1)
+			).to.throw("For `Switch <switch value>, ...`, use `If <switch value> is... <switch value option>: <option result>` instead")
+			expect(->
+				evaluate("""
+					switch (true)
+						case true:
+							1
+							break
+						case false:
+							0
+							break
+				""").to(1)
+			).to.throw("For `Switch <switch value>, ...`, use `If <switch value> is... <switch value option>: <option result>` instead")
+	
 	suite "loops", ->
 		
 		test "for a to b"
