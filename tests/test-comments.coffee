@@ -17,17 +17,17 @@ suite "comments", ->
 			#!/usr/bin/english
 			# "hiya world"
 			"Hello, world!"
-			# "Hello World"
+			# "Greetings Earth"
 		""").to("Hello, world!")
 		evaluate("""
 			# "hiya world"
 			"Hello, world!" # this is the line that shouldn't be ignored
-			# "Hello World"
+			# "Greetings Earth"
 		""").to("Hello, world!")
 		evaluate("""
 			# "hiya world"
 			"#wassup world?" # hashes within strings
-			# "Hello World"
+			# "Greetings Earth"
 		""").to("#wassup world?")
 	
 	test.skip "notes", ->
@@ -36,13 +36,13 @@ suite "comments", ->
 		evaluate("""
 			NOTE: This is not something you should really do.
 			It will basically blow up in your face so try to avoid it.
-		""").to(undefined) # are you sure about this one?
-		# will it be smart about newlines surrounding it?
+		""").to(undefined) # uh, I don't think this one works
+		# is it supposed to decide based on newlines surrounding it?
 		evaluate("""
 			End all life on Earth.
 			NOTE: This is not something you should really do.
 			It will basically blow up in your face so try to avoid it.
-		""").to(undefined) # throw error!(?)
+		""").to(undefined) # throw error, hopefully?! AsimovsZerothLawError :P
 		# this is kinda ugly:
 		evaluate("""
 			NOTE:

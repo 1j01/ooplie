@@ -45,6 +45,10 @@ suite "file system", ->
 		context.eval("remove directory 'temp/tempdir2'")
 		context.eval("remove directories 'temp/tempdir3' and 'temp/tempdir4'")
 		# or context.eval("remove directories 'temp/tempdir{1,2,3,4}'")
+	# TODO: "create a file. fill it with 256 zeros or something. name it 'foo.txt'."
+	# "create a new file, and name/call it 'foo.txt'"
+	# "create a new file named/called 'foo.txt'"
+	# should error if it already exists
 	test "writing files", ->
 		context.eval("write 'bla bla bla' to file 'temp/writing.txt'")
 		expect(fs.readFileSync('temp/writing.txt', 'utf8')).to.equal("bla bla bla")

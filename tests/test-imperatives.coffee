@@ -77,7 +77,7 @@ suite "imperatives", ->
 		context.eval("to say something, output it to the console")
 		context.eval("to output something to the console, run JS console.log(something)")
 		context.eval("to output something to the console, `console.log(it)`")
-		context.eval("to output something to the console, run JavaScript methed log on the global JavaScript object 'console' with it as a parameter")
+		context.eval("to output something to the console, execute the JavaScript method named 'log' on the global JavaScript object 'console' with the thing as a parameter")
 		expect_output "Hello World", ->
 			evaluate("say 'Hello World'!")
 	test.skip "to do x, bla bla bla", ->
@@ -146,4 +146,12 @@ suite "imperatives", ->
 			set the ragdoll's head's velocity to a vector of random orientation with a magnitude between 0 and 10 every frame
 			hope it doesn't fall off
 		""")
+		# set the ragdoll's head velocity
+		# set the ragdoll head's velocity
+		# set the velocity of the ragdoll's head
+		# set the velocity of the head of the ragdoll
+		# add velocity to the head of the ragdoll
+		# apply velocity to the ragdoll's head
+		# apply acceleration to the ragdoll's head
+		# apply a force to the ragdoll's head
 		throw new Error "TODO: what is this?"

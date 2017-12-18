@@ -20,8 +20,8 @@ suite "time", ->
 		test.skip "time span values", ->
 			evaluate("4hr 30m = 4.5hr").to(true)
 			evaluate("4 hours and 30 minutes = 4.5hr").to(true)
-			evaluate("4.5hr = 4:30").to(true) # throw ambiguity error
-			evaluate("4.5min = 4:30").to(true) # throw ambiguity error
+			evaluate("4.5hr = 4:30").to(true) # throw ambiguity error for '4:30'
+			evaluate("4.5min = 4:30").to(true) # throw ambiguity error for '4:30'
 			evaluate("four and a half hours = 4.5h").to(true)
 		
 		test "date-time values"
@@ -95,6 +95,8 @@ suite "time", ->
 		test "now and every <timespan>, do x"
 		test "immediately and after <timespan>, do x"
 		test "immediately and every <timespan>, do x"
+		test "do x immediately and then after <timespan>"
+		test "do x immediately and after every <timespan>"
 		test "'initially' and after <timespan>, do x"
 			# throw style error ("now" or "immediately" is better)
 		test "'initially' and every <timespan>, do x"
@@ -145,14 +147,16 @@ suite "time", ->
 		
 		suite "might need some cron jobs", ->
 			test "every day, do x"
+				# throw ambiguity error, needs time of day
 			test "every day at noon, do x"
 			test "every noon, do x"
 			test "every midnight, do x"
 			test "every day at 5:00 PM, do x"
 			test "every day at 5:00, do x"
-				# throw ambiguity error
+				# throw ambiguity error, needs AM/PM
 			test "every 5:00 PM, do x"
 				# throw style error
+			# all ambiguous, need time of day:
 			test "every week, do x"
 			test "every week on <day of the week>, do x"
 			test "every <day of the week>, do x"
@@ -160,7 +164,7 @@ suite "time", ->
 			test "on <day of the week>, do x"
 			test "every <list of days of the week>, do x"
 			test "next <day of the week> or <day of the week>, do x"
-		
+	
 	suite "questions", ->
 		# not sure this is something that should be here, in any sense
 		

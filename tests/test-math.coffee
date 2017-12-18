@@ -169,6 +169,7 @@ suite "mathematics", ->
 		expect(->
 			evaluate("5 ＋ 6").to(5 + 6)
 		).to.throw("use <a> + <b> instead")
+		# or better, "use + instead of ＋"
 		expect(->
 			evaluate("5 ⋅ 6").to(5 * 6) # dot operator
 		).to.throw("use <a> × <b> instead")
@@ -228,7 +229,7 @@ suite "mathematics", ->
 		evaluate("twenty+4").to(24)
 		evaluate("twenty-5").to(25)
 		evaluate("twentysix").to(26)
-		evaluate("twenty‒seven").to(27) # figure dash used (probably not really correct usage)
+		evaluate("twenty‒seven").to(27) # figure dash used (pretty sure that's incorrect usage)
 		evaluate("thirty-eight").to(38)
 		evaluate("fourty-nine").to(49) # throw spelling error
 		evaluate("forty-nine").to(49)
@@ -408,6 +409,7 @@ suite "mathematics", ->
 		evaluate("a laugh + a goof = a spoof").to(true)
 		evaluate("a laugh + a goof + a gaff = a romp").to(true)
 		evaluate("a romp + a riot + a ball + a laugh + a goof + a gaff = sqrt(a spoof)").to(true)
+		evaluate("a spaf = a goof + a gaf").to(true)
 		evaluate("a look + a gaff = a gander").to(true)
 		evaluate("a spoof + a boo = a spook").to(true)
 		evaluate("a gaff + a neck = a giraffe").to(true)

@@ -568,5 +568,6 @@ suite "tokenize", ->
 	test "different line-endings"
 	
 	test "row/column properties"
-		# which btw shouldn't be the end of the token (although that would be good to have additionally)
-		# Token.pos should be {first_line, first_column, last_line, last_column}
+		# row/column properties of the start and the end of the token
+		# and also the file name or other input source identification
+		# Token.pos something like {first_line, first_column, last_line, last_column}

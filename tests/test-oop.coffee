@@ -12,8 +12,12 @@ evaluate = (expression)->
 	{to}
 
 suite "object-oriented programming", ->
-	# TODO: put the oop in ooplie
-	
+	# TODO: put the OOP in Ooplie? well, not necessarily traditional OOP
+	# probably not traditional OOP. maybe "concept-oriented programming"?
+	# well, that's of course another term that's been coined:
+	# http://conceptoriented.org/wiki/Concept-oriented_programming
+	# I dunno
+
 	shared_context = new Context
 	
 	# TODO: better tests in general
@@ -74,14 +78,3 @@ suite "object-oriented programming", ->
 		evaluate("Is a bunny a type of animal?").to(yes)
 		evaluate("Is a mammal a type of animal?").to(yes)
 		evaluate("Is a mammal a type of bunny?").to(no)
-	
-	test.skip "bla bla bla", ->
-		throw new Error "TODO: move or remove this, it isn't OOP"
-		context = shared_context.subcontext()
-		context.eval """
-			To say or log something, output it to the console.
-			Say "Hello world!"
-			Greeting = "Hello"
-			Log greeting " world!"
-			output the greeting followed by " world!"
-		"""
