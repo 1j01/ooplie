@@ -251,19 +251,29 @@ However, the entire IDE could be made reusable as a component,
 and could be included as a plugin in web-based code editors like [Atom][] and [Code][].
 
 
-### Dev
+## Develop Ooplie
 
 [Fork the repository on GitHub][fork a repo], and
 with [Node.js][] installed run `npm install` in the project directory.
 
+Run `npm run dev` (and leave this running) to watch the source files and recompile when changes are made.
+(In the future this could also run the tests after each recompile.)
+
 Run `npm test` to run the tests.
 You can also open [`test.html`][tests] (maybe with a [live-server][]) to test Ooplie in a browser,
 but note that only a subset of the tests are run.
-The File System module can't be tested in the browser, for instance.
-If you've been running tests in a browser, be sure to run `npm test` at least once before committing.
+The File System module isn't tested in the browser, for instance.
+(In the future it could use a mock FS.)
 
-Before committing, run `npm run prepublish` to compile `ooplie.js`,
-which is included in the repository for [GitHub Pages][] usage.
+#### Before committing (unless it's a WIP commit)
+
+If you've been running tests in a browser,
+be sure to run the full suite of tests with `npm test` at least once before committing.
+
+Run `npm run prepublish` to make sure `ooplie.js` is comiled.
+It's included in the repository for [GitHub Pages][] usage.
+(In the future this should be an automated step of the release process,
+not a manual step before every commit.)
 
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
