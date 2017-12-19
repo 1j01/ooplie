@@ -2117,6 +2117,11 @@ module.exports = function(source) {
     }
     return results;
   };
+  
+  // TODO?
+  // if indentation.length < indent_level
+  // 	tokens.push(new Token("dedent", row, col, indentation))
+  // 	indent_level = indentation.length
   start_string = function(char) {
     next_type = "string";
     quote_char = char;
@@ -2126,6 +2131,7 @@ module.exports = function(source) {
     return string_content_indentation = null;
   };
   finish_token = function() {
+    // TODO: move this conditional parseFloat outside of the tokenizer
     if (current_type === "number") {
       tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)));
     } else if (current_type != null) {
@@ -2185,7 +2191,7 @@ module.exports = function(source) {
             current_token_string += '"';
             break;
           default:
-            throw new Error(`Unknown backslash escape \\${char} (Do you need to escape the backslash?)`);
+            throw new Error(`Unknown backslash escape \\${char} (Do you need to escape the backslash with another backslash?)`);
         }
         previous_was_escape = true;
       } else if (char === quote_char) {
