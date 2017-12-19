@@ -46,6 +46,9 @@
   "bin": {
     "ooplie": "./bin/ooplie-cli.js"
   },
+  "engines": {
+    "node": ">=6"
+  },
   "scripts": {
     "prepublish": "browserify --transform coffeeify --extension=\".coffee\" ./src/ooplie.coffee --outfile ooplie.js --standalone Ooplie",
     "dev": "watchify --verbose --transform coffeeify --extension=\".coffee\" ./src/ooplie.coffee --outfile ooplie.js --standalone Ooplie",
