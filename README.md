@@ -7,17 +7,17 @@ It runs in [Node.js][] and in the browser.
 There's [a nice little console][console] where you can try it out so far.
 It has a Parts menu where you can see the available commands and expressions.
 Each command has multiple synonyms, often many.
-Everything is organized into libraries, and yes, conditionals are defined in a library.
+Everything is organized into libraries, including things like conditionals.
 To access libraries for File System manipulation etc. you need to install the console as a desktop app.
-To do so, clone the repository, open a terminal/command prompt in `console/` and run `npm install`.
-To run the console app, do `npm start`.
+To do so, [clone the repository][clone a repo], open a terminal/command prompt in `console/` and enter `npm install`.
+Then to run the app, enter `npm start`.
 
 <!-- https://en.wikipedia.org/wiki/Controlled_natural_language -->
 
 So far Ooplie is completely [imperative][], and you can't do much with it.
-You can output text, evaluate JS, and evaluate Ooplie code,
-write mathematical expressions with worded operators, Unicode operators, or ASCII operators,
-write trivial (read: useless because there are no variables yet) conditionals,
+You can output text, evaluate JS, and evaluate Ooplie code (from Ooplie code),
+write mathematical expressions with worded operators ("2 to the power of 4"), Unicode operators, or ASCII operators,
+write trivial conditionals which are useless because there are no variables yet,
 and read and write text files.
 
 ## Inspiration
@@ -30,10 +30,12 @@ then at least check out some of [Brett Victor's work][]
 or maybe [Toward a better programming][],
 and get excited about the future of programming in general.
 
-<!-- 
 There's a project called [EVE][] that looks interesting.
 I'll have to try [it](https://github.com/witheve/Eve) out and see what it's like.
 
+Also, check out [Apparatus](http://aprt.us/)!
+
+<!-- 
 Could gather some quotes here and relate them to the project:
 
 #### Quotes
@@ -43,6 +45,17 @@ Could gather some quotes here and relate them to the project:
 ([Toward a better programming][])
 
 Ooplie will have an expressive and rather comprehensive time module.
+
+
+> At its deepest, interface design means developing the fundamental primitives human beings think and create with... It is one of the hardest, most important and most fundamental problems humanity grapples with.
+
+
+> "In summary, I think Parsey McParseface is a very nice milestone on a larger trend. The thing that's really significant is how quickly the speed and accuracy of natural language processing technologies is advancing. I think there are lots of ideas that didn't work yesterday, that are suddenly becoming very viable."
+> "I think there are lots of ideas that didn't work yesterday, that are suddenly becoming very viable."
+
+
+> To paraphrase Will Wright, your software doesn't just run on the computer -- it also runs in each of your users' heads. And to paraphrase Clay Shirky, social software also runs on the "hivemind" of the group as a whole. All together, that's an extraordinarily powerful hardware platform. Take advantage of it!
+
 
 http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
 
@@ -58,23 +71,61 @@ http://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-i
 
 ## Motivation
 
+**TL;DR:** Someone's gotta do it.
+(Accessibility, curiosity and want for a better world.)
+
 I want see what it would be like to program in English.
 
 I don't think this is the be-all and end-all of programming paradigms.
 Unless a future of realtime cross-translated collaborative structured document editing is realized, it's probably not going to be better than a more syntactical programming language for international collaboration on software projects.
-High expectations of lingual [disambiguation][] and common sense mean it will never feel smart enough without machine learning and huge amounts of data.
-That's not very distributable, so [a compiler would][Programming with Natural Language Is Actually Going to Work] probably work better.
-But then you miss certain possiblities afforded by a dynamic interpreter.
+High expectations of lingual [disambiguation][] and common sense mean it ~~will~~ may never feel smart enough without machine learning and huge amounts of data.
+That would make it harder to distribute programs, so [a compiler would][Programming with Natural Language Is Actually Going to Work] probably work better.
+Although then you miss certain possiblities afforded by a dynamic interpreter / runtime.
 
-**TL;DR:** Someone's gotta do it.
+But anyways, I think Ooplie might be a good tool for learning and getting into programming,
+as an alternative to drag-and-drop-based systems,
+and for automating lots of things that might be too trivial to automate considering you'd have to write a program for it.
+
+It also could be great option for programming if you're blind, as long as it's designed with that in mind.
+(hey, I just realized, that that rhymed...)
+(seriously, if you know any blind programmers or blind people interested in programming, hit me up!
+I might actively seek blind test users when this project is further along,
+but interest in the project would probably motivate me to bring it further along.)
+
+Also, I think radical ideas like this need to be explored.
+Because even if Ooplie fails as a whole / as a project,
+there still might be ideas in there that,
+if people try programming in this new way,
+might expand people's minds and end up being applied to other programming languages or systems.
+It might raise expectations for clarity in code, expressitivity, richness of authoring environments, etc.
+(expressitivity is related to... well, both of those other things.
+it's really in the middle. perfect, I planned that.^([sarcasm needed]))
 
 
-## Roadmap
+## Roadmap (somewhat muddled... by newer and older ideas colliding)
 
 The first aim will be to get it usable as an imperative interpreter for simple shell scripts.
 Scripts will be able to use a shebang comment like `#!/usr/bin/env ooplie`, or hopefully `#!/bin/english`. (`sh`, `bash`, `ksh`, `zsh`, `english`!)
 
 Ooplie will need some better [natural language processing][].
+
+Actually, I think Ooplie code should maybe be stored in a structure with more information,
+or at least more concrete and explicit information, than is apparent in the plain language text,
+or at least the plain language text that's input.
+For instance, you shouldn't have to deal with escaping the contents of string literals.
+<!-- (Or disable pieces of code without having to worry about other commented out pieces of code inside it, although this is solved in languages that allow nested comment blocks, and IDEs that let you comment/uncomment batches of lines with EOL comments) -->
+
+It should understand more than it accepts.
+In authoring you should be able to use autocomplete and such and express ideas freely and easily,
+and then it should also help you form those ideas into clearer, more concrete representations, and more explicit functionality / algorithmic processes.
+<!-- I realize it's an implicit problem with English that there are many ways to express the same thing,
+but it's also a problem in normal programming languages.
+There are callbacks, Promises, and async/await for doing async just in vanilla JavaScript, for instance.
+And, maybe "problem" is too strong a word, or that's making it out to be simpler than it is,
+because having different ways to express things is also a good thing.
+It can enable different ways of thinking! That's a big part of the reason for this project!
+I don't know, I'm rambling.
+-->
 
 Ooplie should have a good module system.
 You should be able to easily write wrappers for modules on [npm][] to give them lingual interfaces.
@@ -94,26 +145,68 @@ There should be an IDE, because an interpreter is not good enough.
 
 It would feature "Did you mean?" style error handling that can update your actual code (especially for disambiguation).
 
+It should encourage you to write robust, explicit code.
+It might give you fields to fill out in response to commands:
+
+"Draw a circle."
+* Where? / Center point: [0, 0]
+* How big? / Radius:     [1]
+* What color? / Color:   [#000000]
+
+It might highlight paths of execution that aren't handled like failure cases and else clauses.
+Of course it's perfectly valid to do else-nothing,
+but it *could* require or strongly encourage you to be explicit about it,
+because sometimes you really should throw/raise/return an error/exception
+(depending on the paradigm we go with),
+and you might just not think of it.
+It could unhandled paths with questions, like "What if this fails?" or "Else what?",
+with easy default answers like
+"just continue [below?]" / "do nothing" (no-op),
+"this is an error" / "show a failure message" / whatever,
+and "let me know if this happens" (ideally you could resume execution of the program after deciding what to do when the case pops up, optionally updating the program with some general handling of that scenario)
+
+Errors should be considered UI.
+Errors are already UI, just generally shitty, shoddy, untested UI.
+Aside from having good, clear error messages:
+* There should be good patterns for propagating error/exception cases up to the user,
+with good contextual information in the message
+(such as parameters passed to the things that might fail,
+or *maybe* separate messages at each `raise`/`throw` level).
+* Error messages should be able to contain references to objects/values for inspection,
+similar to `console.log`.
+That would include strings,
+so you wouldn't have to either escape strings with `JSON.stringify()`
+which makes them hard to read, in order to make it unambiguous,
+or use quote characters around the string
+that you think/hope are not going to be used in it (as often).
+
 It could let you dig down into statements and expressions to see the underlying meaning and implementation, through your code, through libraries, and to the underlying JavaScript.
 Similar features exist [in other IDEs][Peek Definition], but I can imagine it working more like a variant of [code folding][] where you fold layers of meaning and [abstraction][] rather than just blocks of code.
 Perhaps like [this][IP levels of detail]?
 (Except you wouldn't have to write that lower layer of code, `print the numbers 1 to 10` would just work :smile:)
 
-It should let you write code that isn't understood
-and subsequently implement in detail.
+It should also let you write code that isn't understood
+and subsequently define/explain it, implementing it in detail.
 
-It could automatically search for modules related to code you type that isn't understood.
-When typed, when run, or at the click of a button.
-(A button's probably good.)
 
-It would try to show you what's going on with the program as much as possible.
-I'd add a dynamic underline to `Every N seconds` / `After N seconds` representing the timer, and maybe underlines to any line of code being executed.
-This might warrant some controls to toggle or dim the underlines as they could be distracting.
-<!-- I've never gotten [Light Table][]'s live connection features to work on a real project, but they look cool. -->
+It could automatically search for modules related to phrases it doesn't understand.
+Maybe not *totally* automatically as it could be a privacy issue sending code to some server,
+but maybe at the click of a button when it gives an "I don't understand" type error.
+That would be good.
+(And if the search DB was mirrored locally that could eliminate the privacy issue,
+but it might take up a decent chunk of space,
+so there could be three options for this, auto (not private), manual (not private), and local db (private).)
+
+It should try to show you what's going on with the program as much as possible.
+
+It could have dynamic underlines on timers like `Every N seconds` / `After N seconds`,
+and maybe underlines to any line of code being executed.
+That would be optional, though, as it could obviously be distracting.
+Also I'm not sure how it would work with asynchronous code being run multiple times.
 
 ![Execution underlines](./images/execution-underlines.gif)
 
-([Execution underlines CSS animation on multifiddle](http://multifiddle.ml/#execution-underlines))
+([Execution underlines CSS animation on jsfiddle](https://jsfiddle.net/1j01/2f2ko6ke/))
 
 When you have multiple asynchronous code paths,
 they may be run either in parallel or in series.
@@ -147,16 +240,21 @@ Dragging the line could change the control flow, updating the code to reflect th
 The IDE could support visual mathematical equation/expression editing, and resources like images could be dragged and dropped and used directly in expressions.
 
 It could blur the line between entering commands and writing a program (if that's a good thing).
+(Like a notebook? I think I was thinking specifically about being able to extract commands entered into a console out and factor them into a program retroactively... but probably this would work like "notebook IDEs" - [Jupyter Notebook](http://jupyter.org/) for lots of languages including JS, [RunKit](https://runkit.com) for Node.js)
 
-The necessarily dynamic syntax highlighting engine could be made reusable if many things actually allow for dynamic stuff like that, but most things probably only support regular expressions.
+Syntax highlighting in other apps would require a custom, dynamic engine using the parser
+(which would be a problem because most things probably only support regular expression based highlighting),
+unless the plain text file format includes lots of markup needed to identify semantics.
+It would probably also need to be able to hide things, hide the markup unless it's somehow kept terse like markdown.
+I don't know how that might work, but it would presumably/probably/generally be a subpar experience anyways...
 However, the entire IDE could be made reusable as a component,
-and could be included as a plugin in web-based code editors like [Atom][].
+and could be included as a plugin in web-based code editors like [Atom][] and [Code][].
 
 
 ### Dev
 
-Fork the repository on GitHub, and
-with [Node.js][] run `npm install` in the project directory.
+[Fork the repository on GitHub][fork a repo], and
+with [Node.js][] installed run `npm install` in the project directory.
 
 Run `npm test` to run the tests.
 You can also open [`test.html`][tests] (maybe with a [live-server][]) to test Ooplie in a browser,
@@ -181,8 +279,11 @@ which is included in the repository for [GitHub Pages][] usage.
 [npm]: https://www.npmjs.com/
 [live-server]: https://www.npmjs.com/package/live-server
 [Node.js]: https://nodejs.org/
+[fork a repo]: https://help.github.com/articles/fork-a-repo/
+[clone a repo]: https://help.github.com/articles/cloning-a-repository/
 [Light Table]: http://lighttable.com/
 [Atom]: https://atom.io/
+[Code]: https://code.visualstudio.com/
 [Learnable Programming]: http://worrydream.com/LearnableProgramming/
 [Brett Victor's work]: http://worrydream.com/
 [Toward a better programming]: http://www.chris-granger.com/2014/03/27/toward-a-better-programming/
