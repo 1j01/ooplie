@@ -489,7 +489,7 @@ suite "tokenize", ->
 		])
 	
 	test.skip "keep indentation until content", ->
-		# but ideally if there isn't content, the dedent token would come before other newline tokens?
+		# but ideally if there isn't content, maybe the dedent token would come before other newline tokens?
 		# (shouldn't really matter until the dedent is referenced in an error)
 		tokenize("""
 			A
@@ -542,7 +542,21 @@ suite "tokenize", ->
 				Tabbed
 				  Spaced
 				Tabbed
-		""")
+		""").to([
+			{type: "word", value: "Indented"}
+			{type: "punctuation", value: ":"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t"}
+			{type: "word", value: "Tabbed"}
+			{type: "newline", value: "\n"}
+			{type: "indent", value: "\t  "}
+			{type: "word", value: "Spaced"}
+			{type: "newline", value: "\n"}
+			{type: "dedent", value: "\t"}
+			{type: "dedent", value: "\t"} # FIXME: multiple dedents (despite combined indents)
+			{type: "word", value: "Tabbed"}
+			{type: "dedent", value: ""}
+		])
 		tokenize("""
 			Indented with spaces:
 			  But then

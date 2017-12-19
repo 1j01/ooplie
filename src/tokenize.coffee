@@ -13,7 +13,7 @@ check_indentation = (source)->
 					else JSON.stringify(indentation[column_index])
 				throw new Error "Mixed indentation between lines #{line_index} and #{line_index + 1} at column #{column_index + 1}"
 		previous_indentation = indentation
-	
+
 module.exports = (source)->
 	check_indentation(source)
 	
@@ -48,6 +48,11 @@ module.exports = (source)->
 		while indentation.length < indent_level
 			tokens.push(new Token("dedent", row, col, indentation))
 			indent_level -= 1
+		
+		# TODO?
+		# if indentation.length < indent_level
+		# 	tokens.push(new Token("dedent", row, col, indentation))
+		# 	indent_level = indentation.length
 	
 	start_string = (char)->
 		next_type = "string"
@@ -58,6 +63,7 @@ module.exports = (source)->
 		string_content_indentation = null
 	
 	finish_token = ->
+		# TODO: move this conditional parseFloat outside of the tokenizer
 		if current_type is "number"
 			tokens.push(new Token(current_type, row, col, parseFloat(current_token_string)))
 		else if current_type?
@@ -95,7 +101,7 @@ module.exports = (source)->
 					when "\\" then current_token_string += "\\"
 					when "'" then current_token_string += "'"
 					when '"' then current_token_string += '"'
-					else throw new Error "Unknown backslash escape \\#{char} (Do you need to escape the backslash?)"
+					else throw new Error "Unknown backslash escape \\#{char} (Do you need to escape the backslash with another backslash?)"
 				previous_was_escape = yes
 			else if char is quote_char
 				finish_token()

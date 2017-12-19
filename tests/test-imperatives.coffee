@@ -80,8 +80,15 @@ suite "imperatives", ->
 		context.eval("to output something to the console, execute the JavaScript method named 'log' on the global JavaScript object 'console' with the thing as a parameter")
 		expect_output "Hello World", ->
 			evaluate("say 'Hello World'!")
-	test.skip "to do x, bla bla bla", ->
+	test.skip "to draw things, bla bla bla", ->
+		# these are just some sketches of some canvas API glue code / API definition
+		# to figure out what some stuff might look like
+		# I'm not really happy with most of this stuff
+
 		context.eval("to draw a circle of radius r at (x, y), run JS ctx.arc(x, y, r, 0, Math.PI * 2)")
+		context.eval("to draw a circle of a given radius, x, and y, run JS ctx.arc(x, y, radius, 0, Math.PI * 2)")
+		context.eval("to draw a circle of a given radius and x and y position, run JS ctx.arc(x, y, radius, 0, Math.PI * 2)")
+		context.eval("to draw a circle of a given radius and position, run JS ctx.arc(position.x, position.y, radius, 0, Math.PI * 2)")
 		context.eval("""
 			To draw a circle of radius r at (x, y),
 				run JS
@@ -109,7 +116,10 @@ suite "imperatives", ->
 				# TODO: DRY
 			To draw a circle at (x, y) with radius r, draw a circle at (x, y, r)
 		""")
+
+		# verbose optional arguments with room for errors:
 		context.eval("to draw a circle at (x, y), draw a circle of radius 5 at (x, y)")
+
 		context.eval("""
 			To draw a filled shape,
 				Run JS ctx.beginPath()
@@ -127,13 +137,31 @@ suite "imperatives", ->
 			The code for a circle is: ctx.arc(x, y, r, 0, Math.PI * 2)
 			The code for a rectangle is: ctx.rect(x, y, w, h)
 			
-			The code for a rectangle requires variables such as x, y, w, and h which shall be taken from the rectangle's properties of x, y, width and height respectively.
+			The code for a rectangle requires variables such as x, y, w, and h which shalt be takeneth from the rectangle's properties of x, y, width and height respectivisimally.
 			
 			To draw a rectangle at (x, y, w, h), or
 			To draw a rectangle at (x, y) with width w and height h,
 				nevermind!
 			
 		""")
+		context.eval("""
+			To draw a circle, blah blah blah.
+			
+			Circles should be drawn like this: blah blah blah.
+			
+			Circles can be drawn by blah blah blah-ing.
+			
+			Draw a circle by blah blah blah-ing. (This sounds like it would actually do the thing not just define the functionality)
+
+			To draw a given shape, do the following:
+				circle: blah blah blah
+				rectangle: blah blah blah
+			
+			The code to draw a specific shape is (by shape):
+				circle: blah blah blah
+				rectangle: blah blah blah
+		""")
+
 		context.eval("draw a circle")
 		context.eval("draw a circle of radius 5")
 		context.eval("draw a circle with radius 5")

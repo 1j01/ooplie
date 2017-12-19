@@ -230,10 +230,50 @@ suite "control flow", ->
 			evaluate("If foo is a, then x, b then y, or c then z").to()
 			evaluate("If foo is five, then do x, but if it's six then do y. If it's seven do z. Otherwise, do w").to()
 			evaluate("If foo is five, do x; if it's six do y, and if it's seven do z; else, do w").to()
+			evaluate("When foo is five, do x; when it's six do y, when seven do z; else do w").to()
 			evaluate("""
 				If foo happens to be five by some weird chance, do x I guess, but otherwise, y'know, just..
 				if it's exactly six do y, and if pertains to seven do z (u kno the drill); and of course, don't forget,
 				if it's none of the above, do w. always do w, in that case. just a fyi protip, fwiw, jsyk btw
+			""").to()
+			evaluate("""
+				If foo is...
+					a list, show the list elements
+					an object, show the object
+					anything else, show it
+			""").to()
+			evaluate("""
+				If foo is a...
+					list: show the list elements
+					object: show the object
+					anything else, show it
+			""").to()
+			evaluate("""
+				Depending on what foo is, either
+					show its elements (if it's a list)
+					show it (otherwise)
+			""").to()
+			evaluate("""
+				Depending on what foo is, either
+					show its elements, if it's a list
+					show it, otherwise, whatever it is
+			""").to()
+			evaluate("""
+				Depending on foo,
+					when a list, show its elements
+					otherwise just show it
+			""").to()
+			evaluate("""
+				What is foo?
+					if a list, show its elements individually
+					else show it normally
+			""").to()
+			evaluate("""
+				What is foo, exactly?
+				In the case that it's a list, display the elements it contains individually
+				In case it's a balloon, let it float into the sky. Weeeee
+				If it be the case that it do be a knife, watch out! put a warning on there, but then log it
+				Otherwise, indeed merely present it in a traditional fasion, I urge you, mildly
 			""").to()
 		
 		test.skip "blocks", ->
