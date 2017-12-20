@@ -260,7 +260,7 @@ Run `npm run dev` (and leave this running) to watch the source files and recompi
 (In the future this could also run the tests after each recompile.)
 
 Run `npm test` to run the tests.
-You can also open [`test.html`][tests] (maybe with a [live-server][]) to test Ooplie in a browser,
+You can also open [`test.html`](./test.html) (maybe with a [live-server][]) to test Ooplie in a browser,
 but note that only a subset of the tests are run.
 The File System module isn't tested in the browser, for instance.
 (In the future it could use a mock FS.)
@@ -275,6 +275,21 @@ It's included in the repository for [GitHub Pages][] usage.
 (In the future this should be an automated step of the release process,
 not a manual step before every commit.)
 
+#### Project Structure
+
+The Ooplie console app lives in [`console/`](./console/)
+and has a separate [`package.json`](./console/package.json).
+It runs as a desktop app with [NW.js][].
+(Could use either [electron][] or [NW.js][] since it's not doing anything fancy.)
+
+CoffeeScript is included in 2 different ways:
+* `lib/coffeescript.js` is the CoffeeScript browser compiler, used in [`test.html`](./test.html).
+* `coffeescript` is a dev dependency, used for building and for testing with `npm test`.
+
+Mocha and Chai are similarly included in 2 different ways:
+* via a CDN in [`test.html`](./test.html)
+* as dev dependencies for `npm test`
+
 
 [multi-paradigm]: https://en.wikipedia.org/wiki/Programming_paradigm "Programming paradigm - Wikipedia"
 [imperative]: https://en.wikipedia.org/wiki/Imperative_programming "Imperative programming - Wikipedia"
@@ -285,10 +300,11 @@ not a manual step before every commit.)
 [disambiguation]: https://en.wikipedia.org/wiki/Word-sense_disambiguation "Word-sense disambiguation - Wikipedia"
 [Programming with Natural Language Is Actually Going to Work]: http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
 [console]: http://1j01.github.io/ooplie/console/
-[tests]: ./test.html
 [npm]: https://www.npmjs.com/
 [live-server]: https://www.npmjs.com/package/live-server
 [Node.js]: https://nodejs.org/
+[NW.js]: https://nwjs.io/
+[electron]: https://electronjs.org/
 [fork a repo]: https://help.github.com/articles/fork-a-repo/
 [clone a repo]: https://help.github.com/articles/cloning-a-repository/
 [Light Table]: http://lighttable.com/
