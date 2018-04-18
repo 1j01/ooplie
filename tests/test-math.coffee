@@ -119,7 +119,25 @@ suite "mathematics", ->
 			evaluate("-1 < +1").to(true)
 			evaluate("5 != 3").to(true)
 			evaluate("5 != 5").to(false)
-		test.skip "multiple inequality"
+		test.skip "multiple inequality", ->
+			evaluate("5 <= 5 <= 5").to(true)
+			evaluate("5 => 5 => 3").to(true)
+			# evaluate("5 => 5 => true").to(true) # error
+			evaluate("5 => 5 <= 3").to(false)
+			evaluate("3 => 5 <= 5").to(false)
+			evaluate("5 => 5 <= 5").to(true)
+			evaluate("5 => 3 <= 5").to(true)
+			evaluate("5 => 6 <= 5").to(false)
+			evaluate("5 != 6 != 5").to(true) # probably bad/warning/error; do you mean "5 != 6 and 6 !=5" or "5 isn't 6 or 5"
+		test.skip "multiple mixed equality/inequality", ->
+			# probably bad
+			evaluate("5 = 3 <= 5").to(false)
+			evaluate("5 = 5 <= 5").to(true)
+			evaluate("5 > 5 = 5").to(false)
+			evaluate("6 > 5 = 5").to(true)
+			evaluate("6 > 5 != 5").to(false)
+			evaluate("6 > 5 != 6").to(true)
+			evaluate("6 >= 6 != 6").to(false)
 		
 	test "parentheses", ->
 		evaluate("(1)").to(1)
@@ -423,6 +441,8 @@ suite "mathematics", ->
 		evaluate("s = ms").to(false)
 		evaluate("s = seconds").to(true)
 		evaluate("sec = 1000ms").to(true)
+		# not to mention differing definitions of some units
+		evaluate("1000000000 bytes = 1000^3 bytes = 1 GB = 1 gigabyte = 1 GiB = 2^30 bytes = 1024^3 bytes = 1073741824 bytes").to(true)
 	test.skip "ordinal numbers (1st, 2nd, 3rd, 4th...)", ->
 		evaluate("1st = first").to(true)
 		evaluate("2st = second").to(true) # throw style error
@@ -466,7 +486,7 @@ suite "mathematics", ->
 		evaluate("103rd = last place").to(true)
 		evaluate("104th = ????").to(false) # throw error, numbers don't go that high
 		evaluate("105th = one hundred fifth").to(true) # should this be "one hundred and fifth"?
-		evaluate("100 seconds = one hundred second").to(false)
+		evaluate("one hundred seconds = one hundred second").to(false) # error
 	test.skip "boolean logic", ->
 		evaluate("true and true").to(true)
 		evaluate("false and true").to(false)
