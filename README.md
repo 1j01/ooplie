@@ -313,6 +313,6 @@ Mocha and Chai are similarly included in 2 different ways:
 [Learnable Programming]: http://worrydream.com/LearnableProgramming/
 [Brett Victor's work]: http://worrydream.com/
 [Toward a better programming]: http://www.chris-granger.com/2014/03/27/toward-a-better-programming/
-[EVE]: http://eve-lang.com/
+[EVE]: http://witheve.com/
 [Peek Definition]: https://msdn.microsoft.com/en-us/library/dn160178.aspx
 [GitHub Pages]: https://pages.github.com/
