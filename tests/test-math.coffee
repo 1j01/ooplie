@@ -431,9 +431,13 @@ suite "mathematics", ->
 		evaluate("a look + a gaff = a gander").to(true)
 		evaluate("a spoof + a boo = a spook").to(true)
 		evaluate("a gaff + a neck = a giraffe").to(true)
+		evaluate("a gaff + a neck = a heck").to(true)
+		evaluate("boof(sqrt(spoof=soup))=aleph[-1i]*gaff").to(true) # the spoof soup equation is a very simple one afaic
+		evaluate("boof(√(spoof=soup))=א₋₁ᵢ × gaff").to(true)
 		evaluate("Pegasus + unicorn = pegacorn").to(true)
 		evaluate("shark + octopus = Sharktopus").to(true)
 		evaluate("shark + tornado = Sharknado").to(true)
+		evaluate("a brap = a burger + bread + a wrap").to(true)
 		# I hope I never implement operator overloading
 	test.skip "unit equality", ->
 		# should this be a thing? probably not
