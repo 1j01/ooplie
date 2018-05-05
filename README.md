@@ -61,11 +61,11 @@ http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually
 
 https://multikulti.wordpress.com/2013/01/09/english-as-a-programming-language/
 
-http://repository.cmu.edu/cgi/viewcontent.cgi?article=1165&context=hcii
+https://repository.cmu.edu/cgi/viewcontent.cgi?article=1165&context=hcii
 
-http://stackoverflow.com/questions/3067377/what-programming-language-is-the-most-english-like
+https://stackoverflow.com/questions/3067377/what-programming-language-is-the-most-english-like
 
-http://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-is-the-difference-between-natural-languages?rq=1
+https://stackoverflow.com/questions/19262597/why-no-programming-in-english-what-is-the-difference-between-natural-languages?rq=1
 
 -->
 
@@ -240,7 +240,7 @@ Dragging the line could change the control flow, updating the code to reflect th
 The IDE could support visual mathematical equation/expression editing, and resources like images could be dragged and dropped and used directly in expressions.
 
 It could blur the line between entering commands and writing a program (if that's a good thing).
-(Like a notebook? I think I was thinking specifically about being able to extract commands entered into a console out and factor them into a program retroactively... but probably this would work like "notebook IDEs" - [Jupyter Notebook](http://jupyter.org/) for lots of languages including JS, [RunKit](https://runkit.com) for Node.js)
+(Like a notebook? I think I was thinking specifically about being able to extract commands entered into a console out and factor them into a program retroactively... but probably this would work like "notebook IDEs" - [Jupyter Notebook](https://jupyter.org/) for lots of languages including JS, [RunKit](https://runkit.com) for Node.js)
 
 Syntax highlighting in other apps would require a custom, dynamic engine using the parser
 (which would be a problem because most things probably only support regular expression based highlighting),
@@ -299,7 +299,7 @@ Mocha and Chai are similarly included in 2 different ways:
 [natural language processing]: https://en.wikipedia.org/wiki/Natural_language_processing
 [disambiguation]: https://en.wikipedia.org/wiki/Word-sense_disambiguation "Word-sense disambiguation - Wikipedia"
 [Programming with Natural Language Is Actually Going to Work]: http://blog.wolfram.com/2010/11/16/programming-with-natural-language-is-actually-going-to-work/
-[console]: http://1j01.github.io/ooplie/console/
+[console]: https://1j01.github.io/ooplie/console/
 [npm]: https://www.npmjs.com/
 [live-server]: https://www.npmjs.com/package/live-server
 [Node.js]: https://nodejs.org/

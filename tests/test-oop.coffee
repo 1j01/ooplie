@@ -15,7 +15,7 @@ suite "object-oriented programming", ->
 	# TODO: put the OOP in Ooplie? well, not necessarily traditional OOP
 	# probably not traditional OOP. maybe "concept-oriented programming"?
 	# well, that's of course another term that's been coined:
-	# http://conceptoriented.org/wiki/Concept-oriented_programming
+	# https://web.archive.org/web/20171026124114/http://conceptoriented.org:80/wiki/Concept-oriented_programming
 	# I dunno
 
 	shared_context = new Context
