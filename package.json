@@ -47,7 +47,7 @@
     "ooplie": "./bin/ooplie-cli.js"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=7"
   },
   "scripts": {
     "prepublish": "browserify --transform coffeeify --extension=\".coffee\" ./src/ooplie.coffee --outfile ooplie.js --standalone Ooplie",
