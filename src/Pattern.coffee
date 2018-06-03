@@ -122,6 +122,8 @@ class Pattern
 			matcher_index += 1
 		
 		if matcher_index is matcher.length
+			# TODO: this is bad; pattern and matcher shouldn't be stuck into something called variables
+			# if could be {variables, pattern, matcher} (it's a "match")
 			variables.pattern = @
 			variables.matcher = matcher
 			# console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @

@@ -265,6 +265,9 @@ but note that only a subset of the tests are run.
 The File System module isn't tested in the browser, for instance.
 (In the future it could use a mock FS.)
 
+To run a specific test or tests, do e.g.
+`npm test -- --grep "multiple statements"`
+
 #### Before committing (unless it's a WIP commit)
 
 If you've been running tests in a browser,

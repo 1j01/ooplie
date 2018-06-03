@@ -1,6 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Ooplie = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -228,7 +226,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":3}],3:[function(require,module,exports){
+},{"_process":2}],2:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -414,6 +412,8 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
+},{}],3:[function(require,module,exports){
+
 },{}],4:[function(require,module,exports){
 var Context, Pattern, Token, find_closing_token, stringify_tokens, tokenize;
 
@@ -425,10 +425,14 @@ Pattern = require("./Pattern");
 
 find_closing_token = require("./find-closing-token");
 
+// map_object_values = (object, fn)->
+// 	Object.assign(...Object.entries(object).map(
+// 		([key, value]) => ({[key]: fn(value)})
+// 	))
 module.exports = Context = class Context {
   constructor({
       console: console1,
-      supercontext: supercontext
+      supercontext
     } = {}) {
     this.console = console1;
     this.supercontext = supercontext;
@@ -497,6 +501,9 @@ module.exports = Context = class Context {
     // (until any change to @libraries, not necessarily a removal and addition of the given library)
     this.coalesce_libraries();
     tokens = tokenize(text);
+    
+    // TODO: why are comments handled like this?
+    // this should at LEAST be in eval_tokens, not outside of it
     return this.eval_tokens((function() {
       var j, len, results;
       results = [];
@@ -514,7 +521,69 @@ module.exports = Context = class Context {
   // eval is syncronous, but could return Promises for asyncronous operations
   // a block of async statements should probably return a single Promise that wraps all the Promises of its statements
   eval_tokens(tokens) {
+    var ast;
+    console.log("eval_tokens", stringify_tokens(tokens));
+    ast = this.parse_tokens(tokens);
+    return this.eval_ast(ast);
+  }
+
+  stringify_ast(ast) {
+    return JSON.stringify(ast, function(key, ast) {
+      if (ast instanceof Pattern) {
+        return ast.prefered;
+      } else {
+        return ast;
+      }
+    });
+  }
+
+  eval_ast(ast) {
+    var get_var_value, j, len, ref, str, token;
+    console.log("eval_ast", this.stringify_ast(ast));
+    if (!ast) {
+      return;
+    }
+    
+    // TODO: better AST in general
+    // include Tokens 
+    switch (ast.type) {
+      case "literal":
+        return ast.value;
+      case "constant": // maybe these should both just be identifiers or whatever
+        return this.constants.get(ast.name);
+      case "variable": // maybe these should both just be identifiers or whatever
+        return this.variables.get(ast.name);
+      // when "match" # TODO: naming (pattern?)
+      // 	get_var_value = (var_name)=>
+      // 		@eval_tokens(ast.match[var_name])
+      // 	return ast.pattern.fn(get_var_value, @)
+      case "pattern": // TODO: naming
+        get_var_value = (var_name) => {
+          return this.eval_ast(ast.vars[var_name]);
+        };
+        return ast.pattern.fn(get_var_value, this);
+      case "operator":
+        if (ast.lhs && ast.rhs) {
+          return ast.operator.fn(this.eval_ast(ast.lhs), this.eval_ast(ast.rhs));
+        } else {
+          return ast.operator.fn(this.eval_ast(ast.operand));
+        }
+        break;
+      case "concat_literals": // TODO: should probably be an operation!
+        str = "";
+        ref = ast.params;
+        for (j = 0, len = ref.length; j < len; j++) {
+          token = ref[j];
+          str += token.value;
+        }
+        return str;
+    }
+  }
+
+  parse_tokens(tokens) {
     var find_longest_match, index, parse_expression, parse_primary;
+    // TODO: rename some things like _value -> _ast or _node or _ast_node or whatever
+    console.log("parse_tokens", stringify_tokens(tokens));
     index = 0;
     find_longest_match = (tokens, match_fn_type = "match") => {
       var j, len, longest_match, match, pattern, ref;
@@ -533,7 +602,8 @@ module.exports = Context = class Context {
       return longest_match;
     };
     parse_primary = () => {
-      var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, get_var_value, i, j, l, len, len1, len2, len3, len4, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, o, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, returns, str, tok_str, token;
+      var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, i, j, k, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, tok_str, token, v, vars;
+      console.log("parse_primary", stringify_tokens(tokens));
       parse_tokens = [];
       ref = tokens.slice(index);
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
@@ -577,11 +647,20 @@ module.exports = Context = class Context {
       next_word_tok_str = stringify_tokens(next_word_tokens);
       match = find_longest_match(parse_tokens);
       if (match != null) {
-        get_var_value = (var_name) => {
-          return this.eval_tokens(match[var_name]);
+        // return {type: "match", match, pattern: match.pattern}
+        // vars = map_object_values(match, (tokens)=> console.log "tokens????", tokens; @parse_tokens(tokens))
+        vars = {};
+        for (k in match) {
+          v = match[k];
+          if (k !== "pattern" && k !== "matcher") {
+            vars[k] = this.parse_tokens(v);
+          }
+        }
+        return {
+          type: "pattern",
+          pattern: match.pattern,
+          vars
         };
-        returns = match.pattern.fn(get_var_value, this);
-        return returns;
       } else {
         bad_match = find_longest_match(parse_tokens, "bad_match");
         if (bad_match != null) {
@@ -592,45 +671,59 @@ module.exports = Context = class Context {
         if (next_literal_tokens.some(function(token) {
           return token.type === "string";
         })) {
-          str = "";
-          for (n = 0, len3 = next_literal_tokens.length; n < len3; n++) {
-            token = next_literal_tokens[n];
-            str += token.value;
-          }
-          return str;
+          return {
+            type: "concat_literals",
+            params: next_literal_tokens
+          };
         } else if (next_literal_tokens.length > 1) {
           // TODO: row/column numbers in errors
           throw new Error(`Consecutive numbers, ${next_literal_tokens[0].value} and ${next_literal_tokens[1].value}`);
         } else {
-          return next_literal_tokens[0].value;
+          return {
+            type: "literal",
+            value: next_literal_tokens[0].value,
+            token: next_literal_tokens[0]
+          };
         }
       } else {
         if (next_word_tokens.length) {
           if (this.constants.has(next_word_tok_str)) {
-            return this.constants.get(next_word_tok_str);
+            return {
+              type: "constant",
+              name: next_word_tok_str
+            };
           }
           if (this.variables.has(next_word_tok_str)) {
-            return this.variables.get(next_word_tok_str);
+            return {
+              type: "variable",
+              name: next_word_tok_str
+            };
           }
         } else {
           if (this.constants.has(tok_str)) {
-            return this.constants.get(tok_str);
+            return {
+              type: "constant",
+              name: tok_str
+            };
           }
           if (this.variables.has(tok_str)) {
-            return this.variables.get(tok_str);
+            return {
+              type: "variable",
+              name: tok_str
+            };
           }
         }
         token = tokens[index];
         if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
           closing_token_index = find_closing_token(tokens, index);
           bracketed_tokens = tokens.slice(index + 1, closing_token_index);
-          bracketed_value = this.eval_tokens(bracketed_tokens);
+          bracketed_value = this.parse_tokens(bracketed_tokens);
           index = closing_token_index;
           return parse_expression(bracketed_value, 0);
         }
         ref4 = this.operators;
-        for (o = 0, len4 = ref4.length; o < len4; o++) {
-          operator = ref4[o];
+        for (n = 0, len3 = ref4.length; n < len3; n++) {
+          operator = ref4[n];
           if (!operator.unary) {
             continue;
           }
@@ -641,7 +734,11 @@ module.exports = Context = class Context {
               throw new Error(`missing right operand for \`${operator.prefered}\``);
             }
             following_value = parse_primary();
-            return operator.fn(following_value);
+            return {
+              type: "operator",
+              operator,
+              operand: following_value
+            };
           }
         }
         throw new Error(`I don't understand \`${tok_str}\``);
@@ -649,7 +746,7 @@ module.exports = Context = class Context {
     };
     parse_expression = (lhs, min_precedence) => {
       var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
-      // console.log "parse_expression", lhs, min_precedence, tokens, index
+      console.log("parse_expression", this.stringify_ast(lhs), min_precedence); //, tokens, index
       match_operator = () => {
         var j, len, matcher, operator, ref;
         ref = this.operators;
@@ -681,7 +778,12 @@ module.exports = Context = class Context {
           index += 2;
           lookahead_operator = match_operator();
         }
-        lhs = operator.fn(lhs, rhs);
+        lhs = {
+          type: "operator",
+          operator,
+          lhs,
+          rhs
+        };
       }
       if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
         throw new Error("unary operator at end of expression? (missing right operand?)"); // TODO/FIXME: terrible error message
@@ -692,7 +794,7 @@ module.exports = Context = class Context {
       // 	throw new Error "end of thing but there's more" # TODO/FIXME: worst error message
       if (((ref = tokens[index + 1]) != null ? ref.type : void 0) === "newline") {
         anything_substantial_after_newline = false;
-        for (i = j = ref1 = index + 1, ref2 = tokens.length - 1; ref1 <= ref2 ? j <= ref2 : j >= ref2; i = ref1 <= ref2 ? ++j : --j) {
+        for (i = j = ref1 = index + 1, ref2 = tokens.length - 1; (ref1 <= ref2 ? j <= ref2 : j >= ref2); i = ref1 <= ref2 ? ++j : --j) {
           if ((ref3 = tokens[i].type) !== "newline" && ref3 !== "comment" && ref3 !== "indent" && ref3 !== "dedent") {
             anything_substantial_after_newline = true;
           }
@@ -714,11 +816,7 @@ module.exports = Context = class Context {
 var Library;
 
 module.exports = Library = class Library {
-  constructor(name, {
-      patterns: patterns,
-      operators: operators,
-      constants: constants
-    }) {
+  constructor(name, {patterns, operators, constants}) {
     this.name = name;
     this.patterns = patterns;
     this.operators = operators;
@@ -804,11 +902,7 @@ stringify_matcher = function(matcher) {
 };
 
 module.exports = Pattern = class Pattern {
-  constructor({
-      match,
-      bad_match,
-      fn: fn
-    }) {
+  constructor({match, bad_match, fn}) {
     var parse_matchers;
     this.fn = fn;
     // TODO: also allow [optional phrase segments]
@@ -971,6 +1065,8 @@ module.exports = Pattern = class Pattern {
       matcher_index += 1;
     }
     if (matcher_index === matcher.length) {
+      // TODO: this is bad; pattern and matcher shouldn't be stuck into something called variables
+      // if could be {variables, pattern, matcher} (it's a "match")
       variables.pattern = this;
       variables.matcher = matcher;
       // console.warn "matched", "`#{stringify_tokens(tokens)}`", "against", "`#{stringify_matcher(matcher)}`", @
@@ -1038,10 +1134,9 @@ module.exports = Token = class Token {
 
   // TODO: @pos = {first_line, first_column, last_line, last_column}
   // instead of @col and @row
-  toString() {
-    return Token.stringify_tokens(this);
-  }
 
+  // toString: ->
+  // 	Token.stringify_tokens([@])
   static stringify_tokens(tokens) {
     var i, len, ref, str, token;
     // @TODO: output token (with whitespace) as they were in the source
@@ -1747,7 +1842,7 @@ module.exports = new Library("File System", {
 // "To go up N levels, go up N times"
 
 
-},{"../Library":5,"../Pattern":7,"fs":1,"path":2}],16:[function(require,module,exports){
+},{"../Library":5,"../Pattern":7,"fs":3,"path":1}],16:[function(require,module,exports){
 var Library, Operator;
 
 Operator = require("../Operator");
