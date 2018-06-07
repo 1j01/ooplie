@@ -425,10 +425,6 @@ Pattern = require("./Pattern");
 
 find_closing_token = require("./find-closing-token");
 
-// map_object_values = (object, fn)->
-// 	Object.assign(...Object.entries(object).map(
-// 		([key, value]) => ({[key]: fn(value)})
-// 	))
 module.exports = Context = class Context {
   constructor({
       console: console1,
@@ -440,7 +436,6 @@ module.exports = Context = class Context {
     // console IO is exceedingly common, but it might be good to establish
     // a more reusable pattern for passing interfaces and things to a context
 
-    // TODO: seperate AST parsing from eval
     // in the case of natural language, semantics are quite tied to context
     // so the parser will need access to the context
     this.libraries = [require("./library/operators"), require("./library/constants"), require("./library/conditionals"), require("./library/console"), require("./library/eval-js"), require("./library/eval-ooplie")];
@@ -521,75 +516,71 @@ module.exports = Context = class Context {
   // eval is syncronous, but could return Promises for asyncronous operations
   // a block of async statements should probably return a single Promise that wraps all the Promises of its statements
   eval_tokens(tokens) {
-    var ast;
+    var ast_node;
     // console.log("eval_tokens", stringify_tokens(tokens))
-    ast = this.parse_tokens(tokens);
-    return this.eval_ast(ast);
+    ast_node = this.parse_tokens(tokens);
+    return this.eval_ast(ast_node);
   }
 
-  stringify_ast(ast) {
-    return JSON.stringify(ast, function(key, ast) {
-      if (ast instanceof Pattern) {
-        return ast.prefered;
+  stringify_ast(ast_node) {
+    return JSON.stringify(ast_node, function(key, ast_node) {
+      if (ast_node instanceof Pattern) {
+        return ast_node.prefered;
       } else {
-        return ast;
+        return ast_node;
       }
     });
   }
 
-  eval_ast(ast) {
-    var ast_sub, get_var_value, j, l, len, len1, ref, result, str, token;
-    // console.log("eval_ast", @stringify_ast(ast))
-    if (!ast) {
+  eval_ast(ast_node) {
+    var get_var_value, inner_ast_node, j, l, len, len1, ref, result, string, token;
+    // console.log("eval_ast", @stringify_ast(ast_node))
+    if (!ast_node) {
       return;
     }
-    if (Array.isArray(ast)) {
-      for (j = 0, len = ast.length; j < len; j++) {
-        ast_sub = ast[j];
-        result = this.eval_ast(ast_sub);
+    if (Array.isArray(ast_node)) {
+      for (j = 0, len = ast_node.length; j < len; j++) {
+        inner_ast_node = ast_node[j];
+        result = this.eval_ast(inner_ast_node);
       }
       return result;
     }
     
     // TODO: better AST in general
-    // include Tokens for character ranges, and not as leaf nodes for literals
-    switch (ast.type) {
+    // include Tokens for character ranges
+    switch (ast_node.type) {
       case "literal":
-        return ast.value;
+        return ast_node.value;
       case "constant": // maybe these should both just be identifiers or whatever
-        return this.constants.get(ast.name);
+        return this.constants.get(ast_node.name);
       case "variable": // maybe these should both just be identifiers or whatever
-        return this.variables.get(ast.name);
-      // when "match" # TODO: naming (pattern?)
-      // 	get_var_value = (var_name)=>
-      // 		@eval_tokens(ast.match[var_name])
-      // 	return ast.pattern.fn(get_var_value, @)
-      case "pattern": // TODO: naming
+        return this.variables.get(ast_node.name);
+      case "pattern": // TODO: naming?
         get_var_value = (var_name) => {
-          return this.eval_ast(ast.vars[var_name]);
+          return this.eval_ast(ast_node.vars[var_name]);
         };
-        return ast.pattern.fn(get_var_value, this);
+        return ast_node.pattern.fn(get_var_value, this);
       case "operator":
-        if (ast.lhs && ast.rhs) {
-          return ast.operator.fn(this.eval_ast(ast.lhs), this.eval_ast(ast.rhs));
+        if (ast_node.left_hand_ast_node && ast_node.right_hand_ast_node) {
+          return ast_node.operator.fn(this.eval_ast(ast_node.left_hand_ast_node), this.eval_ast(ast_node.right_hand_ast_node));
         } else {
-          return ast.operator.fn(this.eval_ast(ast.operand));
+          return ast_node.operator.fn(this.eval_ast(ast_node.operand));
         }
         break;
       case "concat_literals": // TODO: should probably be an operation!
-        str = "";
-        ref = ast.params;
+        string = "";
+        ref = ast_node.params;
         for (l = 0, len1 = ref.length; l < len1; l++) {
           token = ref[l];
-          str += token.value;
+          string += token.value;
         }
-        return str;
+        return string;
     }
   }
 
   parse_tokens(tokens) {
     var find_longest_match, index, parse_expression, parse_primary;
-    // TODO: rename some things like _value -> _ast or _node or _ast_node or whatever
+    // TODO: rename some things like _ast_node -> _ast or _node or _ast_node or whatever
     // console.log("parse_tokens", stringify_tokens(tokens))
     index = 0;
     find_longest_match = (tokens, match_fn_type = "match") => {
@@ -609,7 +600,7 @@ module.exports = Context = class Context {
       return longest_match;
     };
     parse_primary = () => {
-      var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, i, j, k, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, tok_str, token, v, vars;
+      var bad_match, bracketed_ast_node, bracketed_tokens, closing_token_index, following_ast_node, i, j, key, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_token, next_word_token_string, next_word_tokens, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, token, token_string, value, vars;
       // console.log("parse_primary (using tokens from parse_tokens:)", stringify_tokens(tokens))
       parse_tokens = [];
       ref = tokens.slice(index);
@@ -650,17 +641,15 @@ module.exports = Context = class Context {
           break;
         }
       }
-      tok_str = stringify_tokens(parse_tokens);
-      next_word_tok_str = stringify_tokens(next_word_tokens);
+      token_string = stringify_tokens(parse_tokens);
+      next_word_token_string = stringify_tokens(next_word_tokens);
       match = find_longest_match(parse_tokens);
       if (match != null) {
-        // return {type: "match", match, pattern: match.pattern}
-        // vars = map_object_values(match, (tokens)=> console.log "tokens????", tokens; @parse_tokens(tokens))
         vars = {};
-        for (k in match) {
-          v = match[k];
-          if (k !== "pattern" && k !== "matcher") {
-            vars[k] = this.parse_tokens(v);
+        for (key in match) {
+          value = match[key];
+          if (key !== "pattern" && key !== "matcher") {
+            vars[key] = this.parse_tokens(value);
           }
         }
         return {
@@ -671,7 +660,7 @@ module.exports = Context = class Context {
       } else {
         bad_match = find_longest_match(parse_tokens, "bad_match");
         if (bad_match != null) {
-          throw new Error(`For \`${tok_str}\`, use \`${bad_match.pattern.prefered}\` instead`);
+          throw new Error(`For \`${token_string}\`, use \`${bad_match.pattern.prefered}\` instead`);
         }
       }
       if (next_literal_tokens.length) {
@@ -695,29 +684,29 @@ module.exports = Context = class Context {
         }
       } else {
         if (next_word_tokens.length) {
-          if (this.constants.has(next_word_tok_str)) {
+          if (this.constants.has(next_word_token_string)) {
             return {
               type: "constant",
-              name: next_word_tok_str
+              name: next_word_token_string
             };
           }
-          if (this.variables.has(next_word_tok_str)) {
+          if (this.variables.has(next_word_token_string)) {
             return {
               type: "variable",
-              name: next_word_tok_str
+              name: next_word_token_string
             };
           }
         } else {
-          if (this.constants.has(tok_str)) {
+          if (this.constants.has(token_string)) {
             return {
               type: "constant",
-              name: tok_str
+              name: token_string
             };
           }
-          if (this.variables.has(tok_str)) {
+          if (this.variables.has(token_string)) {
             return {
               type: "variable",
-              name: tok_str
+              name: token_string
             };
           }
         }
@@ -725,9 +714,9 @@ module.exports = Context = class Context {
         if (token.type === "punctuation" && token.value === "(" || token.type === "indent") {
           closing_token_index = find_closing_token(tokens, index);
           bracketed_tokens = tokens.slice(index + 1, closing_token_index);
-          bracketed_value = this.parse_tokens(bracketed_tokens);
+          bracketed_ast_node = this.parse_tokens(bracketed_tokens);
           index = closing_token_index;
-          return parse_expression(bracketed_value, 0);
+          return parse_expression(bracketed_ast_node, 0);
         }
         ref4 = this.operators;
         for (n = 0, len3 = ref4.length; n < len3; n++) {
@@ -741,20 +730,20 @@ module.exports = Context = class Context {
             if (index === tokens.length) {
               throw new Error(`missing right operand for \`${operator.prefered}\``);
             }
-            following_value = parse_primary();
+            following_ast_node = parse_primary();
             return {
               type: "operator",
               operator,
-              operand: following_value
+              operand: following_ast_node
             };
           }
         }
-        throw new Error(`I don't understand \`${tok_str}\``);
+        throw new Error(`I don't understand \`${token_string}\``);
       }
     };
-    parse_expression = (lhs, min_precedence) => {
-      var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
-      // console.log "parse_expression", @stringify_ast(lhs), min_precedence #, tokens, index
+    parse_expression = (left_hand_ast_node, min_precedence) => {
+      var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, right_hand_ast_node;
+      // console.log "parse_expression", @stringify_ast(left_hand_ast_node), min_precedence #, tokens, index
       match_operator = () => {
         var j, len, matcher, operator, ref;
         ref = this.operators;
@@ -774,7 +763,7 @@ module.exports = Context = class Context {
         if (lookahead_operator.binary && (tokens[index] == null)) {
           throw new Error(`missing right operand for \`${lookahead_operator.prefered}\``);
         }
-        rhs = parse_primary();
+        right_hand_ast_node = parse_primary();
         index += 1;
         lookahead_operator = match_operator();
         while (((lookahead_operator != null ? lookahead_operator.binary : void 0) && lookahead_operator.precedence > operator.precedence) || ((lookahead_operator != null ? lookahead_operator.right_associative : void 0) && lookahead_operator.precedence === operator.precedence)) {
@@ -782,15 +771,15 @@ module.exports = Context = class Context {
             throw new Error(`missing right operand for \`${lookahead_operator.prefered}\``);
           }
           index -= 2;
-          rhs = parse_expression(rhs, lookahead_operator.precedence);
+          right_hand_ast_node = parse_expression(right_hand_ast_node, lookahead_operator.precedence);
           index += 2;
           lookahead_operator = match_operator();
         }
-        lhs = {
+        left_hand_ast_node = {
           type: "operator",
           operator,
-          lhs,
-          rhs
+          left_hand_ast_node,
+          right_hand_ast_node
         };
       }
       if (lookahead_operator != null ? lookahead_operator.unary : void 0) {
@@ -809,10 +798,10 @@ module.exports = Context = class Context {
         }
         if (anything_substantial_after_newline) {
           index += 1;
-          return [lhs, parse_expression(parse_primary(), 0)];
+          return [left_hand_ast_node, parse_expression(parse_primary(), 0)];
         }
       }
-      return lhs;
+      return left_hand_ast_node;
     };
     return parse_expression(parse_primary(), 0);
   }
