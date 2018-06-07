@@ -73,7 +73,7 @@ class Context
 		# a block of async statements should probably return a single Promise that wraps all the Promises of its statements
 	
 	eval_tokens: (tokens)->
-		console.log("eval_tokens", stringify_tokens(tokens))
+		# console.log("eval_tokens", stringify_tokens(tokens))
 		ast = @parse_tokens(tokens)
 		@eval_ast(ast)
 	
@@ -81,7 +81,7 @@ class Context
 		JSON.stringify(ast, (key, ast)-> if ast instanceof Pattern then ast.prefered else ast)
 	
 	eval_ast: (ast)->
-		console.log("eval_ast", @stringify_ast(ast))
+		# console.log("eval_ast", @stringify_ast(ast))
 		return unless ast
 		
 		if Array.isArray(ast)

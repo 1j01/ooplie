@@ -522,7 +522,7 @@ module.exports = Context = class Context {
   // a block of async statements should probably return a single Promise that wraps all the Promises of its statements
   eval_tokens(tokens) {
     var ast;
-    console.log("eval_tokens", stringify_tokens(tokens));
+    // console.log("eval_tokens", stringify_tokens(tokens))
     ast = this.parse_tokens(tokens);
     return this.eval_ast(ast);
   }
@@ -539,7 +539,7 @@ module.exports = Context = class Context {
 
   eval_ast(ast) {
     var ast_sub, get_var_value, j, l, len, len1, ref, result, str, token;
-    console.log("eval_ast", this.stringify_ast(ast));
+    // console.log("eval_ast", @stringify_ast(ast))
     if (!ast) {
       return;
     }
