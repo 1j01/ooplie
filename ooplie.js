@@ -538,14 +538,21 @@ module.exports = Context = class Context {
   }
 
   eval_ast(ast) {
-    var get_var_value, j, len, ref, str, token;
+    var ast_sub, get_var_value, j, l, len, len1, ref, result, str, token;
     console.log("eval_ast", this.stringify_ast(ast));
     if (!ast) {
       return;
     }
+    if (Array.isArray(ast)) {
+      for (j = 0, len = ast.length; j < len; j++) {
+        ast_sub = ast[j];
+        result = this.eval_ast(ast_sub);
+      }
+      return result;
+    }
     
     // TODO: better AST in general
-    // include Tokens 
+    // include Tokens for character ranges, and not as leaf nodes for literals
     switch (ast.type) {
       case "literal":
         return ast.value;
@@ -572,8 +579,8 @@ module.exports = Context = class Context {
       case "concat_literals": // TODO: should probably be an operation!
         str = "";
         ref = ast.params;
-        for (j = 0, len = ref.length; j < len; j++) {
-          token = ref[j];
+        for (l = 0, len1 = ref.length; l < len1; l++) {
+          token = ref[l];
           str += token.value;
         }
         return str;
@@ -583,7 +590,7 @@ module.exports = Context = class Context {
   parse_tokens(tokens) {
     var find_longest_match, index, parse_expression, parse_primary;
     // TODO: rename some things like _value -> _ast or _node or _ast_node or whatever
-    console.log("parse_tokens", stringify_tokens(tokens));
+    // console.log("parse_tokens", stringify_tokens(tokens))
     index = 0;
     find_longest_match = (tokens, match_fn_type = "match") => {
       var j, len, longest_match, match, pattern, ref;
@@ -603,7 +610,7 @@ module.exports = Context = class Context {
     };
     parse_primary = () => {
       var bad_match, bracketed_tokens, bracketed_value, closing_token_index, following_value, i, j, k, l, len, len1, len2, len3, m, match, matcher, n, next_literal_tokens, next_token, next_word_tok_str, next_word_tokens, operator, parse_tokens, prev_token, ref, ref1, ref2, ref3, ref4, tok_str, token, v, vars;
-      console.log("parse_primary", stringify_tokens(tokens));
+      // console.log("parse_primary (using tokens from parse_tokens:)", stringify_tokens(tokens))
       parse_tokens = [];
       ref = tokens.slice(index);
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
@@ -668,6 +675,7 @@ module.exports = Context = class Context {
         }
       }
       if (next_literal_tokens.length) {
+        // TODO: give just a literal for a single string
         if (next_literal_tokens.some(function(token) {
           return token.type === "string";
         })) {
@@ -746,7 +754,7 @@ module.exports = Context = class Context {
     };
     parse_expression = (lhs, min_precedence) => {
       var anything_substantial_after_newline, i, j, lookahead_operator, match_operator, operator, ref, ref1, ref2, ref3, rhs;
-      console.log("parse_expression", this.stringify_ast(lhs), min_precedence); //, tokens, index
+      // console.log "parse_expression", @stringify_ast(lhs), min_precedence #, tokens, index
       match_operator = () => {
         var j, len, matcher, operator, ref;
         ref = this.operators;
@@ -801,7 +809,7 @@ module.exports = Context = class Context {
         }
         if (anything_substantial_after_newline) {
           index += 1;
-          return parse_expression(parse_primary(), 0);
+          return [lhs, parse_expression(parse_primary(), 0)];
         }
       }
       return lhs;

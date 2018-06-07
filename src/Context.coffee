@@ -84,8 +84,13 @@ class Context
 		console.log("eval_ast", @stringify_ast(ast))
 		return unless ast
 		
+		if Array.isArray(ast)
+			for ast_sub in ast
+				result = @eval_ast(ast_sub)
+			return result
+		
 		# TODO: better AST in general
-		# include Tokens 
+		# include Tokens for character ranges, and not as leaf nodes for literals
 		switch ast.type
 			when "literal"
 				return ast.value
@@ -113,7 +118,7 @@ class Context
 	
 	parse_tokens: (tokens)->
 		# TODO: rename some things like _value -> _ast or _node or _ast_node or whatever
-		console.log("parse_tokens", stringify_tokens(tokens))
+		# console.log("parse_tokens", stringify_tokens(tokens))
 		index = 0
 		
 		find_longest_match = (tokens, match_fn_type="match")=>
@@ -126,7 +131,7 @@ class Context
 			longest_match
 		
 		parse_primary = =>
-			console.log("parse_primary", stringify_tokens(tokens))
+			# console.log("parse_primary (using tokens from parse_tokens:)", stringify_tokens(tokens))
 			parse_tokens = []
 			for token, i in tokens.slice(index)
 				if token.type is "newline"
@@ -171,6 +176,7 @@ class Context
 					throw new Error "For `#{tok_str}`, use `#{bad_match.pattern.prefered}` instead"
 			
 			if next_literal_tokens.length
+				# TODO: give just a literal for a single string
 				if next_literal_tokens.some((token)-> token.type is "string")
 					return {type: "concat_literals", params: next_literal_tokens}
 				else if next_literal_tokens.length > 1
@@ -215,7 +221,7 @@ class Context
 				throw new Error "I don't understand `#{tok_str}`"
 		
 		parse_expression = (lhs, min_precedence)=>
-			console.log "parse_expression", @stringify_ast(lhs), min_precedence #, tokens, index
+			# console.log "parse_expression", @stringify_ast(lhs), min_precedence #, tokens, index
 			match_operator = =>
 				for operator in @operators
 					matcher = operator.match(tokens, index)
@@ -257,7 +263,7 @@ class Context
 						anything_substantial_after_newline = yes
 				if anything_substantial_after_newline
 					index += 1
-					return parse_expression(parse_primary(), 0)
+					return [lhs, parse_expression(parse_primary(), 0)]
 			return lhs
 		
 		parse_expression(parse_primary(), 0)
