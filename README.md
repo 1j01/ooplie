@@ -1,5 +1,5 @@
 
-# Ooplie
+# [<img alt="Ooplie" src="images/logo/ooplie-logotype.png" height="200"></a>][console]
 
 Ooplie is a programming system where you write in English.
 It runs in [Node.js][] and in the browser.
