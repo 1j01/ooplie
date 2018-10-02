@@ -50,7 +50,7 @@
   "main": "index.html",
   "window": {
     "id": "ooplie-console",
-    "icon": "images/icon-3.png"
+    "icon": "images/ooplie-icon-32.png"
   },
   "dependencies": {
     "nw": "^0.14.2-sdk"
