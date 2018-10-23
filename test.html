@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<title>Ooplie Tests with Mocha</title>
 	<link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+	<link rel="icon" href="images/logo/test-status/ooplie-icon-test-status-in-progress.png">
 </head>
 <body>
 	<div id="mocha"></div>
@@ -28,7 +29,10 @@
 	<script src="tests/test-nonsense.coffee" type="text/coffeescript"></script>
 	<script type="text/coffeescript">
 		mocha.checkLeaks()
-		mocha.run()
+		mocha.run((failures)->
+			icon_link = document.querySelector("link[rel~=icon]")
+			icon_link.href = icon_link.href.replace /(test-status-)[^\.]+/, "$1#{if failures then "failed" else "passed"}"
+		)
 	</script>
 </body>
 </html>
